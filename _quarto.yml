@@ -3,7 +3,7 @@ project:
 
 # This defines the .qmd files that are in your document
 book:
-  title: "A Template Quarto Repository"
+  title: "Effectiveness of Temporary Portable Rumble Strips in Utah"
   author:
     - name: Gregory S. Macfarlane
       orcid: 0000-0003-3999-7584
@@ -15,7 +15,10 @@ book:
           state: UT
           postal-code: 84602
     # to add additional authors, simply add another -name: tag 
-  date: "1/25/2023"
+    - name: Tyler Carruth
+    - name: Benjamin Hailstone
+    - name: Grant Schultz
+  date: "2/25/2025"
   chapters:
     - index.qmd
     - 01_introduction.qmd

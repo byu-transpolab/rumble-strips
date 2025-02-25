@@ -1,3 +1,4 @@
-# Quarto template
+# Rumble Strips
 
-This repository creates a template article that can be converted into a website, an academic article PDF, and (eventually) a BYU Engineering thesis. This template also implements the workflow presented in my [lab documentation](https://gregmacfarlane.github.io/lab/workflow.html).
+This repository contains analysis and writing related to UDOT-funded
+research on the effectiveness of temporary portable rumble strips.
