@@ -34,9 +34,9 @@ return(data)
 
 
 ##Avgerage volume per hour for given date(s)##############
-#' @param data.frame
-#' @param start_date
-#' @param end_date #is start date if not provided
+#' @param data        data frame
+#' @param start_date  date in YYYY-MM-DD format
+#' @param end_date    date in YYYY-MM-DD format
 # return vector with average volumes per hour within
 # given dates
 # 
@@ -65,15 +65,19 @@ return(hourly_volume)
 }
 
 ##Required observations###################################
-#' @param sta_devia
-#' @param z-score etc etc
+#' @param standard_deviation o, dbl
+#' @param z-score z, dbl
+#' @param centrality_adjustment U, dbl
+#' @param margin_of_error E, dbl
 # return number of required observations
 # 
-min_obs <- function() {
+min_obs <- function(o = 3, z = 1.959964, U = 1.04, E = 1) 
+{
   
+  n = ((o^2) * (z^2) * ((U^2) + 2)) / (2 * (E^2))
+  n = ceiling(n)
   
-  
-return(n)  
+  return(n)  
 }
 
 ##AADT####################################################
