@@ -115,6 +115,8 @@ obs_time <- function(start_time, end_time,
                      obs, hourly_volume){
   
   t = end_time - start_time
+  if(t==0){t = 1}
+  
   a = sum(hourly_volume)
   p = AADT_perc(hourly_volume,start_time,end_time)
   
