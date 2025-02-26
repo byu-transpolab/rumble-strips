@@ -94,8 +94,8 @@ return(AADT)
 }
 ##AADT % within time window################################
 #' @param hourly_volume in vector from
-#' @param start_time
-#' @param end_time defaults to start time
+#' @param start_time integer 0-23 for 24 hour format
+#' @param end_time integer 0-23 for 24 hour format
 # return % AADT within time window
 # 
 
@@ -117,17 +117,24 @@ return(percentage)
 }
 
 ##Observation time########################################
-#' @param hourly_volume
-#' @param min_observations
+#' @param AADT_percentage dbl 63.3% = 63.3 =/= 0.633
+#' @param observations int, minimum # needed for confidence
+#' @param work_time int, time period related to AADT_percent
 # call on AADT and AADT% functions
 # return observation time
 # 
-obs_time <- function(){
+obs_time <- function(start_time, end_time,
+                     obs, hourly_volume){
   
+  t = end_time - start_time
+  a = sum(hourly_volume)
+  p = AADT_perc(hourly_volume,start_time,end_time)
   
+  hours = round(
+                (t * obs) / (a * p/100)
+          , 5)
   
-  
-  
+  return(hours)
   
 }
 
