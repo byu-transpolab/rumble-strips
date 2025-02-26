@@ -127,13 +127,67 @@ obs_time <- function(start_time, end_time,
 }
 
 ##plot station data######################################
-#' @param hourly_volume in vector format
-#' @param station
-#' @param start_date
-#' @param end_date
-#' @param start_time
-#' @param end_time
+#' @param station int
+#' @param start_date sd
+#' @param end_date ed
+#' @param start_time st
+#' @param end_time et
+#' @param min_observations int, # of minimum observations
 #' @param file_path
 # return plot with AADT%, time window, min observation time
 # save it to the given folder
 # 
+
+plot_station <- function(station, 
+                         sd, ed,
+                         st, et,
+                         obs,
+                         file_path = NULL){
+  
+  data <- station_data(station)
+  hv <- hourly_volume(data, sd, ed)
+  p <- AADT_perc(hv, st, et)
+  hours <- obs_time(st, et, obs, hv)
+  
+  if(file_path == is.NULL)
+    {
+    
+    barplot(hv,
+            beside = TRUE,
+            ylim = range(pretty(c(0, hv))))
+    title(main = paste0('Station ', station, ', ',
+                        "% AADT from ", st, " to ", et, ": ", 
+                        p, "%"
+                        ),
+          sub = paste("required hours of observation: ",
+                       hours
+                       ),
+          xlab = "Hours of the Day",
+          ylab = "Average Traffic Volume"
+          )
+    
+  }else{
+    pdf(file = paste0(file_path, 'Station ', station, ', ',
+                       sd, " to ", ed))
+    
+    barplot(hv,
+            beside = TRUE,
+            ylim = range(pretty(c(0, hv))))
+    title(main = paste0('Station ', station, ', ',
+                        "% AADT from ", st, " to ", et, ": ", 
+                        p, "%"
+    ),
+    sub = paste("required hours of observation: ",
+                hours
+    ),
+    xlab = "Hours of the Day",
+    ylab = "Average Traffic Volume"
+    ) 
+    
+    dev.off()
+    
+    }
+  
+}
+
+
