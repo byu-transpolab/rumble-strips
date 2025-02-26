@@ -80,18 +80,6 @@ min_obs <- function(o = 3, z = 1.959964, U = 1.04, E = 1)
   return(n)  
 }
 
-##AADT####################################################
-#' @param hourly_volume in vector form
-# return AADT = total volume over 24 hours
-# 
-
-AADT <- functions(hourly_volume) {
-  
-AADT = sum(hourly_volume)  
-  
-return(AADT)  
-  
-}
 ##AADT % within time window################################
 #' @param hourly_volume in vector from
 #' @param start_time integer 0-23 for 24 hour format
