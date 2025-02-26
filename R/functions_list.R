@@ -96,9 +96,18 @@ return(AADT)
 # 
 
 AADT_perc <- function(hourly_volume, start_time, 
-                      end_time = start_time + 1){
+                      end_time = start_time){
   
+  #find the total volume within the given time
+  work_zone_volume = sum(hourly_volume[start_time:end_time])
   
+  total_volume = sum(hourly_volume)
+  
+  #find the percentage of the AADT during specified hours
+  percentage = round(
+                    work_zone_volume / total_volume * 100,
+              digits = 2
+  )  
   
 return(percentage)  
 }
