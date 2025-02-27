@@ -23,8 +23,8 @@ if (300 < station & station < 432) {
 #bring in volume data from Google sheets
 data <- read_sheet(
   sheet_id,
-  range = paste0("0", station, "!B:AC"), #will B:AC select 
-  col_names = TRUE,                      #enough rows?
+  sheet = paste0("0", station),
+  col_names = TRUE,                    
   col_types = NULL,
   trim_ws = FALSE,  #this will parameter should be checked
 )
