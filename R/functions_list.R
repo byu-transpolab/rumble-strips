@@ -2,7 +2,10 @@
 # defines several functions used to analyze traffic counting
 # data from UDOT. only analyzes 2023 data. 
 
+##required pacakges######################################
 
+#tidyverse
+#googlesheets4
 
 ##import data#############################################
 #' @param station
