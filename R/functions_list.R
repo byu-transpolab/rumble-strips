@@ -165,7 +165,7 @@ plot_station <- function(data,
   p <- AADT_perc(hv, st, et)
   hours <- obs_time(st, et, obs, hv)
   
-  if(file_path == is.NULL)
+  if(is.null(file_path))
     {
     
     barplot(hv,
