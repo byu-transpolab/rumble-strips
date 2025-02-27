@@ -36,31 +36,43 @@ et = 17
 
 ##Process all the stations################################
 
+#calculate minimum observations on given variables
+n = min_obs(o, z, U, E)
+
 #initialize a total hourly volume vector
 thv <- rep(0, 24)
 
 #add columns to station_list to record AADT and AADT%
 station_list <- station_list %>%
-  mutate(AADT = 0) %>%
-  mutate(AADT_percentage = 0)
+  mutate(AADT = 0, AADT_percentage = 0)
+
+#initialize a counter to track the iteration of the loop
+i = 1
 
 
 #loop through all stations
-for (station in station_list) {
-
+for (station in station_list$station_number) 
+  {
     #read in data from Google sheets
     df <- station_data(station)
   
     #add station's hourly_volume data to totals data
     hv = hourly_volume(df, sd, ed)
-    tvh = tvh + hv
+    thv = tvh + hv
   
     #add station AADT to station_list
-  
+    station_list[i, "AADT"] <- sum(hv)
+    
     #add station AADT% to station_list
+    station_list[i, "AADT_percentage"] <- 
+        AADT_perc(hv, st, et)
   
     #plot station hourly volumes
-}
+    plot_station(df, sd, ed, st, et, n)
+    
+    i = i +1
+  }
+
 
 #plot total station data
 
