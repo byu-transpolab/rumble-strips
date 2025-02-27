@@ -54,11 +54,13 @@ hourly_volume <- function(df, start_date,
   df$DATE <- as.Date(df$DATE)
   
   # Count the number of unique days
-  unique_days_count <- length(unique(df$DATE))
+  days <- length(unique(df$DATE))
  
     
 #isolate just the volume data (i.e. columns F to AC)
-vdata <-   as.integer(df$"H000":"H2300")
+  vdata <- df %>%
+    select(H0000:H2300) %>%
+    mutate_all(as.integer)
   
 #add all columns together into one row
 hourly_volume <- colSums(vdata, na.rm = TRUE)  

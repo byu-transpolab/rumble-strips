@@ -6,4 +6,8 @@ library(tidyverse)
 library(googlesheets4)
 gs4_deauth() #prevents the need of signing into Google
 
-station_data(720)
+options(timeout = 1000)
+tib <- station_data(720)
+
+hv <- hourly_volume(tib, "2023-05-01", "2023-08-31")
+
