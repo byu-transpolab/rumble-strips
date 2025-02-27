@@ -36,20 +36,32 @@ et = 17
 
 ##Process all the stations################################
 
-#count the quantity of stations
+#initialize a total hourly volume vector
+thv <- rep(0, 24)
+
+#add columns to station_list to record AADT and AADT%
+station_list <- station_list %>%
+  mutate(new_column = 0) %>%
+  mutate(new_column = 0)
+
+
 
 #loop through all stations
+for (station in station_list) {
 
     #read in data from Google sheets
     df <- station_data(station)
   
-    #add stations hourly data to totals hourly data
+    #add station's hourly_volume data to totals data
+    hv = hourly_volume(df, sd, ed)
+    tvh = tvh + hv
   
-    #add station AADT to the tibble
+    #add station AADT to station_list
   
-    #add station AADT% to the tibble
+    #add station AADT% to station_list
   
     #plot station hourly volumes
+}
 
 #plot total station data
 
