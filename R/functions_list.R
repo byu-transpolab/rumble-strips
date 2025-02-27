@@ -27,6 +27,7 @@ if (300 < station & station < 432) {
 data <- read_sheet(
   sheet_id,
   sheet = paste0("0", station),
+  range = paste0("B:AC"),
   col_names = TRUE,                    
   col_types = NULL,
   trim_ws = FALSE,  #this will parameter should be checked
