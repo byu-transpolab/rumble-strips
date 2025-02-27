@@ -11,6 +11,9 @@
 #' @param station
 #' returns complete data frame of that station
 #
+
+#station = 720 #used as a debug tool
+
 station_data <- function(station) {
   
 #determines which Google sheet to look at based on station #
