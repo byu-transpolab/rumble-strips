@@ -12,6 +12,7 @@
 
 clean_stations <- function(sl){
   
+  options(timeout = 1000)
   #retrieves the available worksheets in 2023 data 301-431
   sheet_names1 <- sheet_names(
     "1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw")
