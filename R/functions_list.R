@@ -7,6 +7,18 @@
 #tidyverse
 #googlesheets4
 
+##Clean station list#####################################
+#' @param sl a tibble with the a column of station #s
+
+clean_stations <- function(sl){
+  approved_stations <- c(301:431, 501:733)
+  
+  sl <- sl %>%
+    filter(station_number %in% approved_stations)
+  
+  return(sl)
+}
+
 ##import data#############################################
 #' @param station
 #' returns complete data frame of that station
