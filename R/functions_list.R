@@ -54,7 +54,7 @@ hourly_volume <- function(df, start_date,
  
     
 #isolate just the volume data (i.e. columns F to AC)
-vdata <-   as.integer(df$ : )
+#vdata <-   as.integer(df$ : )
   
 #add all columns together into one row
 hourly_volume <- colSums(vdata, na.rm = TRUE)  
