@@ -77,8 +77,18 @@ for (station in station_list$station_number)
   }
 
 
+
+#average out total hourly volume
+y = rep(nrow(station_list), 24)
+thv = thv / y
+thv <- round(thv, digits = 0)
+
+
 #plot total station data
+station = "Rg 4"
+plot_station(thv, sd, ed, st, et, n)
 
 #save AADT and AADT% to a csv
-
+write_csv(station_list, 
+          "~/rumble-strips/data/station_summary")
 
