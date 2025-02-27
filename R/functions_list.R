@@ -144,7 +144,7 @@ obs_time <- function(start_time, end_time,
 }
 
 ##plot station data######################################
-#' @param station int
+#' @param data tibble with dates and volume data
 #' @param start_date sd
 #' @param end_date ed
 #' @param start_time st
@@ -155,13 +155,12 @@ obs_time <- function(start_time, end_time,
 # save it to the given folder
 # 
 
-plot_station <- function(station, 
+plot_station <- function(data, 
                          sd, ed,
                          st, et,
-                         obs,
+                         obs = 54,
                          file_path = NULL){
   
-  data <- station_data(station)
   hv <- hourly_volume(data, sd, ed)
   p <- AADT_perc(hv, st, et)
   hours <- obs_time(st, et, obs, hv)
