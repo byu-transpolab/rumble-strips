@@ -34,31 +34,37 @@ return(data)
 
 
 ##Avgerage volume per hour for given date(s)##############
-#' @param data        data frame
+#' @param df        data frame
 #' @param start_date  date in YYYY-MM-DD format
 #' @param end_date    date in YYYY-MM-DD format
 # return vector with average volumes per hour within
 # given dates
 # 
 
-hourly_volume <- function(data, start_date, 
+hourly_volume <- function(df, start_date, 
                           end_date = start_date) {
   
 #count unique days in the data  
-y = 
+
+  # Ensure the date column is in Date format
+  df$DATE <- as.Date(df$DATE)
   
+  # Count the number of unique days
+  unique_days_count <- length(unique(df$DATE))
+ 
     
 #isolate just the volume data (i.e. columns F to AC)
-vdata <-   
+vdata <-   as.integer(df$ : )
   
 #add all columns together into one row
 hourly_volume <- colSums(vdata, na.rm = TRUE)  
   
   
 #average the total using the total # of days
-y = rep(n, 24) 
-hourly_volume <- hourly_volume / y
-hourly_volume <- round(hourly_volume, digits = 0)  
+y = rep(days, 24) #creates a vector 
+hourly_volume <- hourly_volume / y #vector divided by vector
+hourly_volume <- round(hourly_volume, 
+                       digits = 0) #rounds up to whole #
 
 return(hourly_volume)  
   
