@@ -61,6 +61,16 @@ data <- read_sheet(
   trim_ws = TRUE
 )
 
+colnames(data) <- c(
+                      'DATE', 'route', 'MP', 'lane',
+                      '0','1','2','3','4',
+                      '5','6','7','8',
+                      '9','10','11','12',
+                      '13','14','15','16',
+                      '17','18','19','20',
+                      '21','22','23'
+                    )
+
 return(data)  
 }
 
@@ -87,8 +97,10 @@ hourly_volume <- function(df, start_date,
     
 #isolate just the volume data (i.e. columns F to AC)
   vdata <- df %>%
-    select(H0000:H2300) %>%
+    select("0":"23") %>%
     mutate_all(as.integer)
+  
+  
   
 #add all columns together into one row
 hourly_volume <- colSums(vdata, na.rm = TRUE)  
@@ -99,6 +111,8 @@ y = rep(days, 24) #creates a vector
 hourly_volume <- hourly_volume / y #vector divided by vector
 hourly_volume <- round(hourly_volume, 
                        digits = 0) #rounds up to whole #
+
+
 
 return(hourly_volume)  
   
