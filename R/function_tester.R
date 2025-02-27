@@ -9,7 +9,7 @@ gs4_deauth() #prevents the need of signing into Google
 # Load the functions from functions_list.R
 source("R/functions_list.R")
 
-tib <- station_data(733)
+tib <- station_data(735)
 
 hv <- hourly_volume(tib, "2023-05-01", "2023-08-31")
 
