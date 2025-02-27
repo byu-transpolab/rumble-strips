@@ -26,6 +26,9 @@ clean_stations <- function(sl){
   sl <- sl %>%
     filter(station_number %in% approved_stations)
   
+  # Convert the character column to integer
+  sl$station_number <- as.integer(sl$station_number)
+  
   return(sl)
 }
 
