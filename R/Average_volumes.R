@@ -71,7 +71,7 @@ for (station in station_list$station_number)
         AADT_perc(hv, st, et)
   
     #plot station hourly volumes
-    plot_station(df, sd, ed, st, et, n)
+    plot_station(hv, sd, ed, st, et, n)
     
     i = i +1
   }
