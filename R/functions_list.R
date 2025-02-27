@@ -58,8 +58,7 @@ data <- read_sheet(
   range = paste0("B:AC"),
   col_names = TRUE,                    
   col_types = NULL,
-  trim_ws = TRUE,
-  timeout = 60
+  trim_ws = TRUE
 )
 
 return(data)  
