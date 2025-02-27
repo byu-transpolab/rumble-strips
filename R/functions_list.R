@@ -46,6 +46,7 @@ data <- read_sheet(
   col_names = TRUE,                    
   col_types = NULL,
   trim_ws = TRUE,
+  timeout = 60
 )
 
 return(data)  
