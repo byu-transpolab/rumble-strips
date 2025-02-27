@@ -22,7 +22,7 @@ library(googlesheets4)
 AADT <- function(station, date)  
   
 #define the station number
-station = 733
+station = 720
 
 start_date = '2023-05-01'
 end_date = '2023-08-31'
@@ -66,7 +66,7 @@ if (300 < station & station < 432) {
 #pulls all the dates from the data, there are repeats
 dates <- read_sheet(
                     sheet_id,
-                    range = paste0("0", station, "!B:B"),
+                    range = paste0("0", station, "!B:AC"),
                     col_names = TRUE,
                     col_types = "D",
                     trim_ws = FALSE,
@@ -87,7 +87,7 @@ final_row = dates.loc[dates['DATE'] ==
 
 
 #defines range of cells with volume data
-rng = paste0("0", station, "!F", initial_row, ":AC", final_row)
+rng = paste0("0", station, "!F:AC")
 
 #bring in volume data from Google sheets
 data <- read_sheet(
