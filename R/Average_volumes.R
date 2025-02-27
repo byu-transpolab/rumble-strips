@@ -36,6 +36,9 @@ et = 17
 
 ##Process all the stations################################
 
+#clean the list of stations
+station_list <- clean_stations(station_list)
+
 #calculate minimum observations on given variables
 n = min_obs(o, z, U, E)
 
@@ -58,7 +61,7 @@ for (station in station_list$station_number)
   
     #add station's hourly_volume data to totals data
     hv = hourly_volume(df, sd, ed)
-    thv = tvh + hv
+    thv = thv + hv
   
     #add station AADT to station_list
     station_list[i, "AADT"] <- sum(hv)
