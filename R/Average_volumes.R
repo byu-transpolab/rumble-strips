@@ -17,7 +17,7 @@ source("R/functions_list.R")
 ##Define files and variables###############################
 
 #import csv with station #s
-station_list <- read_csv(data/stations_in_region4)
+station_list <- read_csv("~/rumble-strips/data/stations_in_region4")
 
 #statistical info
 o = 3         #standard deviation
@@ -41,9 +41,8 @@ thv <- rep(0, 24)
 
 #add columns to station_list to record AADT and AADT%
 station_list <- station_list %>%
-  mutate(new_column = 0) %>%
-  mutate(new_column = 0)
-
+  mutate(AADT = 0) %>%
+  mutate(AADT_percentage = 0)
 
 
 #loop through all stations
