@@ -193,12 +193,11 @@ obs_time <- function(start_time, end_time,
 # save it to the given folder
 # 
 
-plot_station <- function(data, 
+plot_station <- function(hv, 
                          sd, ed,
                          st, et,
                          obs = 54){
   
-  hv <- hourly_volume(data, sd, ed)
   p <- AADT_perc(hv, st, et)
   hours <- obs_time(st, et, obs, hv)
   
