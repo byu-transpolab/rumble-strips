@@ -160,20 +160,21 @@ return(percentage)
 }
 
 ##get_obs_time########################################
-#' @param AADT_percentage dbl 63.3% = 63.3 =/= 0.633
-#' @param observations int, minimum # needed for confidence
-#' @param work_time int, time period related to AADT_percent
-# call on AADT and AADT% functions
-# return observation time
+#' @param st  start time, integer 0-23 for 24-hour format
+#' @param et  start time, integer 0-23 for 24-hour format
+#' @param obs int, minimum # needed for confidence
+#' @param hv  vector with hourly volume data
+# calls on get_aadt_perc function
+# return minimum required observation time
 # 
-get_obs_time <- function(start_time, end_time,
-                     obs, hourly_volume){
+get_obs_time <- function(st, et,
+                     obs, hv){
   
-  t = end_time - start_time
+  t = et - st
   if(t==0){t = 1}
   
-  a = sum(hourly_volume)
-  p = AADT_perc(hourly_volume,start_time,end_time)
+  a = sum(hv)
+  p = get_aadt_perc(hv,st,et)
   
   hours = round(
                 (t * obs) / (a * p/100)
