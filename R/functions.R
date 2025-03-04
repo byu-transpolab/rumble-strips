@@ -31,16 +31,7 @@ get_approved_stations <- function() {
 
 clean_stations <- function(sl){
   
-  options(timeout = 1000)
-  #retrieves the available worksheets in 2023 data 301-431
-  sheet_names1 <- sheet_names(
-    "1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw")
-  
-  #retrieves the available worksheets in 2023 data 501-733
-  sheet_names2 <- sheet_names(
-    "1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI")
-  
-  approved_stations <- c(sheet_names1, sheet_names2)
+  approved_stations <- get_approved_stations()
   
   sl <- sl %>%
     filter(station_number %in% approved_stations)
