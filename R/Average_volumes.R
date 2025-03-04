@@ -25,7 +25,6 @@ z = 1.959964  #z-score
 U = 1.04      #centrality adjustment
 E = 1         #margin of error
 
-
 #'start and end dates formatted as string "yyyy-mm-dd"
 sd = "2023-05-01" 
 ed = "2023-08-31"
