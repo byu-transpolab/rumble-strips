@@ -202,19 +202,19 @@ plot_station <- function(hv,
   hours <- obs_time(st, et, obs, hv)
   
   if (st < 12) {
-    st <- paste0(st, ":00 am")
+    st <- paste0(st, "am")
   } else if (st == 12) {
-    st <- paste0(st, ":00 pm")
+    st <- paste0(st, "pm")
   } else {
-    st <- paste0(st - 12, ":00 pm")
+    st <- paste0(st - 12, "pm")
   }
     
   if (et < 12) {
-    et <- paste0(et, ":00 am")
+    et <- paste0(et, "am")
   } else if (et == 12) {
-    et <- paste0(et, ":00 pm")
+    et <- paste0(et, "pm")
   } else {
-    et <- paste0(et - 12, ":00 pm")
+    et <- paste0(et - 12, "pm")
   }
   
   barplot(hv,
