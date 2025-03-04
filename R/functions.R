@@ -199,7 +199,7 @@ plot_station <- function(hv,
                          obs = 54){
   
   p <- get_aadt_perc(hv, st, et)
-  hours <- obs_time(st, et, obs, hv)
+  hours <- get_obs_time(st, et, obs, hv)
   
   if (st < 12) {
     st <- paste0(st, ":00 am")
