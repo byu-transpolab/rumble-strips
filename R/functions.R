@@ -198,10 +198,25 @@ plot_station <- function(hv,
                          st, et,
                          obs = 54){
   
-  p <- AADT_perc(hv, st, et)
+  p <- get_aadt_perc(hv, st, et)
   hours <- obs_time(st, et, obs, hv)
   
+  if (st < 12) {
+    st <- paste0(st, ":00 am")
+  } else if (st == 12) {
+    st <- paste0(st, ":00 pm")
+  } else {
+    st <- paste0(st - 12, ":00 pm")
+  }
     
+  if (et < 12) {
+    et <- paste0(et, ":00 am")
+  } else if (et == 12) {
+    et <- paste0(et, ":00 pm")
+  } else {
+    et <- paste0(et - 12, ":00 pm")
+  }
+  
   barplot(hv,
           beside = TRUE,
           ylim = range(pretty(c(0, hv))))
