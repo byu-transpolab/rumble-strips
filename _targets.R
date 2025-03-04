@@ -21,8 +21,8 @@ tar_option_set(
 # Install packages {{future}}, {{future.callr}}, and {{future.batchtools}} to allow use_targets() to configure tar_make_future() options.
 
 # Load the R scripts stored in R/ with your custom functions:
-for (file in list.files("R", full.names = TRUE)) source(file)
-# source("other_functions.R") # Source other scripts as needed. # nolint
+#for (file in list.files("R", full.names = TRUE)) source(file)
+source("~/rumble-strips/R/functions.R") # Source other scripts as needed. # nolint
 
 
 
@@ -46,7 +46,7 @@ list(
   ),
   tar_target(
     hourly_volumes,
-    map(station_data_list, ~ hourly_volume(.x, "2023-05-01", "2023-08-31"))
+    map(station_data_list, ~ get_hourly_volume(.x, "2023-05-01", "2023-08-31"))
   ),
   tar_target(
     total_hourly_volume,
