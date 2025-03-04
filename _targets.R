@@ -57,7 +57,7 @@ list(
   ),
   tar_target(
     station_data_list,
-    map(cleaned_station_list$station_number, station_data)
+    map(cleaned_station_list$station_number, get_station_data)
   ),
   tar_target(
     hourly_volumes,
@@ -68,7 +68,7 @@ list(
     reduce(hourly_volumes, `+`)
   ),
   tar_target(
-    station_list_with_aadt,
+    station_summary,
     cleaned_station_list %>%
       mutate(
         AADT = map_dbl(hourly_volumes, sum),
