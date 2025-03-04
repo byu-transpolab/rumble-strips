@@ -13,7 +13,7 @@ library(tidyverse)
 library(googlesheets4)
 gs4_deauth() #prevents the need of signing into Google
 
-# Load the functions from functions_list.R
+#Load the functions from functions.R
 source("R/functions.R")
 
 ##Define files and variables###############################
