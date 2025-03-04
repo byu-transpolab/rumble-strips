@@ -7,8 +7,9 @@
 #tidyverse
 #googlesheets4
 
-##Clean station list#####################################
+##clean_stations#####################################
 #' @param sl a tibble with the a column of station #s
+#' returns a column with avaiable stations. 
 
 clean_stations <- function(sl){
   
@@ -32,14 +33,14 @@ clean_stations <- function(sl){
   return(sl)
 }
 
-##import data#############################################
+##get_station_data#########################################
 #' @param station
 #' returns complete data frame of that station
 #
 
 #station = 733 #used as a debug tool
 
-station_data <- function(station) {
+get_station_data <- function(station) {
   
 #determines which Google sheet to look at based on station #
 if (300 < station & station < 432) {
@@ -75,7 +76,7 @@ return(data)
 }
 
 
-##Avgerage volume per hour for given date(s)##############
+##get_hourly_volume########################################
 #' @param df        data frame
 #' @param start_date  date in YYYY-MM-DD format
 #' @param end_date    date in YYYY-MM-DD format
@@ -118,7 +119,7 @@ return(hourly_volume)
   
 }
 
-##Required observations###################################
+##get_min_obs##############################################
 #' @param standard_deviation o, dbl
 #' @param z-score z, dbl
 #' @param centrality_adjustment U, dbl
@@ -134,14 +135,14 @@ min_obs <- function(o = 3, z = 1.959964, U = 1.04, E = 1)
   return(n)  
 }
 
-##AADT % within time window################################
+##get_aadt_perc#############################################
 #' @param hourly_volume in vector from
 #' @param start_time integer 0-23 for 24 hour format
 #' @param end_time integer 0-23 for 24 hour format
 # return % AADT within time window
 # 
 
-AADT_perc <- function(hourly_volume, start_time, 
+get_aadt_perc <- function(hourly_volume, start_time, 
                       end_time = start_time){
   
   #find the total volume within the given time
@@ -158,14 +159,14 @@ AADT_perc <- function(hourly_volume, start_time,
 return(percentage)  
 }
 
-##Observation time########################################
+##get_obs_time########################################
 #' @param AADT_percentage dbl 63.3% = 63.3 =/= 0.633
 #' @param observations int, minimum # needed for confidence
 #' @param work_time int, time period related to AADT_percent
 # call on AADT and AADT% functions
 # return observation time
 # 
-obs_time <- function(start_time, end_time,
+get_obs_time <- function(start_time, end_time,
                      obs, hourly_volume){
   
   t = end_time - start_time
@@ -182,7 +183,7 @@ obs_time <- function(start_time, end_time,
   
 }
 
-##plot station data######################################
+##plot_station######################################
 #' @param data tibble with dates and volume data
 #' @param start_date sd
 #' @param end_date ed
