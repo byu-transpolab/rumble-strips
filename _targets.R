@@ -24,7 +24,22 @@ tar_option_set(
 #for (file in list.files("R", full.names = TRUE)) source(file)
 source("~/rumble-strips/R/functions.R") # Source other scripts as needed. # nolint
 
+##Define Global variables###########################
+#statistical info
+o = 3         #standard deviation
+z = 1.959964  #z-score
+U = 1.04      #centrality adjustment
+E = 1         #margin of error
 
+#'start and end dates formatted as string "yyyy-mm-dd"
+sd = "2023-05-01" 
+ed = "2023-08-31"
+
+#'start and end times, integer 0-23 for 24-hr format
+st = 8
+et = 17
+
+##target list#########################################
 
 # Replace the target list below with your own:
 list(
@@ -38,7 +53,7 @@ list(
   ),
   tar_target(
     n,
-    get_min_obs(3, 1.959964, 1.04, 1)
+    get_min_obs(o, z, U, E)
   ),
   tar_target(
     station_data_list,
@@ -46,7 +61,7 @@ list(
   ),
   tar_target(
     hourly_volumes,
-    map(station_data_list, ~ get_hourly_volume(.x, "2023-05-01", "2023-08-31"))
+    map(station_data_list, ~ get_hourly_volume(.x, sd, ed))
   ),
   tar_target(
     total_hourly_volume,
@@ -57,12 +72,14 @@ list(
     cleaned_station_list %>%
       mutate(
         AADT = map_dbl(hourly_volumes, sum),
-        AADT_percentage = map_dbl(hourly_volumes, ~ AADT_perc(.x, 8, 17))
+        AADT_percentage = map_dbl(hourly_volumes,
+                                  ~ get_aadt_perc(.x, st, et))
       )
   ),
   tar_target(
     plots,
-    map2(hourly_volumes, cleaned_station_list$station_number, ~ plot_station(.x, "2023-05-01", "2023-08-31", 8, 17, n))
+    map2(hourly_volumes, cleaned_station_list$station_number, 
+         ~ plot_station(.x, sd, ed, st, et, n))
   ),
   tar_target(
     average_hourly_volume,
@@ -70,10 +87,10 @@ list(
   ),
   tar_target(
     final_plot,
-    plot_station(average_hourly_volume, "2023-05-01", "2023-08-31", 8, 17, n)
+    plot_station(average_hourly_volume, sd, ed, st, et, n)
   ),
   tar_target(
     save_summary,
-    write_csv(station_list_with_aadt, "~/rumble-strips/data/station_summary")
+    write_csv(station_summary, "~/rumble-strips/data/station_summary")
   )
 )
