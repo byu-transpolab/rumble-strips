@@ -34,7 +34,7 @@ clean_stations <- function(sl){
 }
 
 ##get_station_data#########################################
-#' @param station
+#' @param station integer, 3-digit station  number 
 #' returns complete data frame of that station
 #
 
@@ -62,6 +62,7 @@ data <- read_sheet(
   trim_ws = TRUE
 )
 
+#ensure the appropriate column names
 colnames(data) <- c(
                       'DATE', 'route', 'MP', 'lane',
                       '0','1','2','3','4',
@@ -77,15 +78,15 @@ return(data)
 
 
 ##get_hourly_volume########################################
-#' @param df        data frame
-#' @param start_date  date in YYYY-MM-DD format
-#' @param end_date    date in YYYY-MM-DD format
+#' @param df data frame of station data
+#' @param sd start date formatted as string "YYYY-MM-DD"
+#' @param ed   end date formatted as string "YYYY-MM-DD"
 # return vector with average volumes per hour within
 # given dates
 # 
 
-hourly_volume <- function(df, start_date, 
-                          end_date = start_date) {
+get_hourly_volume <- function(df, sd, 
+                          ed = sd) {
   
 #count unique days in the data  
 
@@ -101,54 +102,55 @@ hourly_volume <- function(df, start_date,
     select("0":"23") %>%
     mutate_all(as.integer)
   
-  
-  
-#add all columns together into one row
+#add all columns together into one vector
 hourly_volume <- colSums(vdata, na.rm = TRUE)  
   
   
 #average the total using the total # of days
-y = rep(days, 24) #creates a vector 
-hourly_volume <- hourly_volume / y #vector divided by vector
+y = rep(days, 24)
+hourly_volume <- hourly_volume / y 
+
+#rounds to whole #
 hourly_volume <- round(hourly_volume, 
-                       digits = 0) #rounds up to whole #
-
-
-
+                       digits = 0) 
+                      
 return(hourly_volume)  
   
 }
 
 ##get_min_obs##############################################
-#' @param standard_deviation o, dbl
-#' @param z-score z, dbl
-#' @param centrality_adjustment U, dbl
-#' @param margin_of_error E, dbl
+#' @param o, dbl, standard deviation 
+#' @param z, dbl, z-score 
+#' @param U, dbl, centrality adjustment 
+#' @param E, dbl, margin of error 
 # return number of required observations
-# 
-min_obs <- function(o = 3, z = 1.959964, U = 1.04, E = 1) 
-{
+
+get_min_obs <- function(o = 3, z = 1.959964, 
+                        U = 1.04, E = 1) {
   
+  #equation to find required observations
   n = ((o^2) * (z^2) * ((U^2) + 2)) / (2 * (E^2))
+  
+  #round up to nearest whole number
   n = ceiling(n)
   
   return(n)  
 }
 
 ##get_aadt_perc#############################################
-#' @param hourly_volume in vector from
-#' @param start_time integer 0-23 for 24 hour format
-#' @param end_time integer 0-23 for 24 hour format
+#' @param hv vector with hourly volume data
+#' @param st start time, integer 0-23 for 24-hour format
+#' @param et start time, integer 0-23 for 24-hour format
 # return % AADT within time window
 # 
 
-get_aadt_perc <- function(hourly_volume, start_time, 
-                      end_time = start_time){
+get_aadt_perc <- function(hv, st, 
+                      et = st){
   
   #find the total volume within the given time
-  work_zone_volume = sum(hourly_volume[start_time:end_time])
+  work_zone_volume = sum(hv[st:et])
   
-  total_volume = sum(hourly_volume)
+  total_volume = sum(hv)
   
   #find the percentage of the AADT during specified hours
   percentage = round(
@@ -188,8 +190,6 @@ get_obs_time <- function(st, et,
 #' @param hv vector with hourly volume data
 #' @param sd start date formatted as string "YYYY-MM-DD"
 #' @param ed end date formatted as string "YYYY-MM-DD"
-#' @param st start time, integer 0-23 for 24-hour format
-#' @param et start time, integer 0-23 for 24-hour format
 #' @param obs int, # of minimum observations
 #' return plot with AADT%, time window, min observation time
 
