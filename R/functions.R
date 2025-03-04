@@ -184,15 +184,13 @@ get_obs_time <- function(start_time, end_time,
 }
 
 ##plot_station######################################
-#' @param data tibble with dates and volume data
-#' @param start_date sd
-#' @param end_date ed
-#' @param start_time st
-#' @param end_time et
-#' @param min_observations int, # of minimum observations
-# return plot with AADT%, time window, min observation time
-# save it to the given folder
-# 
+#' @param hv vector with hourly volume data
+#' @param sd start date formatted as string "YYYY-MM-DD"
+#' @param ed end date formatted as string "YYYY-MM-DD"
+#' @param st start time, integer 0-23 for 24-hour format
+#' @param et start time, integer 0-23 for 24-hour format
+#' @param obs int, # of minimum observations
+#' return plot with AADT%, time window, min observation time
 
 plot_station <- function(hv, 
                          sd, ed,
@@ -216,8 +214,6 @@ plot_station <- function(hv,
         xlab = "Hours of the Day",
         ylab = "Average Traffic Volume"
         )
-    
-
 }
 
 
