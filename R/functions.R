@@ -199,48 +199,71 @@ get_obs_time <- function(st, et,
 
 ##plot_station######################################
 #' @param hv vector with hourly volume data
+#' @param station int, station #
 #' @param sd start date formatted as string "YYYY-MM-DD"
 #' @param ed end date formatted as string "YYYY-MM-DD"
 #' @param obs int, # of minimum observations
 #' return plot with AADT%, time window, min observation time
 
-plot_station <- function(hv, 
+plot_station <- function(hv, station, 
                          sd, ed,
                          st, et,
                          obs = 54){
   
+  #get the day time percentage
   p <- get_aadt_perc(hv, st, et)
+  
+  #get minimum hours of observation needed
   hours <- get_obs_time(st, et, obs, hv)
   
+  #convert a vector to a table
+  data <- data.frame(hour = 0:23, volume = hv)
+  
+  #convert 24-hour format to am pm
   if (st < 12) {
-    st <- paste0(st, "am")
+    start_time <- paste0(st, "am")
   } else if (st == 12) {
-    st <- paste0(st, "pm")
+    start_time <- paste0(st, "pm")
   } else {
-    st <- paste0(st - 12, "pm")
+    start_time <- paste0(st - 12, "pm")
   }
     
   if (et < 12) {
-    et <- paste0(et, "am")
+    end_time <- paste0(et, "am")
   } else if (et == 12) {
-    et <- paste0(et, "pm")
+    end_time <- paste0(et, "pm")
   } else {
-    et <- paste0(et - 12, "pm")
+    end_time <- paste0(et - 12, "pm")
   }
   
-  barplot(hv,
-          beside = TRUE,
-          ylim = range(pretty(c(0, hv))))
-  title(main = paste0('Station ', station, ', ',
-                      "% AADT from ", st, " to ", et, ": ", 
-                      p, "%"
-                      ),
-        sub = paste("required hours of observation: ",
-                     hours
-                     ),
-        xlab = "Hours of the Day",
-        ylab = "Average Traffic Volume"
-        )
+  
+  # Create the plot
+ pp <- ggplot(data, aes(x = hour, y = volume)) +
+    geom_col(fill = "steelblue")  # bar chart
+ 
+ y_limits <- ggplot_build(pp)$layout$panel_params[[1]]$y.range
+ 
+ pp + annotate(
+      "rect",                      # Add a rectangle
+      xmin = st - 0.5,                  # Start x position
+      xmax = et + 0.5,                  # End x position
+      ymin = 0,                    # Start y position
+      ymax = y_limits,                   # End y position
+      alpha = 0.5,                 # Transparency of the box
+      fill = "grey"              # Fill color of the box
+    ) + # 
+    labs(
+      title = paste0('Station ', station, ', ',
+                      "% AADT from ", start_time, " to ", 
+                      end_time, ": ", p, "%"
+                      ),        # Title of the plot
+      subtitle = paste0("required hours of observation: ",
+                  hours),
+      x = "Hours of the Day",   # X-axis label
+      y = "Average Traffic Volume"    # Y-axis label
+    ) +
+    theme_minimal()                   # A clean theme
+  
 }
 
 ##hist_summary#########################################
