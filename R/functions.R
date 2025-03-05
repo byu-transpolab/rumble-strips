@@ -98,22 +98,23 @@ return(data)
 get_hourly_volume <- function(df, sd, 
                           ed = sd) {
   
-#count unique days in the data  
+# Ensure the date column is in Date format
+df$DATE <- as.Date(df$DATE)
 
-  # Ensure the date column is in Date format
-  df$DATE <- as.Date(df$DATE)
-  
-  # Count the number of unique days
-  days <- length(unique(df$DATE))
+#determine which rows have the needed dates
+df <- df %>%
+  filter(DATE >= sd & DATE <= ed)
+
+# Count the number of unique days
+days <- length(unique(df$DATE))
  
-    
 #isolate just the volume data (i.e. columns F to AC)
-  vdata <- df %>%
+  df <- df %>%
     select("0":"23") %>%
     mutate_all(as.integer)
   
 #add all columns together into one vector
-hourly_volume <- colSums(vdata, na.rm = TRUE)  
+hourly_volume <- colSums(df, na.rm = TRUE)  
   
   
 #average the total using the total # of days
