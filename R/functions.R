@@ -10,7 +10,7 @@
 ##get_available_stations##########################
 #' returns a char list of stations available in Sheets
 
-get_availabe_stations <- functions() {
+get_availabe_stations <- function() {
   
   options(timeout = 1000)
   
