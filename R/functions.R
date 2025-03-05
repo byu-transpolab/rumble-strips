@@ -243,4 +243,12 @@ plot_station <- function(hv,
         )
 }
 
+##hist_summary#########################################
+#' @param table expecting table with station, AADT, 
+#'              and day time percentage
 
+hist_summary <- function(table) {
+  
+  hist(table)
+  
+}
