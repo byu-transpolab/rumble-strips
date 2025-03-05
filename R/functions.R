@@ -7,11 +7,11 @@
 #tidyverse
 #googlesheets4
 
-##Clean station list#####################################
+##clean_stations#####################################
 #' @param sl a tibble with the a column of station #s
+#' returns a column with avaiable stations. 
 
 clean_stations <- function(sl){
-  
   options(timeout = 1000)
   #retrieves the available worksheets in 2023 data 301-431
   sheet_names1 <- sheet_names(
@@ -32,14 +32,14 @@ clean_stations <- function(sl){
   return(sl)
 }
 
-##import data#############################################
-#' @param station
+##get_station_data#########################################
+#' @param station integer, 3-digit station  number 
 #' returns complete data frame of that station
 #
 
 #station = 733 #used as a debug tool
 
-station_data <- function(station) {
+get_station_data <- function(station) {
   
 #determines which Google sheet to look at based on station #
 if (300 < station & station < 432) {
@@ -61,6 +61,7 @@ data <- read_sheet(
   trim_ws = TRUE
 )
 
+#ensure the appropriate column names
 colnames(data) <- c(
                       'DATE', 'route', 'MP', 'lane',
                       '0','1','2','3','4',
@@ -75,16 +76,16 @@ return(data)
 }
 
 
-##Avgerage volume per hour for given date(s)##############
-#' @param df        data frame
-#' @param start_date  date in YYYY-MM-DD format
-#' @param end_date    date in YYYY-MM-DD format
+##get_hourly_volume########################################
+#' @param df data frame of station data
+#' @param sd start date formatted as string "YYYY-MM-DD"
+#' @param ed   end date formatted as string "YYYY-MM-DD"
 # return vector with average volumes per hour within
 # given dates
 # 
 
-hourly_volume <- function(df, start_date, 
-                          end_date = start_date) {
+get_hourly_volume <- function(df, sd, 
+                          ed = sd) {
   
 #count unique days in the data  
 
@@ -100,54 +101,55 @@ hourly_volume <- function(df, start_date,
     select("0":"23") %>%
     mutate_all(as.integer)
   
-  
-  
-#add all columns together into one row
+#add all columns together into one vector
 hourly_volume <- colSums(vdata, na.rm = TRUE)  
   
   
 #average the total using the total # of days
-y = rep(days, 24) #creates a vector 
-hourly_volume <- hourly_volume / y #vector divided by vector
+y = rep(days, 24)
+hourly_volume <- hourly_volume / y 
+
+#rounds to whole #
 hourly_volume <- round(hourly_volume, 
-                       digits = 0) #rounds up to whole #
-
-
-
+                       digits = 0) 
+                      
 return(hourly_volume)  
   
 }
 
-##Required observations###################################
-#' @param standard_deviation o, dbl
-#' @param z-score z, dbl
-#' @param centrality_adjustment U, dbl
-#' @param margin_of_error E, dbl
+##get_min_obs##############################################
+#' @param o, dbl, standard deviation 
+#' @param z, dbl, z-score 
+#' @param U, dbl, centrality adjustment 
+#' @param E, dbl, margin of error 
 # return number of required observations
-# 
-min_obs <- function(o = 3, z = 1.959964, U = 1.04, E = 1) 
-{
+
+get_min_obs <- function(o = 3, z = 1.959964, 
+                        U = 1.04, E = 1) {
   
+  #equation to find required observations
   n = ((o^2) * (z^2) * ((U^2) + 2)) / (2 * (E^2))
+  
+  #round up to nearest whole number
   n = ceiling(n)
   
   return(n)  
 }
 
-##AADT % within time window################################
-#' @param hourly_volume in vector from
-#' @param start_time integer 0-23 for 24 hour format
-#' @param end_time integer 0-23 for 24 hour format
+##get_aadt_perc#############################################
+#' @param hv vector with hourly volume data
+#' @param st start time, integer 0-23 for 24-hour format
+#' @param et start time, integer 0-23 for 24-hour format
 # return % AADT within time window
 # 
 
-AADT_perc <- function(hourly_volume, start_time, 
-                      end_time = start_time){
+get_aadt_perc <- function(hv, st, 
+                      et = st){
   
   #find the total volume within the given time
-  work_zone_volume = sum(hourly_volume[start_time:end_time])
+  work_zone_volume = sum(hv[st:et])
   
-  total_volume = sum(hourly_volume)
+  total_volume = sum(hv)
   
   #find the percentage of the AADT during specified hours
   percentage = round(
@@ -158,21 +160,22 @@ AADT_perc <- function(hourly_volume, start_time,
 return(percentage)  
 }
 
-##Observation time########################################
-#' @param AADT_percentage dbl 63.3% = 63.3 =/= 0.633
-#' @param observations int, minimum # needed for confidence
-#' @param work_time int, time period related to AADT_percent
-# call on AADT and AADT% functions
-# return observation time
+##get_obs_time########################################
+#' @param st  start time, integer 0-23 for 24-hour format
+#' @param et  start time, integer 0-23 for 24-hour format
+#' @param obs int, minimum # needed for confidence
+#' @param hv  vector with hourly volume data
+# calls on get_aadt_perc function
+# return minimum required observation time
 # 
-obs_time <- function(start_time, end_time,
-                     obs, hourly_volume){
+get_obs_time <- function(st, et,
+                     obs, hv){
   
-  t = end_time - start_time
+  t = et - st
   if(t==0){t = 1}
   
-  a = sum(hourly_volume)
-  p = AADT_perc(hourly_volume,start_time,end_time)
+  a = sum(hv)
+  p = get_aadt_perc(hv,st,et)
   
   hours = round(
                 (t * obs) / (a * p/100)
@@ -182,26 +185,37 @@ obs_time <- function(start_time, end_time,
   
 }
 
-##plot station data######################################
-#' @param data tibble with dates and volume data
-#' @param start_date sd
-#' @param end_date ed
-#' @param start_time st
-#' @param end_time et
-#' @param min_observations int, # of minimum observations
-# return plot with AADT%, time window, min observation time
-# save it to the given folder
-# 
+##plot_station######################################
+#' @param hv vector with hourly volume data
+#' @param sd start date formatted as string "YYYY-MM-DD"
+#' @param ed end date formatted as string "YYYY-MM-DD"
+#' @param obs int, # of minimum observations
+#' return plot with AADT%, time window, min observation time
 
 plot_station <- function(hv, 
                          sd, ed,
                          st, et,
                          obs = 54){
   
-  p <- AADT_perc(hv, st, et)
-  hours <- obs_time(st, et, obs, hv)
+  p <- get_aadt_perc(hv, st, et)
+  hours <- get_obs_time(st, et, obs, hv)
   
+  if (st < 12) {
+    st <- paste0(st, "am")
+  } else if (st == 12) {
+    st <- paste0(st, "pm")
+  } else {
+    st <- paste0(st - 12, "pm")
+  }
     
+  if (et < 12) {
+    et <- paste0(et, "am")
+  } else if (et == 12) {
+    et <- paste0(et, "pm")
+  } else {
+    et <- paste0(et - 12, "pm")
+  }
+  
   barplot(hv,
           beside = TRUE,
           ylim = range(pretty(c(0, hv))))
@@ -215,8 +229,6 @@ plot_station <- function(hv,
         xlab = "Hours of the Day",
         ylab = "Average Traffic Volume"
         )
-    
-
 }
 
 

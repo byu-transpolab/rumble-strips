@@ -1,3 +1,5 @@
+
+
 ##Description#############################################
 #' A script that takes in a csv file with a list of station 
 #' numbers and averages the volume data together. 
@@ -11,8 +13,8 @@ library(tidyverse)
 library(googlesheets4)
 gs4_deauth() #prevents the need of signing into Google
 
-# Load the functions from functions_list.R
-source("R/functions_list.R")
+#Load the functions from functions.R
+source("R/functions.R")
 
 ##Define files and variables###############################
 
@@ -24,7 +26,6 @@ o = 3         #standard deviation
 z = 1.959964  #z-score
 U = 1.04      #centrality adjustment
 E = 1         #margin of error
-
 
 #'start and end dates formatted as string "yyyy-mm-dd"
 sd = "2023-05-01" 
@@ -40,7 +41,7 @@ et = 17
 station_list <- clean_stations(station_list)
 
 #calculate minimum observations on given variables
-n = min_obs(o, z, U, E)
+n = get_min_obs(o, z, U, E)
 
 #initialize a total hourly volume vector
 thv <- rep(0, 24)
@@ -57,10 +58,10 @@ i = 1
 for (station in station_list$station_number) 
   {
     #read in data from Google sheets
-    df <- station_data(station)
+    df <- get_station_data(station)
   
     #add station's hourly_volume data to totals data
-    hv = hourly_volume(df, sd, ed)
+    hv = get_hourly_volume(df, sd, ed)
     thv = thv + hv
   
     #add station AADT to station_list
@@ -68,7 +69,7 @@ for (station in station_list$station_number)
     
     #add station AADT% to station_list
     station_list[i, "AADT_percentage"] <- 
-        AADT_perc(hv, st, et)
+        get_aadt_perc(hv, st, et)
   
     #plot station hourly volumes
     plot_station(hv, sd, ed, st, et, n)
@@ -91,4 +92,7 @@ plot_station(thv, sd, ed, st, et, n)
 #save AADT and AADT% to a csv
 write_csv(station_list, 
           "~/rumble-strips/data/station_summary")
+
+
+
 
