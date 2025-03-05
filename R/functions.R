@@ -216,8 +216,17 @@ plot_station <- function(hv, station,
   #get minimum hours of observation needed
   hours <- get_obs_time(st, et, obs, hv)
   
+  #set column colors based on provided time window
+  co <- rep("grey", 24)
+  if (st > et) {
+      day_indices <- c((st + 1):24, 1:(et + 1))
+    } else {
+      day_indices <- (st + 1):(et + 1)
+  }
+  co[day_indices] <- "steelblue"
+  
   #convert a vector to a table
-  data <- data.frame(hour = 0:23, volume = hv)
+  data <- data.frame(hour = 0:23, volume = hv, color = co)
   
   #convert 24-hour format to am pm
   if (st < 12) {
@@ -238,20 +247,9 @@ plot_station <- function(hv, station,
   
   
   # Create the plot
- pp <- ggplot(data, aes(x = hour, y = volume)) +
-    geom_col(fill = "steelblue")  # bar chart
- 
- y_limits <- ggplot_build(pp)$layout$panel_params[[1]]$y.range
- 
- pp + annotate(
-      "rect",                      # Add a rectangle
-      xmin = st - 0.5,                  # Start x position
-      xmax = et + 0.5,                  # End x position
-      ymin = 0,                    # Start y position
-      ymax = y_limits,                   # End y position
-      alpha = 0.5,                 # Transparency of the box
-      fill = "grey"              # Fill color of the box
-    ) + # 
+  ggplot(data, aes(x = hour, y = volume, fill = color)) +
+    geom_col() + # bar chart
+    scale_fill_identity() +         # color based on color col
     labs(
       title = paste0('Station ', station, ', ',
                       "% AADT from ", start_time, " to ", 
