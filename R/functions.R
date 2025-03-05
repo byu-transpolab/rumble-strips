@@ -7,12 +7,13 @@
 #tidyverse
 #googlesheets4
 
-##clean_stations#####################################
-#' @param sl a tibble with the a column of station #s
-#' returns a column with avaiable stations. 
+##get_available_stations##########################
+#' returns a char list of stations available in Sheets
 
-clean_stations <- function(sl){
+get_availabe_stations <- functions() {
+  
   options(timeout = 1000)
+  
   #retrieves the available worksheets in 2023 data 301-431
   sheet_names1 <- sheet_names(
     "1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw")
@@ -21,7 +22,17 @@ clean_stations <- function(sl){
   sheet_names2 <- sheet_names(
     "1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI")
   
-  approved_stations <- c(sheet_names1, sheet_names2)
+  return(c(sheet_names1, sheet_names2))
+  
+}
+
+##clean_stations#####################################
+#' @param sl a tibble with the a column of station #s
+#' returns a column with avaiable stations. 
+
+clean_stations <- function(sl){
+  
+  approved_stations <- get_available_stations()
   
   sl <- sl %>%
     filter(station_number %in% approved_stations)
