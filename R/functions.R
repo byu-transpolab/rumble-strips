@@ -264,12 +264,22 @@ plot_station <- function(hv, station,
   
 }
 
-##hist_summary#########################################
-#' @param table expecting table with station, AADT, 
-#'              and day time percentage
+##hist_daytime_perc#########################################
+#' @param df expecting table with station, AADT, 
+#'           and day time percentage
 
-hist_summary <- function(table) {
+hist_daytime_perc <- function(df) {
   
-  hist(table)
-  
+  # Plot daytime percentages
+  ggplot(df, aes(x = AADT_percentage)) +
+    geom_histogram(binwidth = 1, 
+                   color = "black", 
+                   fill = "steelblue") +
+    labs(title = "Histogram of Station Daytime Percentages",
+         x = "Percentage", 
+         y = "Frequency"
+         ) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5))  
+          # Center the title
 }
