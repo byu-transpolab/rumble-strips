@@ -254,7 +254,11 @@ plot_station <- function(hv, station,
       x = "Hours of the Day",   # X-axis label
       y = "Average Traffic Volume"    # Y-axis label
     ) +
-    theme_minimal()                   # A clean theme
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Times New Roman", 
+                              size = 12)
+    )                  # A clean theme
   
 }
 
