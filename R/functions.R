@@ -11,7 +11,7 @@
 
 #' returns a char list of stations available in Sheets
 
-get_availabe_stations <- function() {
+get_available_stations <- function() {
   
   options(timeout = 1000)
   
