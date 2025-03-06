@@ -280,19 +280,43 @@ hist_daytime_perc <- function(df) {
 #' @param df expecting table with station, AADT, 
 #'           and day time percentage
 
-hist_aadt <- function(df) {
+plot_station_summary <- function(df) {
   
-  # Plot daytime percentages
-  ggplot(df, aes(x = AADT)) +
-    geom_histogram(binwidth = 1000, 
-                   color = "black", 
-                   fill = "steelblue") +
-    labs(title = "Histogram of Station AADT",
-         x = "AADT", 
-         y = "Frequency"
-    ) +
-    theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5))  
-  # Center the title
+  # # Plot daytime percentages
+  # ggplot(df, aes(x = AADT)) +
+  #   geom_histogram(binwidth = 1000, 
+  #                  color = "black", 
+  #                  fill = "steelblue") +
+  #   labs(title = "Histogram of Station AADT",
+  #        x = "AADT", 
+  #        y = "Frequency"
+  #   ) +
+  #   theme_minimal() +
+  #   theme(plot.title = element_text(hjust = 0.5))  
+  # # Center the title
+  
+  # ggplot(df, aes(x = AADT, y = AADT_percentage)) +
+  #   geom_boxplot(outlier.color = "red", 
+  #                fill = "lightgray") +
+  #   geom_jitter(width = 0.2, 
+  #               alpha = 0.5, 
+  #               color = "steelblue") +
+  #   labs(title = "AADT Boxplot with Points", 
+  #        x = "", 
+  #        y = "AADT") +
+  #   theme_minimal()
+  
+  ggplot(df, aes(x = AADT_percentage, y = AADT)) +
+    geom_jitter(width = 0.2, 
+                alpha = 0.7, 
+                color = "steelblue") +
+    labs(title = "Station AADT and Daytime Percentage", 
+         x = "Daytime Percentage", 
+         y = "AADT") +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Times New Roman", 
+                              size = 12)
+          )
   
 }
