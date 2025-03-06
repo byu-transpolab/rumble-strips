@@ -7,7 +7,8 @@
 #tidyverse
 #googlesheets4
 
-##get_available_stations##########################
+##Functions##########################################
+
 #' returns a char list of stations available in Sheets
 
 get_availabe_stations <- function() {
@@ -26,7 +27,6 @@ get_availabe_stations <- function() {
   
 }
 
-##clean_stations#####################################
 #' @param sl a tibble with the a column of station #s
 #' returns a column with avaiable stations. 
 
@@ -43,7 +43,6 @@ clean_stations <- function(sl){
   return(sl)
 }
 
-##get_station_data#########################################
 #' @param station integer, 3-digit station  number 
 #' returns complete data frame of that station
 #
@@ -87,7 +86,6 @@ return(data)
 }
 
 
-##get_hourly_volume########################################
 #' @param df data frame of station data
 #' @param sd start date formatted as string "YYYY-MM-DD"
 #' @param ed   end date formatted as string "YYYY-MM-DD"
@@ -129,7 +127,6 @@ return(hourly_volume)
   
 }
 
-##get_min_obs##############################################
 #' @param o, dbl, standard deviation 
 #' @param z, dbl, z-score 
 #' @param U, dbl, centrality adjustment 
@@ -148,7 +145,6 @@ get_min_obs <- function(o = 3, z = 1.959964,
   return(n)  
 }
 
-##get_aadt_perc#############################################
 #' @param hv vector with hourly volume data
 #' @param st start time, integer 0-23 for 24-hour format
 #' @param et start time, integer 0-23 for 24-hour format
@@ -172,7 +168,6 @@ get_aadt_perc <- function(hv, st,
 return(percentage)  
 }
 
-##get_obs_time########################################
 #' @param st  start time, integer 0-23 for 24-hour format
 #' @param et  start time, integer 0-23 for 24-hour format
 #' @param obs int, minimum # needed for confidence
@@ -197,7 +192,6 @@ get_obs_time <- function(st, et,
   
 }
 
-##plot_station######################################
 #' @param hv vector with hourly volume data
 #' @param station int, station #
 #' @param sd start date formatted as string "YYYY-MM-DD"
@@ -264,7 +258,6 @@ plot_station <- function(hv, station,
   
 }
 
-##hist_daytime_perc#########################################
 #' @param df expecting table with station, AADT, 
 #'           and day time percentage
 
@@ -284,7 +277,6 @@ hist_daytime_perc <- function(df) {
           # Center the title
 }
 
-##hist_aadt#########################################
 #' @param df expecting table with station, AADT, 
 #'           and day time percentage
 
