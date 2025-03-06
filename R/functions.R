@@ -272,9 +272,11 @@ hist_daytime_perc <- function(df) {
          x = "Percentage", 
          y = "Frequency"
          ) +
-    theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5))  
-          # Center the title
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Times New Roman", 
+                              size = 12)
+          )  
 }
 
 #' @param df expecting table with station, AADT, 
