@@ -1,0 +1,25 @@
+specifications,speed,spacing
+Recommended,0,10
+Recommended,40,10
+Recommended,41,15
+Recommended,55,15
+Recommended,56,20
+Recommended,65,20
+Recommended,66,35
+Recommended,80,35
+More Spacing,0,15
+More Spacing,40,15
+More Spacing,41,25
+More Spacing,55,25
+More Spacing,56,40
+More Spacing,65,40
+More Spacing,66,40
+More Spacing,80,40
+Less Spacing,0,5
+Less Spacing,40,5
+Less Spacing,41,10
+Less Spacing,55,10
+Less Spacing,56,15
+Less Spacing,65,15
+Less Spacing,66,20
+Less Spacing,80,20

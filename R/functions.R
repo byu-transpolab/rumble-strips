@@ -7,12 +7,16 @@
 #tidyverse
 #googlesheets4
 
-##Get_approved_stations##############################
-#' returns a list of available station data
 
-get_approved_stations <- function() {
+##Functions##########################################
+
+#' returns a char list of stations available in Sheets
+
+get_available_stations <- function() {
+
   
   options(timeout = 1000)
+  
   #retrieves the available worksheets in 2023 data 301-431
   sheet_names1 <- sheet_names(
     "1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw")
@@ -25,13 +29,17 @@ get_approved_stations <- function() {
   
 }
 
+
 ##clean_stations#####################################
+
 #' @param sl a tibble with the a column of station #s
 #' returns a column with avaiable stations. 
 
 clean_stations <- function(sl){
   
-  approved_stations <- get_approved_stations()
+
+  approved_stations <- get_available_stations()
+
   
   sl <- sl %>%
     filter(station_number %in% approved_stations)
@@ -42,7 +50,6 @@ clean_stations <- function(sl){
   return(sl)
 }
 
-##get_station_data#########################################
 #' @param station integer, 3-digit station  number 
 #' returns complete data frame of that station
 #
@@ -86,7 +93,6 @@ return(data)
 }
 
 
-##get_hourly_volume########################################
 #' @param df data frame of station data
 #' @param sd start date formatted as string "YYYY-MM-DD"
 #' @param ed   end date formatted as string "YYYY-MM-DD"
@@ -97,14 +103,17 @@ return(data)
 get_hourly_volume <- function(df, sd, 
                           ed = sd) {
   
-#count unique days in the data  
+# Ensure the date column is in Date format
+df$DATE <- as.Date(df$DATE)
 
-  # Ensure the date column is in Date format
-  df$DATE <- as.Date(df$DATE)
-  
-  # Count the number of unique days
-  days <- length(unique(df$DATE))
+#determine which rows have the needed dates
+df <- df %>%
+  filter(DATE >= sd & DATE <= ed)
+
+# Count the number of unique days
+days <- length(unique(df$DATE))
  
+
 #identify the first row with sd and last row with ed
 slected_rows <- df$DATE >= sd & df$DATE <= ed
     
@@ -115,7 +124,11 @@ vdata <- df %>%
   
 #add all columns together into one vector
 hourly_volume <- colSums(vdata[slected_rows, ], na.rm = TRUE)  
-  
+
+#isolate just the volume data (i.e. columns F to AC)
+  df <- df %>%
+    select("0":"23") %>%
+    mutate_all(as.integer)
   
 #average the total using the total # of days
 y = rep(days, 24)
@@ -128,7 +141,6 @@ hourly_volume <- round(hourly_volume,
 return(hourly_volume)  
 }
 
-##get_min_obs##############################################
 #' @param o, dbl, standard deviation 
 #' @param z, dbl, z-score 
 #' @param U, dbl, centrality adjustment 
@@ -147,7 +159,6 @@ get_min_obs <- function(o = 3, z = 1.959964,
   return(n)  
 }
 
-##get_aadt_perc#############################################
 #' @param hv vector with hourly volume data
 #' @param st start time, integer 0-23 for 24-hour format
 #' @param et start time, integer 0-23 for 24-hour format
@@ -171,7 +182,6 @@ get_aadt_perc <- function(hv, st,
 return(percentage)  
 }
 
-##get_obs_time########################################
 #' @param st  start time, integer 0-23 for 24-hour format
 #' @param et  start time, integer 0-23 for 24-hour format
 #' @param obs int, minimum # needed for confidence
@@ -196,50 +206,139 @@ get_obs_time <- function(st, et,
   
 }
 
-##plot_station######################################
 #' @param hv vector with hourly volume data
+#' @param station int, station #
 #' @param sd start date formatted as string "YYYY-MM-DD"
 #' @param ed end date formatted as string "YYYY-MM-DD"
 #' @param obs int, # of minimum observations
 #' return plot with AADT%, time window, min observation time
 
-plot_station <- function(hv, 
+plot_station <- function(hv, station, 
                          sd, ed,
                          st, et,
                          obs = 54){
   
+  #get the day time percentage
   p <- get_aadt_perc(hv, st, et)
+
+  hours <- get_obs_time(st, et, obs, hv)
+
+  
+  #get minimum hours of observation needed
   hours <- get_obs_time(st, et, obs, hv)
   
+  #set column colors based on provided time window
+  co <- rep("grey", 24)
+  if (st > et) {
+      day_indices <- c((st + 1):24, 1:(et + 1))
+    } else {
+      day_indices <- (st + 1):(et + 1)
+  }
+  co[day_indices] <- "steelblue"
+  
+  #convert a vector to a table
+  data <- data.frame(hour = 0:23, volume = hv, color = co)
+  
+  #convert 24-hour format to am pm
   if (st < 12) {
-    st <- paste0(st, "am")
+    start_time <- paste0(st, "am")
   } else if (st == 12) {
-    st <- paste0(st, "pm")
+    start_time <- paste0(st, "pm")
   } else {
-    st <- paste0(st - 12, "pm")
+    start_time <- paste0(st - 12, "pm")
   }
     
   if (et < 12) {
-    et <- paste0(et, "am")
+    end_time <- paste0(et, "am")
   } else if (et == 12) {
-    et <- paste0(et, "pm")
+    end_time <- paste0(et, "pm")
   } else {
-    et <- paste0(et - 12, "pm")
+    end_time <- paste0(et - 12, "pm")
   }
   
-  barplot(hv,
-          beside = TRUE,
-          ylim = range(pretty(c(0, hv))))
-  title(main = paste0('Station ', station, ', ',
-                      "% AADT from ", st, " to ", et, ": ", 
-                      p, "%"
-                      ),
-        sub = paste("required hours of observation: ",
-                     hours
-                     ),
-        xlab = "Hours of the Day",
-        ylab = "Average Traffic Volume"
-        )
+  
+  # Create the plot
+  ggplot(data, aes(x = hour, y = volume, fill = color)) +
+    geom_col() + # bar chart
+    scale_fill_identity() +         # color based on color col
+    labs(
+      title = paste0('Station ', station, ', ',
+                      "% AADT from ", start_time, " to ", 
+                      end_time, ": ", p, "%"
+                      ),        # Title of the plot
+      subtitle = paste0("required hours of observation: ",
+                  hours),
+      x = "Hours of the Day",   # X-axis label
+      y = "Average Traffic Volume"    # Y-axis label
+    ) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Times New Roman", 
+                              size = 12)
+    )                  # A clean theme
+  
 }
 
+#' @param df expecting table with station, AADT, 
+#'           and day time percentage
 
+hist_daytime_perc <- function(df) {
+  
+  # Plot daytime percentages
+  ggplot(df, aes(x = AADT_percentage)) +
+    geom_histogram(binwidth = 1, 
+                   color = "black", 
+                   fill = "steelblue") +
+    labs(title = "Histogram of Station Daytime Percentages",
+         x = "Percentage", 
+         y = "Frequency"
+         ) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Times New Roman", 
+                              size = 12)
+          )  
+}
+
+#' @param df expecting table with station, AADT, 
+#'           and day time percentage
+
+plot_station_summary <- function(df) {
+  
+  # # Plot daytime percentages
+  # ggplot(df, aes(x = AADT)) +
+  #   geom_histogram(binwidth = 1000, 
+  #                  color = "black", 
+  #                  fill = "steelblue") +
+  #   labs(title = "Histogram of Station AADT",
+  #        x = "AADT", 
+  #        y = "Frequency"
+  #   ) +
+  #   theme_minimal() +
+  #   theme(plot.title = element_text(hjust = 0.5))  
+  # # Center the title
+  
+  # ggplot(df, aes(x = AADT, y = AADT_percentage)) +
+  #   geom_boxplot(outlier.color = "red", 
+  #                fill = "lightgray") +
+  #   geom_jitter(width = 0.2, 
+  #               alpha = 0.5, 
+  #               color = "steelblue") +
+  #   labs(title = "AADT Boxplot with Points", 
+  #        x = "", 
+  #        y = "AADT") +
+  #   theme_minimal()
+  
+  ggplot(df, aes(x = AADT_percentage, y = AADT)) +
+    geom_jitter(width = 0.2, 
+                alpha = 0.7, 
+                color = "steelblue") +
+    labs(title = "Station AADT and Daytime Percentage", 
+         x = "Daytime Percentage", 
+         y = "AADT") +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Times New Roman", 
+                              size = 12)
+          )
+}

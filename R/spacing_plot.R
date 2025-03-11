@@ -4,10 +4,10 @@ library(readxl)
 ##read in the data##########################################
 #data <- read_excel("/Users/gregmacfarlane/Library/CloudStorage/Box-Box/Macfarlane/research/tprs/data/spacing_data.xlsx")
 
-data1 <- read_excel("/Users/Tyler/Box/tprs/data/spacing_data.xlsx")
+data1 <- read_csv("~/rumble-strips/data/spacing_data.csv")
 #How do we make the data path relative?
 
-data2 <- read_excel("/Users/Tyler/Box/tprs/data/test_spacing.xlsx")
+data2 <- read_csv("~/rumble-strips/data/test_spacing.csv")
 
 ###organize and mutate data#################################
 data1 <- data1 |> 
@@ -54,6 +54,7 @@ ggplot(data1, aes(x = speed, y = spacing)) +
   facet_wrap(~factor(state, 
                      c("Maryland", "Virginia", "Minnesota",
                        "New York","Texas", "Missouri", 
+                       "Recommended",
                        "California", "North Dakota",
                        "Wisconsin", "Florida", "Colorado")),
                      #puts the states in a particular order
