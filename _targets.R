@@ -54,7 +54,7 @@ list(
     map(cleaned_station_list$station_number, get_station_data)
   ),
   tar_target(
-    hourly_volumes,
+    hourly_volumes_list,
     map(station_data_list, ~ get_hourly_volume(.x, sd, ed))
   ),
   tar_target(
@@ -101,7 +101,6 @@ list(
   tar_target(z, 1.959964),
   tar_target(U, 1.04),
   tar_target(E, 1),
-  tar_target(n, get_min_obs(o, z, U, E)),
   tar_target(sd, "2023-05-01"),
   tar_target(ed, "2023-08-31"),
   tar_target(st, 8),
