@@ -27,10 +27,10 @@ get_available_stations <- function() {
   
   #return(c(sheet_names1, sheet_names2))
   
-  ls <- c(sheet_names1, sheet_names2)
+  available_stations <- c(sheet_names1, sheet_names2)
   
-  save(ls, 
-       file = "data/available_stations")
+  write(available_stations, 
+              file = "data/available_stations")
 }
 
 
@@ -43,12 +43,12 @@ clean_stations <- function(sl){
   
 if (file.exists("data/available_stations")) {
   
-  approved_stations <- load("data/available_stations")
+  approved_stations <- read.csv("data/available_stations")
   
 } else {
   
   get_available_stations()
-  approved_stations <- load("data/available_stations")
+  approved_stations <- read.csv("data/available_stations")
   
 }
   
