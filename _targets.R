@@ -87,22 +87,49 @@ list(
     map(hourly_volumes, ~ plot_station(.x, st, et))
   ),
   
-  # Create station summary
+  # Create station summary with initial values
   tar_target(
     station_summary,
     cleaned_station_list %>%
       mutate(
-        AADT = map_dbl(hourly_volumes, sum),
-        daytime_perc = map_dbl(hourly_volumes,
-                                  ~ get_aadt_perc(.x, st, et)),
-        min_hours = map_dbl(hourly_volumes,
-                            ~ get_obs_time(st, et, n, .x))
+        AADT = 0,
+        daytime_perc = 0,
+        min_hours = 0
       )
+  ),
+  
+  # Add AADT to station summary
+  tar_target(
+    AADT_summary,
+    station_summary %>%
+      mutate(AADT = map_int(hourly_volumes, sum))
+  ),
+  
+  # Add daytime percentage to station summary
+  tar_target(
+    daytime_summary,
+    AADT_summary %>%
+      mutate(daytime_perc = map_dbl(hourly_volumes, 
+                              ~ get_aadt_perc(.x, st, et)))
+  ),
+  
+  # Add minimum hours of observation to station summary
+  tar_target(
+    final_summary,
+    daytime_summary %>%
+      mutate(min_hours = map_dbl(hourly_volumes, 
+                           ~ get_obs_time(st, et, n, .x)))
+  ),
+  
+  #plot the station summary
+  tar_target(
+    plot_summary,
+    plot_station_summary(final_summary),
   ),
   
   #save the station summary
   tar_target(
     save_summary,
-    write_csv(station_summary, "data/station_summary"),
+    write_csv(final_summary, "data/station_summary"),
   ),
 )
