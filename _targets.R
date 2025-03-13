@@ -52,7 +52,8 @@ list(
   # Load station list
   tar_target(
     station_list,
-    read.csv("data/stations_in_region4")
+    read.csv("data/stations_in_region4",
+             colClasses =  c("character"))
   ),
   
   # Calculate minimum observations
@@ -69,7 +70,7 @@ list(
   
   # Pull station data from Google Sheets
   tar_target(
-    station_data_list,
+    all_station_data,
     map(cleaned_station_list$station_number, 
         get_station_data)
   ),
@@ -77,15 +78,13 @@ list(
   # Summarize each station to their hourly volumes
   tar_target(
     hourly_volumes,
-    map(station_data_list, 
-        ~ get_hourly_volume(.x, sd, ed))
+    map(all_station_data, ~ get_hourly_volume(.x, sd, ed))
   ),
   
   #plot each station
   tar_target(
     plots,
-    map(hourly_volumes, 
-        ~ plot_station(.x, st, et))
+    map(hourly_volumes, ~ plot_station(.x, st, et))
   ),
   
   # Create station summary
