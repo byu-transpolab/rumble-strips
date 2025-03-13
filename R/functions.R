@@ -25,8 +25,12 @@ get_available_stations <- function() {
   sheet_names2 <- sheet_names(
     "1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI")
   
-  return(c(sheet_names1, sheet_names2))
+  #return(c(sheet_names1, sheet_names2))
   
+  ls <- c(sheet_names1, sheet_names2)
+  
+  save(ls, 
+       file = "data/available_stations")
 }
 
 
@@ -37,9 +41,16 @@ get_available_stations <- function() {
 
 clean_stations <- function(sl){
   
-
-  approved_stations <- get_available_stations()
-
+if (file.exists("data/available_stations")) {
+  
+  approved_stations <- load("data/available_stations")
+  
+} else {
+  
+  get_available_stations()
+  approved_stations <- load("data/available_stations")
+  
+}
   
   sl <- sl %>%
     filter(station_number %in% approved_stations)
