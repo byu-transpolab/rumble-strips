@@ -274,8 +274,9 @@ plot_station <- function(hv, station,
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5),
           text = element_text(family = "Times New Roman", 
-                              size = 12)
-    )                  # A clean theme
+                              size = 12),
+          panel.border = element_blank()
+    )                  
   
 }
 
@@ -296,7 +297,8 @@ hist_daytime_perc <- function(df) {
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5),
           text = element_text(family = "Times New Roman", 
-                              size = 12)
+                              size = 12),
+          panel.border = element_blank()
           )  
 }
 
