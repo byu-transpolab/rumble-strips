@@ -7,6 +7,8 @@
 library(targets)
 library(tidyverse)
 library(googlesheets4)
+library(mlogit)
+library(modelsummary)
 # library(tarchetypes) # Load other packages as needed. # nolint
 
 # Deauthenticate to prevent Google login prompts
@@ -14,7 +16,10 @@ gs4_deauth()
 
 # Set target options:
 tar_option_set(
-  packages = c("tidyverse", "mlogit", "modelsummary"), # packages that your targets need to run
+  packages = c("tidyverse", 
+               "mlogit", 
+               "modelsummary", 
+               "googlesheets4"), # packages that your targets need to run
   format = "rds" # default storage format
   # Set other options as needed.
 )
@@ -31,7 +36,7 @@ tar_option_set(
 
 ##target list#########################################
 
-source("R/functions.R") # Source other scripts as needed. # nolint
+source("R/functions.R")
 
 
 # Replace the target list below with your own:
@@ -131,5 +136,5 @@ list(
   tar_target(
     save_summary,
     write_csv(final_summary, "data/station_summary"),
-  ),
+  )
 )
