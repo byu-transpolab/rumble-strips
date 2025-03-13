@@ -61,6 +61,10 @@ if (file.exists("data/available_stations")) {
   cleaned_station_list$station_number <- 
     as.integer(cleaned_station_list$station_number)
   
+  write.table(cleaned_station_list, 
+              file = "data/cleaned_station_list",
+              row.names = FALSE)
+  
   return(cleaned_station_list)
 }
 
@@ -281,7 +285,7 @@ hist_daytime_perc <- function(df) {
 
 plot_station_summary <- function(df) {
   
-  ggplot(df, aes(y = AADT_percentage, x = AADT)) +
+  ggplot(df, aes(y = daytime_perc, x = AADT)) +
     geom_jitter(width = 0.2, 
                 alpha = 0.7, 
                 color = "steelblue") +
