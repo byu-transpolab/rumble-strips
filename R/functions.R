@@ -329,16 +329,17 @@ plot_station_summary <- function(df) {
   #        y = "AADT") +
   #   theme_minimal()
   
-  ggplot(df, aes(x = AADT_percentage, y = AADT)) +
+  ggplot(df, aes(y = AADT_percentage, x = AADT)) +
     geom_jitter(width = 0.2, 
                 alpha = 0.7, 
                 color = "steelblue") +
-    labs(title = "Station AADT and Daytime Percentage", 
-         x = "Daytime Percentage", 
-         y = "AADT") +
+    labs( #title = "Station AADT and Daytime Percentage",
+         y = "Percentage of AADT between 8AM and 5PM", 
+         x = "AADT") +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5),
           text = element_text(family = "Times New Roman", 
-                              size = 12)
+                              size = 12),
+          panel.border = element_blank()
           )
 }
