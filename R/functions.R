@@ -206,26 +206,12 @@ get_obs_time <- function(st, et,
   
 }
 
-#' @param hv vector with hourly volume data
-#' @param station int, station #
-#' @param sd start date formatted as string "YYYY-MM-DD"
-#' @param ed end date formatted as string "YYYY-MM-DD"
-#' @param obs int, # of minimum observations
+#' @param hv vector, hourly volume data
+#' @param st int, start time in 24-hour format
+#' @param et int, end time in 24-hour format
 #' return plot with AADT%, time window, min observation time
 
-plot_station <- function(hv, station, 
-                         sd, ed,
-                         st, et,
-                         obs = 54){
-  
-  #get the day time percentage
-  p <- get_aadt_perc(hv, st, et)
-
-  hours <- get_obs_time(st, et, obs, hv)
-
-  
-  #get minimum hours of observation needed
-  hours <- get_obs_time(st, et, obs, hv)
+plot_station <- function(hv, st, et){
   
   #set column colors based on provided time window
   co <- rep("grey", 24)
@@ -239,35 +225,11 @@ plot_station <- function(hv, station,
   #convert a vector to a table
   data <- data.frame(hour = 0:23, volume = hv, color = co)
   
-  #convert 24-hour format to am pm
-  if (st < 12) {
-    start_time <- paste0(st, "am")
-  } else if (st == 12) {
-    start_time <- paste0(st, "pm")
-  } else {
-    start_time <- paste0(st - 12, "pm")
-  }
-    
-  if (et < 12) {
-    end_time <- paste0(et, "am")
-  } else if (et == 12) {
-    end_time <- paste0(et, "pm")
-  } else {
-    end_time <- paste0(et - 12, "pm")
-  }
-  
-  
-  # Create the plot
+   # Create the plot
   ggplot(data, aes(x = hour, y = volume, fill = color)) +
     geom_col() + # bar chart
     scale_fill_identity() +         # color based on color col
-    labs(
-      title = paste0('Station ', station, ', ',
-                      "% AADT from ", start_time, " to ", 
-                      end_time, ": ", p, "%"
-                      ),        # Title of the plot
-      subtitle = paste0("required hours of observation: ",
-                  hours),
+    labs(#             hours),
       x = "Hours of the Day",   # X-axis label
       y = "Average Traffic Volume"    # Y-axis label
     ) +
@@ -290,13 +252,11 @@ hist_daytime_perc <- function(df) {
     geom_histogram(binwidth = 1, 
                    color = "black", 
                    fill = "steelblue") +
-    labs(title = "Histogram of Station Daytime Percentages",
-         x = "Percentage", 
+    labs(x = "Percentage", 
          y = "Frequency"
          ) +
     theme_bw() +
-    theme(plot.title = element_text(hjust = 0.5),
-          text = element_text(family = "Times New Roman", 
+    theme(text = element_text(family = "Times New Roman", 
                               size = 12),
           panel.border = element_blank()
           )  
@@ -335,12 +295,10 @@ plot_station_summary <- function(df) {
     geom_jitter(width = 0.2, 
                 alpha = 0.7, 
                 color = "steelblue") +
-    labs( #title = "Station AADT and Daytime Percentage",
-         y = "Percentage of AADT between 8AM and 5PM", 
+    labs(y = "Percentage of AADT between 8AM and 5PM", 
          x = "AADT") +
     theme_bw() +
-    theme(plot.title = element_text(hjust = 0.5),
-          text = element_text(family = "Times New Roman", 
+    theme(text = element_text(family = "Times New Roman", 
                               size = 12),
           panel.border = element_blank()
           )
