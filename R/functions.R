@@ -267,30 +267,6 @@ hist_daytime_perc <- function(df) {
 
 plot_station_summary <- function(df) {
   
-  # # Plot daytime percentages
-  # ggplot(df, aes(x = AADT)) +
-  #   geom_histogram(binwidth = 1000, 
-  #                  color = "black", 
-  #                  fill = "steelblue") +
-  #   labs(title = "Histogram of Station AADT",
-  #        x = "AADT", 
-  #        y = "Frequency"
-  #   ) +
-  #   theme_minimal() +
-  #   theme(plot.title = element_text(hjust = 0.5))  
-  # # Center the title
-  
-  # ggplot(df, aes(x = AADT, y = AADT_percentage)) +
-  #   geom_boxplot(outlier.color = "red", 
-  #                fill = "lightgray") +
-  #   geom_jitter(width = 0.2, 
-  #               alpha = 0.5, 
-  #               color = "steelblue") +
-  #   labs(title = "AADT Boxplot with Points", 
-  #        x = "", 
-  #        y = "AADT") +
-  #   theme_minimal()
-  
   ggplot(df, aes(y = AADT_percentage, x = AADT)) +
     geom_jitter(width = 0.2, 
                 alpha = 0.7, 
