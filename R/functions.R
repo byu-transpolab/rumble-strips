@@ -27,7 +27,8 @@ get_available_stations <- function() {
   
   #return(c(sheet_names1, sheet_names2))
   
-  available_stations <- c(sheet_names1, sheet_names2)
+  available_stations <- c("available_stations",
+                          sheet_names1, sheet_names2)
   
   write(available_stations, 
               file = "data/available_stations")
@@ -36,10 +37,10 @@ get_available_stations <- function() {
 
 ##clean_stations#####################################
 
-#' @param sl a tibble with the a column of station #s
-#' returns a column with avaiable stations. 
+#' @param station_list a tibble with the a column of station #s
+#' returns a column with available stations. 
 
-clean_stations <- function(sl){
+clean_stations <- function(station_list){
   
 if (file.exists("data/available_stations")) {
   
@@ -51,14 +52,16 @@ if (file.exists("data/available_stations")) {
   approved_stations <- read.csv("data/available_stations")
   
 }
-  
-  sl <- sl %>%
-    filter(station_number %in% approved_stations)
+ 
+  cleaned_station_list <- station_list %>%
+    filter(station_number %in% 
+             approved_stations$available_stations)
   
   # Convert the character column to integer
-  sl$station_number <- as.integer(sl$station_number)
+  cleaned_station_list$station_number <- 
+    as.integer(cleaned_station_list$station_number)
   
-  return(sl)
+  return(cleaned_station_list)
 }
 
 #' @param station integer, 3-digit station  number 
