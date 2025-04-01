@@ -73,12 +73,31 @@ list(
     clean_stations(station_list)
   ),
   
-  # Load all_station_data
+  # # Load all_station_data
+  # tar_target(
+  #   all_station_data, {
+  #   load("data/all_station_data.rds")
+  #   get("result") #for reasons unknown, the previous load command saves all_station_data.rds as "result" in the global environment. 
+  #   }
+  # ),
+  # 
+  # # Pull and save station data from Google Sheets
+  # tar_target(
+  #   save_station_data,
+  #   {
+  #     station_data <- map(cleaned_station_list$station_number, 
+  #                         get_station_data)
+  #     save(station_data, 
+  #          file = "data/all_station_data.rds")
+  #     "data/all_station_data.rds"
+  #   },
+  #   format = "file" # Declare the target output as a file
+  # ),
+  
+  # pull station data from Google sheets
   tar_target(
-    all_station_data, {
-    load("data/all_station_data.rds")
-    get("result") #for reasons unknown, the previous load command saves all_station_data.rds as "result" in the global environment. 
-    }
+    all_station_data,
+    map(cleaned_station_list$station_number, get_station_data)
   ),
   
   # Summarize each station to their hourly volumes and save the result
@@ -141,18 +160,5 @@ list(
   tar_target(
     save_summary,
     write_csv(final_summary, "data/station_summary"),
-  ),
-  
-  # Pull and save station data from Google Sheets
-  tar_target(
-    save_station_data,
-    {
-      station_data <- map(cleaned_station_list$station_number, 
-                          get_station_data)
-      save(station_data, 
-           file = "data/all_station_data.rds")
-      "data/all_station_data.rds"
-    },
-    format = "file" # Declare the target output as a file
   )
 )
