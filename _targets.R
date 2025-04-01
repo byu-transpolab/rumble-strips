@@ -101,6 +101,8 @@ list(
   ),
   
   # Summarize each station to their hourly volumes and save the result
+  
+  # to-do: return a tibble with station names so we can label plots
   tar_target(
     hourly_volumes,
     {
@@ -111,6 +113,8 @@ list(
   ),
   
   #plot each station
+  
+  # how can we save each plot with the file_name stating station, sd, ed?
   tar_target(
     plots,
     map(hourly_volumes, ~ plot_station(.x, st, et))
