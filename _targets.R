@@ -81,11 +81,14 @@ list(
     }
   ),
   
-  # Summarize each station to their hourly volumes
+  # Summarize each station to their hourly volumes and save the result
   tar_target(
     hourly_volumes,
-    map(all_station_data, 
-        ~ get_hourly_volume(.x, sd, ed))
+    {
+      hv <- map(all_station_data, ~ get_hourly_volume(.x, sd, ed))
+      save(hv, file = "data/all_station_data")
+      hv
+    }
   ),
   
   #plot each station
