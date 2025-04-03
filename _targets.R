@@ -106,7 +106,7 @@ list(
   tar_target(
     hourly_volumes,
     {
-      hv <- tibble(row_name = cleaned_station_list,
+      hv <- tibble(cleaned_station_list,
                    vector = I(map(all_station_data, 
                                  ~ get_hourly_volume(.x, sd, ed)
                                  )
