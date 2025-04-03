@@ -122,7 +122,15 @@ list(
   # how can we save each plot with the file_name stating station, sd, ed?
   tar_target(
     plots,
-    map(hourly_volumes, ~ plot_station(.x, st, et))
+    map2(
+      hourly_volumes$vector, 
+      hourly_volumes$station_number, 
+      ~ ggsave(
+        filename = paste0("output/", "plot_", .y,"_", sd, "_to_", ed,".svg"), 
+        plot = plot_station(.x, st, et), 
+        width = 7, 
+        height = 5)
+        )
   ),
   
   # Create station summary with initial values
