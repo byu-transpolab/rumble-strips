@@ -70,8 +70,12 @@ list(
   
   # Check availability of station data on Google Sheets
   tar_target(
-    cleaned_station_list,
-    clean_stations(station_list)
+    cleaned_station_list, 
+    {
+    cs <- clean_stations(station_list)
+    write_csv(cs, "data/temp_data/cleaned_list")
+    cs
+    }
   ),
   
   # # Load all_station_data
