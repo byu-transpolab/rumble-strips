@@ -20,3 +20,5 @@ data/list_of_hourly_volumes
 data/all_station_data
 /output
 /data/temp_data
+data/temp_data/station_summary
+data/temp_data/hourly_station_data
