@@ -9,6 +9,7 @@ library(tidyverse)
 library(googlesheets4)
 library(mlogit)
 library(modelsummary)
+library(svglite)
 # library(tarchetypes) # Load other packages as needed. # nolint
 
 # Deauthenticate to prevent Google login prompts
