@@ -61,10 +61,6 @@ if (file.exists("data/available_stations")) {
   cleaned_station_list$station_number <- 
     as.integer(cleaned_station_list$station_number)
   
-  write.table(cleaned_station_list, 
-              file = "data/cleaned_station_list",
-              row.names = FALSE)
-  
   return(cleaned_station_list)
 }
 
