@@ -180,12 +180,12 @@ list(
   #plot the station summary
   tar_target(
     plot_summary,
-    plot_station_summary(final_summary),
+    plot_station_summary(final_summary)
   ),
   
   #save the station summary
   tar_target(
     save_summary,
-    write_csv(final_summary, "data/temp_data/station_summary"),
+    write_csv(final_summary, "data/temp_data/station_summary")
   )
 )
