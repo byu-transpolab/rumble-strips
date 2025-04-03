@@ -149,14 +149,14 @@ list(
   tar_target(
     AADT_summary,
     station_summary %>%
-      mutate(AADT = map_int(hourly_volumes, sum))
+      mutate(AADT = map_int(hourly_volumes$vector, sum))
   ),
   
   # Add daytime percentage to station summary
   tar_target(
     daytime_summary,
     AADT_summary %>%
-      mutate(daytime_perc = map_dbl(hourly_volumes, 
+      mutate(daytime_perc = map_dbl(hourly_volumes$vector, 
                               ~ get_aadt_perc(.x, st, et)))
   ),
   
@@ -164,7 +164,7 @@ list(
   tar_target(
     final_summary,
     daytime_summary %>%
-      mutate(min_hours = map_dbl(hourly_volumes, 
+      mutate(min_hours = map_dbl(hourly_volumes$vector, 
                            ~ get_obs_time(st, et, n, .x)))
   ),
   
