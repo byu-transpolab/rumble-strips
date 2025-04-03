@@ -153,7 +153,12 @@ list(
   tar_target(
     AADT_summary,
     station_summary %>%
-      mutate(AADT = map_int(hourly_volumes$vector, sum))
+      mutate(AADT = map_int(hourly_volumes$vector, 
+                            ~ {result <- sum(.x, na.rm = TRUE)
+                                if (is.nan(result)) 0 
+                                else as.integer(result)  # Replace NaN with 0
+                              }
+                            ))
   ),
   
   # Add daytime percentage to station summary
