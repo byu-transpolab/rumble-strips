@@ -58,7 +58,7 @@ list(
   # Load station list
   tar_target(
     station_list,
-    read.csv("data/stations_in_region4",
+    read.csv("data/temp_data/stations_list",
              colClasses =  c("character"))
   ),
   
@@ -113,7 +113,7 @@ list(
                                  )
                              )
                   )
-      save(hv, file = "data/all_station_data")
+      save(hv, file = "data/temp_data/hourly_station_data")
       hv
     }
   ),
@@ -177,6 +177,6 @@ list(
   #save the station summary
   tar_target(
     save_summary,
-    write_csv(final_summary, "data/station_summary"),
+    write_csv(final_summary, "data/temp_data/station_summary"),
   )
 )
