@@ -10,6 +10,7 @@ library(googlesheets4)
 library(mlogit)
 library(modelsummary)
 # library(tarchetypes) # Load other packages as needed. # nolint
+#setwd("~/Documents/GitHub/rumble-strips")
 
 # Deauthenticate to prevent Google login prompts
 gs4_deauth()
@@ -129,12 +130,14 @@ list(
   ),
   
   #plot the station summary
+  #for loops in these functions
   tar_target(
     plot_summary,
     plot_station_summary(final_summary),
   ),
   
   #save the station summary
+  #for loops in these functions
   tar_target(
     save_summary,
     write_csv(final_summary, "data/station_summary"),
@@ -153,3 +156,7 @@ list(
     format = "file" # Declare the target output as a file
   )
 )
+
+#Next Step: How to save the plot based on a given station number is what we have to figure out next.
+#tbbl instead of a list of vectors. Each vector is the info for one station.
+#instead of having tar_target hourly_volumes (line 85) return a list of vectors, have it return a table.
