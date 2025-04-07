@@ -11,6 +11,7 @@ library(mlogit)
 library(modelsummary)
 library(svglite)
 # library(tarchetypes) # Load other packages as needed. # nolint
+#setwd("~/Documents/GitHub/rumble-strips")
 
 # Deauthenticate to prevent Google login prompts
 gs4_deauth()
