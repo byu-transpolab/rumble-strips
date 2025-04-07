@@ -61,10 +61,6 @@ if (file.exists("data/available_stations")) {
   cleaned_station_list$station_number <- 
     as.integer(cleaned_station_list$station_number)
   
-  write.table(cleaned_station_list, 
-              file = "data/cleaned_station_list",
-              row.names = FALSE)
-  
   return(cleaned_station_list)
 }
 
@@ -258,26 +254,6 @@ plot_station <- function(hv, st, et){
           panel.border = element_blank()
     )                  
   
-}
-
-#' @param df expecting table with station, AADT, 
-#'           and day time percentage
-
-hist_daytime_perc <- function(df) {
-  
-  # Plot daytime percentages
-  ggplot(df, aes(x = AADT_percentage)) +
-    geom_histogram(binwidth = 1, 
-                   color = "black", 
-                   fill = "steelblue") +
-    labs(x = "Percentage", 
-         y = "Frequency"
-         ) +
-    theme_bw() +
-    theme(text = element_text(family = "Times New Roman", 
-                              size = 12),
-          panel.border = element_blank()
-          )  
 }
 
 #' @param df expecting table with station, AADT, 

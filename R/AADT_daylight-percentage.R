@@ -10,7 +10,8 @@
 #data can be found at https://drive.google.com/drive/folders/1ZYy-WkICLOp1482vwEbTc5UvLItbWs4y
 
 ##Packages################################################
-library(tidyverse) 
+library(tidyverse)
+library(dplyr)
 library(googlesheets4)
   gs4_deauth() #prevents the need of signing into Google
 
@@ -73,12 +74,12 @@ dates <- read_sheet(
                     )
 
 #finds the first row with start_date
-initial_row = dates.query('Date == "2023-05-01"').head(1)
+initial_row = dates.query('Date == "2023-05-01"') %>% head(1)
 
 
 #finds the last row with end_date 
 final_row = dates.loc[dates['DATE'] == 
-                        end_date].tail(1)
+                        end_date] %>% tail(1)
 
 
 

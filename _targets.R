@@ -9,6 +9,7 @@ library(tidyverse)
 library(googlesheets4)
 library(mlogit)
 library(modelsummary)
+library(svglite)
 # library(tarchetypes) # Load other packages as needed. # nolint
 #setwd("~/Documents/GitHub/rumble-strips")
 
@@ -58,7 +59,7 @@ list(
   # Load station list
   tar_target(
     station_list,
-    read.csv("data/stations_in_region4",
+    read.csv("data/temp_data/stations_list",
              colClasses =  c("character"))
   ),
   
@@ -70,29 +71,72 @@ list(
   
   # Check availability of station data on Google Sheets
   tar_target(
-    cleaned_station_list,
-    clean_stations(station_list)
-  ),
-  
-  # Load all_station_data
-  tar_target(
-    all_station_data, {
-    load("data/all_station_data.rds")
-    get("result") #for reasons unknown, the previous load command saves all_station_data.rds as "result" in the global environment. 
+    cleaned_station_list, 
+    {
+    cs <- clean_stations(station_list)
+    write_csv(cs, "data/temp_data/cleaned_list")
+    cs
     }
   ),
   
-  # Summarize each station to their hourly volumes
+  # # Load all_station_data
+  # tar_target(
+  #   all_station_data, {
+  #   load("data/all_station_data.rds")
+  #   get("result") #for reasons unknown, the previous load command saves all_station_data.rds as "result" in the global environment. 
+  #   }
+  # ),
+  # 
+  # # Pull and save station data from Google Sheets
+  # tar_target(
+  #   save_station_data,
+  #   {
+  #     station_data <- map(cleaned_station_list$station_number, 
+  #                         get_station_data)
+  #     save(station_data, 
+  #          file = "data/all_station_data.rds")
+  #     "data/all_station_data.rds"
+  #   },
+  #   format = "file" # Declare the target output as a file
+  # ),
+  
+  # pull station data from Google sheets
+  tar_target(
+    all_station_data,
+    map(cleaned_station_list$station_number, get_station_data)
+  ),
+  
+  # Summarize each station to their hourly volumes and save the result
+  
+  # to-do: return a tibble with station names so we can label plots
   tar_target(
     hourly_volumes,
-    map(all_station_data, 
-        ~ get_hourly_volume(.x, sd, ed))
+    {
+      hv <- tibble(cleaned_station_list,
+                   vector = I(map(all_station_data, 
+                                 ~ get_hourly_volume(.x, sd, ed)
+                                 )
+                             )
+                  )
+      save(hv, file = "data/temp_data/hourly_station_data")
+      hv
+    }
   ),
   
   #plot each station
+  
+  # how can we save each plot with the file_name stating station, sd, ed?
   tar_target(
     plots,
-    map(hourly_volumes, ~ plot_station(.x, st, et))
+    map2(
+      hourly_volumes$vector, 
+      hourly_volumes$station_number, 
+      ~ ggsave(
+        filename = paste0("output/", "plot_", .y,"_", sd, "_to_", ed,".svg"), 
+        plot = plot_station(.x, st, et), 
+        width = 7, 
+        height = 5)
+        )
   ),
   
   # Create station summary with initial values
@@ -110,14 +154,19 @@ list(
   tar_target(
     AADT_summary,
     station_summary %>%
-      mutate(AADT = map_int(hourly_volumes, sum))
+      mutate(AADT = map_int(hourly_volumes$vector, 
+                            ~ {result <- sum(.x, na.rm = TRUE)
+                                if (is.nan(result)) 0 
+                                else as.integer(result)  # Replace NaN with 0
+                              }
+                            ))
   ),
   
   # Add daytime percentage to station summary
   tar_target(
     daytime_summary,
     AADT_summary %>%
-      mutate(daytime_perc = map_dbl(hourly_volumes, 
+      mutate(daytime_perc = map_dbl(hourly_volumes$vector, 
                               ~ get_aadt_perc(.x, st, et)))
   ),
   
@@ -125,7 +174,7 @@ list(
   tar_target(
     final_summary,
     daytime_summary %>%
-      mutate(min_hours = map_dbl(hourly_volumes, 
+      mutate(min_hours = map_dbl(hourly_volumes$vector, 
                            ~ get_obs_time(st, et, n, .x)))
   ),
   
@@ -133,27 +182,14 @@ list(
   #for loops in these functions
   tar_target(
     plot_summary,
-    plot_station_summary(final_summary),
+    plot_station_summary(final_summary)
   ),
   
   #save the station summary
   #for loops in these functions
   tar_target(
     save_summary,
-    write_csv(final_summary, "data/station_summary"),
-  ),
-  
-  # Pull and save station data from Google Sheets
-  tar_target(
-    save_station_data,
-    {
-      station_data <- map(cleaned_station_list$station_number, 
-                          get_station_data)
-      save(station_data, 
-           file = "data/all_station_data.rds")
-      "data/all_station_data.rds"
-    },
-    format = "file" # Declare the target output as a file
+    write_csv(final_summary, "data/temp_data/station_summary")
   )
 )
 
