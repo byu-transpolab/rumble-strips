@@ -4,10 +4,10 @@ library(readxl)
 ##read in the data##########################################
 #data <- read_excel("/Users/gregmacfarlane/Library/CloudStorage/Box-Box/Macfarlane/research/tprs/data/spacing_data.xlsx")
 
-data1 <- read_csv("~/rumble-strips/data/spacing_data.csv")
+data1 <- read_csv("data/spacing_data.csv")
 #How do we make the data path relative?
 
-data2 <- read_csv("~/rumble-strips/data/test_spacing.csv")
+data2 <- read_csv("data/test_spacing.csv")
 
 ###organize and mutate data#################################
 data1 <- data1 |> 
