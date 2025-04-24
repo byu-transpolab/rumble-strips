@@ -28,7 +28,11 @@ data2 <- mutate_if(data2, is.character, as.factor) |>
 
 ##test plot#################################################
 
-ggplot(data2, aes(x = speed, y = spacing, 
+# Exclude certain specifications (e.g., "Less Spacing" and "More Spacing")
+filtered_data2 <- data2 %>% 
+  filter(!specifications %in% c("Less Spacing", "More Spacing"))
+
+ggplot(filtered_data2, aes(x = speed, y = spacing, 
                   color = specifications)) + 
   geom_line() + 
   xlab("Speed [mph]") + 
@@ -41,7 +45,11 @@ ggplot(data2, aes(x = speed, y = spacing,
 
 ##State plot################################################
 
-ggplot(data1, aes(x = speed, y = spacing)) + 
+#exclude certain states
+filtered_data1 <- data1 %>% 
+  filter(!state %in% c("California", "North Dakota"))
+
+ggplot(filtered_data1, aes(x = speed, y = spacing)) + 
   geom_line() + 
   xlab("Speed [mph]") + 
   ylab("Strip spacing [ft]") +
@@ -51,14 +59,13 @@ ggplot(data1, aes(x = speed, y = spacing)) +
   theme(text = element_text(size = 14, 
                             family = "Times New Roman")) +
   
-  facet_wrap(~factor(state, 
-                     c("Maryland", "Virginia", "Minnesota",
-                       "New York","Texas", "Missouri", 
-                       "Recommended",
-                       "California", "North Dakota",
-                       "Wisconsin", "Florida", "Colorado")),
+  facet_wrap(~factor(state,
+                     levels = c("Wisconsin",   "Florida",  "Colorado",
+                                "Maryland",    "Virginia", "Minnesota",
+                                "New York",    "Texas",    "Missouri", 
+                                "Recommended", "Utah",     "Linear Spacing")),
                      #puts the states in a particular order
-             
+             drop = TRUE, # removes any NA plots
              ncol = 3) + #set column count
   
   #pane titles in 14 pt Times New Roman font
