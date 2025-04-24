@@ -61,7 +61,9 @@ Recommended,56,20
 Recommended,65,20
 Recommended,66,35
 Recommended,80,35
-Utah Spacing,0,10
-Utah Spacing,45,10
-Utah Spacing,50,20
-Utah Spacing,80,20
+Utah,0,10
+Utah,45,10
+Utah,50,20
+Utah,80,20
+Linear Spacing,10,5
+Linear Spacing,80,40
