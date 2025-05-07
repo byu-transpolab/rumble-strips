@@ -30,7 +30,7 @@ data2 <- mutate_if(data2, is.character, as.factor) |>
 
 # Exclude certain specifications (e.g., "Less Spacing" and "More Spacing")
 filtered_data2 <- data2 %>% 
-  filter(!specifications %in% c("Less Spacing", "More Spacing"))
+  filter(!specifications %in% c("Recommended"))
 
 ggplot(filtered_data2, aes(x = speed, y = spacing, 
                   color = specifications)) + 
