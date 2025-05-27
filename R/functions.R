@@ -250,7 +250,7 @@ plot_station <- function(hv, st, et){
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5),
           text = element_text(family = "Times New Roman", 
-                              size = 12),
+                              size = 14),
           panel.border = element_blank()
     )                  
   
@@ -269,7 +269,7 @@ plot_station_summary <- function(df) {
          x = "AADT") +
     theme_bw() +
     theme(text = element_text(family = "Times New Roman", 
-                              size = 12),
+                              size = 14),
           panel.border = element_blank()
           )
 }

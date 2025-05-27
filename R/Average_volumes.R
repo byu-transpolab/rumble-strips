@@ -19,7 +19,7 @@ source("R/functions.R")
 ##Define files and variables###############################
 
 #import csv with station #s
-station_list <- read_csv("~/rumble-strips/data/stations_in_region4")
+station_list <- read_csv("data/stations_in_region4")
 
 #statistical info
 o = 3         #standard deviation
@@ -98,7 +98,7 @@ plot_station(thv, sd, ed, st, et, n)
 
 #save AADT and AADT% to a csv
 write_csv(station_list, 
-          "~/rumble-strips/data/station_summary")
+          "data/station_summary")
 
 
 
