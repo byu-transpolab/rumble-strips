@@ -13,7 +13,7 @@ library(tidyverse)
 library(googlesheets4)
 gs4_deauth() #prevents the need of signing into Google
 
-# Load the functions from functions_list.R
+#Load the functions from functions.R
 source("R/functions.R")
 
 ##Define files and variables###############################
@@ -48,7 +48,7 @@ thv <- rep(0, 24)
 
 #add columns to station_list to record AADT and AADT%
 station_list <- station_list %>%
-  mutate(AADT = 0, AADT_percentage = 0)
+  mutate(AADT = 0, AADT_percentage = 0, hours = 0)
 
 #initialize a counter to track the iteration of the loop
 i = 1
@@ -65,11 +65,18 @@ for (station in station_list$station_number)
     thv = thv + hv
   
     #add station AADT to station_list
-    station_list[i, "AADT"] <- sum(hv)
+    station_list[i, "AADT"] <- 
+        sum(hv)
     
     #add station AADT% to station_list
     station_list[i, "AADT_percentage"] <- 
         get_aadt_perc(hv, st, et)
+
+    
+    #add station observation time to station_list
+    station_list[i, "hours"] <-
+        get_obs_time(st, et, n, hv)
+
   
     #plot station hourly volumes
     plot_station(hv, sd, ed, st, et, n)

@@ -4,10 +4,10 @@ library(readxl)
 ##read in the data##########################################
 #data <- read_excel("/Users/gregmacfarlane/Library/CloudStorage/Box-Box/Macfarlane/research/tprs/data/spacing_data.xlsx")
 
-data1 <- read_excel("/Users/Tyler/Box/tprs/data/spacing_data.xlsx")
+data1 <- read_csv("data/spacing_data.csv")
 #How do we make the data path relative?
 
-data2 <- read_excel("/Users/Tyler/Box/tprs/data/test_spacing.xlsx")
+data2 <- read_csv("data/test_spacing.csv")
 
 ###organize and mutate data#################################
 data1 <- data1 |> 
@@ -28,7 +28,11 @@ data2 <- mutate_if(data2, is.character, as.factor) |>
 
 ##test plot#################################################
 
-ggplot(data2, aes(x = speed, y = spacing, 
+# Exclude certain specifications (e.g., "Less Spacing" and "More Spacing")
+filtered_data2 <- data2 %>% 
+  filter(!specifications %in% c("Recommended"))
+
+ggplot(filtered_data2, aes(x = speed, y = spacing, 
                   color = specifications)) + 
   geom_line() + 
   xlab("Speed [mph]") + 
@@ -41,7 +45,11 @@ ggplot(data2, aes(x = speed, y = spacing,
 
 ##State plot################################################
 
-ggplot(data1, aes(x = speed, y = spacing)) + 
+#exclude certain states
+filtered_data1 <- data1 %>% 
+  filter(!state %in% c("California", "North Dakota"))
+
+ggplot(filtered_data1, aes(x = speed, y = spacing)) + 
   geom_line() + 
   xlab("Speed [mph]") + 
   ylab("Strip spacing [ft]") +
@@ -51,13 +59,13 @@ ggplot(data1, aes(x = speed, y = spacing)) +
   theme(text = element_text(size = 14, 
                             family = "Times New Roman")) +
   
-  facet_wrap(~factor(state, 
-                     c("Maryland", "Virginia", "Minnesota",
-                       "New York","Texas", "Missouri", 
-                       "California", "North Dakota",
-                       "Wisconsin", "Florida", "Colorado")),
+  facet_wrap(~factor(state,
+                     levels = c("Wisconsin",   "Florida",  "Colorado",
+                                "Maryland",    "Virginia", "Minnesota",
+                                "New York",    "Texas",    "Missouri", 
+                                "Recommended", "Utah",     "Linear Spacing")),
                      #puts the states in a particular order
-             
+             drop = TRUE, # removes any NA plots
              ncol = 3) + #set column count
   
   #pane titles in 14 pt Times New Roman font
