@@ -43,9 +43,18 @@ list(
   # Download Google Sheets as Excel files before anything else
   tar_target(
     download_sheets,
-    {
-      dnld_google_sheet()
-    }
+    tryCatch(
+      {
+        dnld_google_sheet()
+      },
+      error = function(e) {
+        message("\n*** ERROR: Failed to download Google Sheets as Excel files. ***\n",
+                "Try running the program again, or manually download the file.\n",
+                "See the README file in data/temp_data.\n",
+                "Original error: ", e$message, "\n")
+        stop(e) # re-throw to stop the pipeline
+      }
+    )
   ),
 
   # Statistical parameters
@@ -89,7 +98,16 @@ list(
   # Pull station data from local Excel files
   tar_target(
     all_station_data,
-    map(cleaned_station_list$station_number, get_station_data)
+    tryCatch(
+      map(cleaned_station_list$station_number, get_station_data),
+      error = function(e) {
+        message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
+                "Try running the program again, or manually check the Excel files in data/temp_data.\n",
+                "See the README file in data/temp_data.\n",
+                "Original error: ", e$message, "\n")
+        stop(e)
+      }
+    )
   ),
 
   # Summarize each station to their hourly volumes and save the result
