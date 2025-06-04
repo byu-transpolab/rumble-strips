@@ -43,7 +43,9 @@ list(
   # Download Google Sheets as Excel files before anything else
   tar_target(
     download_sheets,
-    dnld_google_sheet()
+    {
+      dnld_google_sheet()
+    }
   ),
 
   # Statistical parameters

@@ -11,6 +11,8 @@
 ##Functions##########################################
 
 dnld_google_sheet <- function() {
+  drive_deauth()
+
   local_path_1 <- file.path("data", "temp_data", "2023_data_301-431.xlsx")
   local_path_2 <- file.path("data", "temp_data", "2023_data_501-733.xlsx")
 
@@ -19,7 +21,8 @@ dnld_google_sheet <- function() {
     googledrive::drive_download(
       as_id("1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw"),
       path = local_path_1,
-      overwrite = TRUE
+      overwrite = TRUE,
+      type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
   }
 
@@ -27,7 +30,8 @@ dnld_google_sheet <- function() {
     googledrive::drive_download(
       as_id("1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI"),
       path = local_path_2,
-      overwrite = TRUE
+      overwrite = TRUE,
+      type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
   }
 }
@@ -48,14 +52,11 @@ get_available_stations <- function() {
 ##clean_stations#####################################
 
 #' @param station_list a tibble with the a column of station #s
-#' returns a column with available stations. 
+#' returns a column with available stations.
 
 clean_stations <- function(station_list){
-  
 if (file.exists("data/available_stations")) {
-  
   approved_stations <- read.csv("data/available_stations")
-  
 } else {
   
   get_available_stations()
@@ -95,9 +96,11 @@ get_station_data <- function(station) {
   data <- readxl::read_excel(
     path = local_path,
     sheet = sheet_name,
-    range = "B:AC",
     col_names = TRUE
   )
+
+  # Remove the first and last columns
+  data <- data[, -c(1, ncol(data))]
 
   # Ensure the appropriate column names
   colnames(data) <- c(
