@@ -5,4 +5,9 @@ cellar/
 lock/
 python/
 staging/
-data/temp_data/*.xlsx
+# ignore the contents of the temp_data and output directories
+# but not the directories themselves
+!data/temp_data/
+data/temp_data/*
+!output/
+output/*
