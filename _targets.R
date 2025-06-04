@@ -6,22 +6,21 @@
 # Load packages required to define the pipeline:
 library(targets)
 library(tidyverse)
-library(googlesheets4)
+library(googledrive)
+library(readxl)
 library(mlogit)
 library(modelsummary)
 library(svglite)
 # library(tarchetypes) # Load other packages as needed. # nolint
 #setwd("~/Documents/GitHub/rumble-strips")
 
-# Deauthenticate to prevent Google login prompts
-gs4_deauth()
-
 # Set target options:
 tar_option_set(
   packages = c("tidyverse", 
                "mlogit", 
                "modelsummary", 
-               "googlesheets4"), # packages that your targets need to run
+               "readxl", 
+               "googledrive"), # updated: removed googlesheets4, added readxl and googledrive
   format = "rds" # default storage format
   # Set other options as needed.
 )
@@ -40,75 +39,78 @@ tar_option_set(
 
 source("R/functions.R")
 
-
-# Replace the target list below with your own:
 list(
-  
+  # Download Google Sheets as Excel files before anything else
+  tar_target(
+    download_sheets,
+    tryCatch(
+      {
+        dnld_google_sheet()
+      },
+      error = function(e) {
+        message("\n*** ERROR: Failed to download Google Sheets as Excel files. ***\n",
+                "Try running the program again, or manually download the file.\n",
+                "See the README file in data/temp_data.\n",
+                "Original error: ", e$message, "\n")
+        stop(e) # re-throw to stop the pipeline
+      }
+    )
+  ),
+
   # Statistical parameters
   tar_target(o, 3),
   tar_target(z, 1.959964),
   tar_target(U, 1.04),
   tar_target(E, 1),
-  
+
   # Date and time parameters
   tar_target(sd, "2023-05-01"),
   tar_target(ed, "2023-08-31"),
   tar_target(st, 8),
   tar_target(et, 17),
-  
-  # Load station list
+
+  # Load station list (depends on download_sheets)
   tar_target(
     station_list,
-    read.csv("data/temp_data/stations_list",
-             colClasses =  c("character"))
+    {
+      download_sheets
+      read.csv("data/temp_data/stations_list", colClasses =  c("character"))
+    }
   ),
-  
+
   # Calculate minimum observations
   tar_target(
     n,
     get_min_obs(o, z, U, E)
   ),
-  
-  # Check availability of station data on Google Sheets
+
+  # Check availability of station data
   tar_target(
     cleaned_station_list, 
     {
-    cs <- clean_stations(station_list)
-    write_csv(cs, "data/temp_data/cleaned_list")
-    cs
+      download_sheets
+      cs <- clean_stations(station_list)
+      write_csv(cs, "data/temp_data/cleaned_list")
+      cs
     }
   ),
-  
-  # # Load all_station_data
-  # tar_target(
-  #   all_station_data, {
-  #   load("data/all_station_data.rds")
-  #   get("result") #for reasons unknown, the previous load command saves all_station_data.rds as "result" in the global environment. 
-  #   }
-  # ),
-  # 
-  # # Pull and save station data from Google Sheets
-  # tar_target(
-  #   save_station_data,
-  #   {
-  #     station_data <- map(cleaned_station_list$station_number, 
-  #                         get_station_data)
-  #     save(station_data, 
-  #          file = "data/all_station_data.rds")
-  #     "data/all_station_data.rds"
-  #   },
-  #   format = "file" # Declare the target output as a file
-  # ),
-  
-  # pull station data from Google sheets
+
+  # Pull station data from local Excel files
   tar_target(
     all_station_data,
-    map(cleaned_station_list$station_number, get_station_data)
+    tryCatch(
+      map(cleaned_station_list$station_number, get_station_data),
+      error = function(e) {
+        message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
+                "Try running the program again, or manually check the Excel files in data/temp_data.\n",
+                "See the README file in data/temp_data.\n",
+                "Original error: ", e$message, "\n")
+        stop(e)
+      }
+    )
   ),
-  
+
   # Summarize each station to their hourly volumes and save the result
-  
-  # to-do: return a tibble with station names so we can label plots
   tar_target(
     hourly_volumes,
     {
@@ -122,10 +124,8 @@ list(
       hv
     }
   ),
-  
-  #plot each station
-  
-  # how can we save each plot with the file_name stating station, sd, ed?
+
+  # Plot each station
   tar_target(
     plots,
     map2(
@@ -138,7 +138,7 @@ list(
         height = 5)
         )
   ),
-  
+
   # Create station summary with initial values
   tar_target(
     station_summary,
@@ -149,7 +149,7 @@ list(
         min_hours = 0
       )
   ),
-  
+
   # Add AADT to station summary
   tar_target(
     AADT_summary,
@@ -161,7 +161,7 @@ list(
                               }
                             ))
   ),
-  
+
   # Add daytime percentage to station summary
   tar_target(
     daytime_summary,
@@ -169,7 +169,7 @@ list(
       mutate(daytime_perc = map_dbl(hourly_volumes$vector, 
                               ~ get_aadt_perc(.x, st, et)))
   ),
-  
+
   # Add minimum hours of observation to station summary
   tar_target(
     final_summary,
@@ -177,16 +177,14 @@ list(
       mutate(min_hours = map_dbl(hourly_volumes$vector, 
                            ~ get_obs_time(st, et, n, .x)))
   ),
-  
-  #plot the station summary
-  #for loops in these functions
+
+  # Plot the station summary
   tar_target(
     plot_summary,
     plot_station_summary(final_summary)
   ),
-  
-  #save the station summary
-  #for loops in these functions
+
+  # Save the station summary
   tar_target(
     save_summary,
     write_csv(final_summary, "data/temp_data/station_summary")

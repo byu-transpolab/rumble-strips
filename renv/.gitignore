@@ -5,3 +5,11 @@ cellar/
 lock/
 python/
 staging/
+# ignore the contents of the temp_data and output directories
+# but not the directories themselves
+!data/temp_data/
+data/temp_data/*
+!data/temp_data/stations_list
+!data/temp_data/README.md
+!output/
+output/*
