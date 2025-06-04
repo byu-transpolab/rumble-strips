@@ -5,3 +5,4 @@ cellar/
 lock/
 python/
 staging/
+data/temp_data/*.xlsx

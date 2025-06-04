@@ -5,33 +5,43 @@
 ##required pacakges######################################
 
 #tidyverse
-#googlesheets4
-
+#readxl
+#googledrive
 
 ##Functions##########################################
 
+dnld_google_sheet <- function() {
+  local_path_1 <- file.path("data", "temp_data", "2023_data_301-431.xlsx")
+  local_path_2 <- file.path("data", "temp_data", "2023_data_501-733.xlsx")
+
+  # Download the files if they don't exist
+  if (!file.exists(local_path_1)) {
+    googledrive::drive_download(
+      as_id("1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw"),
+      path = local_path_1,
+      overwrite = TRUE
+    )
+  }
+
+  if (!file.exists(local_path_2)) {
+    googledrive::drive_download(
+      as_id("1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI"),
+      path = local_path_2,
+      overwrite = TRUE
+    )
+  }
+}
+
+
 #' returns a char list of stations available in Sheets
-
 get_available_stations <- function() {
+  # Get sheet names from local Excel files
+  sheet_names1 <- readxl::excel_sheets("data/temp_data/2023_data_301-431.xlsx")
+  sheet_names2 <- readxl::excel_sheets("data/temp_data/2023_data_501-733.xlsx")
 
-  
-  options(timeout = 1000)
-  
-  #retrieves the available worksheets in 2023 data 301-431
-  sheet_names1 <- sheet_names(
-    "1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw")
-  
-  #retrieves the available worksheets in 2023 data 501-733
-  sheet_names2 <- sheet_names(
-    "1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI")
-  
-  #return(c(sheet_names1, sheet_names2))
-  
-  available_stations <- c("available_stations",
-                          sheet_names1, sheet_names2)
-  
-  write(available_stations, 
-              file = "data/available_stations")
+  available_stations <- c(sheet_names1, sheet_names2)
+
+  write(available_stations, file = "data/available_stations")
 }
 
 
@@ -71,39 +81,31 @@ if (file.exists("data/available_stations")) {
 #station = 733 #used as a debug tool
 
 get_station_data <- function(station) {
-  
-#determines which Google sheet to look at based on station #
-if (300 < station & station < 432) {
-  sheet_id = "1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw"
-} else if (500 < station & station < 734) {
-  sheet_id = "1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI"
-} else {
-  stop(paste0("station # ", station, " not found."))
-}
-  
+  # Determine which local Excel file to use based on station number
+  if (300 < station & station < 432) {
+    local_path <- "data/temp_data/2023_data_301-431.xlsx"
+  } else if (500 < station & station < 734) {
+    local_path <- "data/temp_data/2023_data_501-733.xlsx"
+  } else {
+    stop(paste0("station # ", station, " not found."))
+  }
 
-#bring in volume data from Google sheets
-data <- read_sheet(
-  sheet_id,
-  sheet = paste0("0", station),
-  range = paste0("B:AC"),
-  col_names = TRUE,                    
-  col_types = NULL,
-  trim_ws = TRUE
-)
+  # Read the sheet for the station from the local Excel file
+  sheet_name <- paste0("0", station)
+  data <- readxl::read_excel(
+    path = local_path,
+    sheet = sheet_name,
+    range = "B:AC",
+    col_names = TRUE
+  )
 
-#ensure the appropriate column names
-colnames(data) <- c(
-                      'DATE', 'route', 'MP', 'lane',
-                      '0','1','2','3','4',
-                      '5','6','7','8',
-                      '9','10','11','12',
-                      '13','14','15','16',
-                      '17','18','19','20',
-                      '21','22','23'
-                    )
+  # Ensure the appropriate column names
+  colnames(data) <- c(
+    'DATE', 'route', 'MP', 'lane',
+    as.character(0:23)
+  )
 
-return(data)  
+  return(data)  
 }
 
 
