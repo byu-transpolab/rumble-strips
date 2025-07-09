@@ -290,6 +290,10 @@ csv_to_df <- function (filePath) {
 }
 
 #' @param df data frame with raw video observation data
+#' returns a data frame with converted video data
+#' j for passenger vehicles, k for trucks, y for TPRS movement
+#' d for brake lights before, f for brake lights after
+#' b for erratic behavior
 
 convert_video_data <- function(df_raw) {
   # initialize an empty data frame to store converted data
