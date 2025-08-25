@@ -10,7 +10,9 @@
             },
             "properties": {
                 "Location": "Mile marker 6.5",
-                "Roadway": "SR-112",
+                "Roadway": "SR-12",
+                "Start": "2025-07-07",
+                "End": "2025-07-11",
                 "site": 1
             },
             "type": "Feature"
@@ -26,6 +28,8 @@
             "properties": {
                 "Location": "20 miles W of Wellington",
                 "Roadway": "US-6",
+                "Start": "2025-07-15",
+                "End": "2025-07-18",
                 "site": 2
             },
             "type": "Feature"
@@ -41,6 +45,8 @@
             "properties": {
                 "Location": "Clear Creek Summit",
                 "Roadway": "I-70",
+                "Start": "2025-07-29",
+                "End": "2025-08-01",
                 "site": 3
             },
             "type": "Feature"
@@ -56,6 +62,8 @@
             "properties": {
                 "Location": "North of summit",
                 "Roadway": "US-191",
+                "Start": "2025-08-05",
+                "End": "2025-08-08",
                 "site": 4
             },
             "type": "Feature"
