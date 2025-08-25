@@ -1,0 +1,69 @@
+state,speed,spacing
+New York,40,10
+New York,41,15
+New York,55,15
+New York,56,20
+New York,64,20
+New York,65,35
+New York,80,35
+Minnesota,0,10
+Minnesota,40,10
+Minnesota,45,15
+Minnesota,55,15
+Minnesota,60,20
+Minnesota,75,20
+Maryland,0,10
+Maryland,40,10
+Maryland,41,15
+Maryland,55,15
+Maryland,56,20
+Maryland,80,20
+Virginia,25,10
+Virginia,40,10
+Virginia,41,15
+Virginia,55,15
+Virginia,56,20
+Virginia,80,20
+Missouri,0,10
+Missouri,45,10
+Missouri,50,20
+Missouri,55,20
+Missouri,60,35
+Missouri,70,35
+Maryland,0,10
+Maryland,40,10
+Maryland,41,15
+Maryland,55,15
+Maryland,56,20
+Maryland,80,20
+Texas,0,10
+Texas,40,10
+Texas,41,15
+Texas,55,15
+Texas,60,20
+Texas,65,35
+Texas,80,35
+California,45,8
+California,80,8
+North Dakota,46,15
+North Dakota,80,15
+Wisconsin,25,15
+Wisconsin,55,15
+Florida,55,20
+Florida,80,20
+Colorado,75,40
+Colorado,25,40
+Recommended,0,10
+Recommended,40,10
+Recommended,41,15
+Recommended,55,15
+Recommended,56,20
+Recommended,65,20
+Recommended,66,35
+Recommended,80,35
+Utah,0,10
+Utah,45,10
+Utah,50,20
+Utah,80,20
+Linear Spacing,10,5
+Linear Spacing,80,40

@@ -12,9 +12,29 @@
 library(mlogit)
 ```
 
-In this chapter, you describe the approach you have taken on the problem. This usually involves a discussion about both the data you used and the models you applied.
+This chapter describes the methodology designed by the research team to evaluate the effectiveness, durability, and stability of TPRS systems on high-speed roadways in Utah. The experiment will observe driver behavior and TPRS displacement under traffic load. Cameras and Wavetronix units will be used to collect the desired data. The designed experiment will observe the results that occur in the absence of TPRS and in layouts that vary the spacing between the individual strips in arrays. The experiment will be designed to maximize observation time and minimize how often contractors will need to adjust the TPRS. Work sites were selected for observation based on traffic volume, availability, and location.
+
+## Layouts
+
+The team created a layout to use to test the effectiveness of TPRS at work sites. These layouts were set up at the arrays of TPRS placed in front of a work site. They comprised comprised of two Wavetronix radar detectors and two countCAM4 cameras from StreetLogic Pro mounted to trailers and tripods stationed on the side of the road next to the tapering line of cones that marked the beginning of a work zone. The layouts are depicted below with displaying the set-ups designed for both single lanes or passing lanes.
+
+![](MethodologydiagramPassingLaneClosure-4.svg){fig-align="center" width="672"}
+
+![](MethodologydiagramPassingLaneClosure-5.svg){fig-align="center" width="672"}
+
+![](MethodologydiagramPassingLaneClosure-6.svg){fig-align="center" width="681"}
+
+The research team primarily focused on testing the space between the individual TPRS to observe what kind of effect spacing would have on driver speed and behavior and the ability of the individual strips to stay in place without needing readjustment. The team developed a spacing system for contractors to use during observation days based on posted speed limit for the spacing between TPRS at the sites they observed. The different spacing specifications are derived from current standards from UDOT for TPRS spacing and general recommendations from PSS for their RoadQuake TPRS.
+
+![](SpacingFigure.svg){fig-align="center" width="560"}
+
+## Site Selection
+
+The team selected work sites available during the summer of 2025 based on how far away they had to drive from Provo. These sites were also selected because the research team was able to check AADT data from 2023 to ensure that a sufficient number of cars could be expected to traverse the rumble strips to make a reliable statistical measurement on the the potential effect spacing would have on TPRS arrays.
 
 ## Data
+
+The research team used histograms of AADT on Utah roads to determine which ones would make reliable sites to study to ensure statistical significance.
 
 Discuss where you got your data, how you cleaned it, and any assumptions you made. In this example, we get the `Car` dataset from the `mlogit` [@mlogit] package[^03_methods-1] and massage it to be in the format needed for `mlogit`.
 
