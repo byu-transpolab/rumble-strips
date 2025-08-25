@@ -74,10 +74,14 @@ You can also refer back to numbered equations, like the probability of an MNL pr
 
 
 ```{r}
-
-
+#| label: fig-map
+#| fig-cap: Map of sites
+library(ggspatial)
+library(sf)
+utah <- tigris::states() |> filter(STUSPS == "UT")
+sites <- read_sf("data/sites.geojson")
 ggplot() + 
-  annotation_map_tile("thunderforestoutdoors", zoom = 7) + 
+  annotation_map_tile("osm", zoom = 8) + 
   ggspatial::annotation_north_arrow(style = ggspatial::north_arrow_minimal, 
   location = "tr") + ggspatial::annotation_scale(location = "br") +
   geom_sf(data = utah, fill = NA, color = "black") +
@@ -90,3 +94,15 @@ ggplot() +
 
 ```
 
+
+```{r}
+#| label: tbl-sites
+#| tbl-cap: Data Collection Sites
+#| 
+library(kableExtra)
+sites |>
+  as_tibble() |>
+  select(site, Roadway, Location, Start, End) |>
+  sf::st_drop_geometry() |>
+  kbl(booktabs = "true", format = "markdown" ) |> kable_styling()
+```
