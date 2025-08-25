@@ -4,6 +4,8 @@
 # a number of commands need to run at the beginning of each chapter. This
 # includes loading libraries that I always use, as well as options for 
 # displaying numbers and text.
+library(ggspatial)
+library(sf)
 ```
 
 ```{r setup2, include = FALSE}
@@ -69,3 +71,22 @@ $$ {#eq-mnl}
 Use [LaTeX mathematics](https://www.overleaf.com/learn/latex/mathematical_expressions). You'll want to number display equations so that you can refer to them later in the manuscript. Other simpler math can be described inline, like saying that $i, j \in J$. Details on using equations in Quarto are available [here](https://quarto.org/docs/visual-editor/technical.html#equations).
 
 You can also refer back to numbered equations, like the probability of an MNL presented in @eq-mnl.
+
+
+```{r}
+
+
+ggplot() + 
+  annotation_map_tile("thunderforestoutdoors", zoom = 7) + 
+  ggspatial::annotation_north_arrow(style = ggspatial::north_arrow_minimal, 
+  location = "tr") + ggspatial::annotation_scale(location = "br") +
+  geom_sf(data = utah, fill = NA, color = "black") +
+  geom_sf_text(data = sites, aes(label = site), color = "red", size = 10) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title = element_blank())
+
+```
+
