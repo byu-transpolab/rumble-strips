@@ -278,3 +278,106 @@ plot_station_summary <- function(df) {
           panel.border = element_blank()
           )
 }
+
+#' @param filePath provide the file path to a csv, and return a data frame
+#' 
+csv_to_df <- function (filePath) {
+  if (!file.exists(filePath)) {
+    stop(paste("File does not exist:", filePath))
+  }
+  df <- read.csv(filePath, stringsAsFactors = FALSE)
+  return(df)
+}
+
+#' @param df data frame with raw video observation data
+#' returns a data frame with converted video data
+#' j for passenger vehicles, k for trucks, y for TPRS movement
+#' d for brake lights before, f for brake lights after
+#' b for erratic behavior
+
+convert_video_data <- function(df_raw) {
+  # initialize an empty data frame to store converted data
+  df_converted <- data.frame(
+    timestamp = character(),
+    class = character(),
+    brake_lights = character(),
+    erratic = logical(),
+    stringsAsFactors = FALSE
+  )
+
+  # iterate through each row of the raw data frame
+  n <- nrow(df_raw)
+  i <- 1
+  while (i <= n) {
+
+    # intialize variables
+    entry <- trimws(tolower(df_raw$entry[i]))   # Stores the entry from the raw data
+    entry <- gsub(" ", "", entry)               # Remove any spaces from the entry
+    ts <- df_raw$timestamp[i]                   # Stores the timestamp              
+    next_entry <- if (i < n) trimws(tolower(df_raw$entry[i+1])) else NA     # Stores the next entry
+    next2_entry <- if (i < n-1) trimws(tolower(df_raw$entry[i+2])) else NA  # Stores the second next entry
+
+    # if j or k, set class to passenger or truck
+    # and set defaults for brake lights and erratic behavior
+    if (entry %in% c("j", "k")) {
+      class <- ifelse(entry == "j", "passenger", "truck")
+      brake <- NA
+      erratic <- FALSE
+      # Check for erratic (if next is b, or if next is d/f and next2 is b)
+      if ((!is.na(next_entry) && next_entry == "b") ||
+          (!is.na(next_entry) && next_entry %in% c("d", "f") && !is.na(next2_entry) && next2_entry == "b")) {
+        erratic <- TRUE
+      }
+
+      # Determine if brake is before/after/none/error
+      # If next is d/f and next2 is f/d, set error
+      if (!is.na(next_entry) && !is.na(next2_entry) &&
+          ((next_entry == "d" && next2_entry == "f") || (next_entry == "f" && next2_entry == "d"))) {
+        brake <- "error"
+      # if next or next2 is d/f, set before/after
+      } else if (!is.na(next_entry) && next_entry == "d") {
+        brake <- "before"
+      } else if (!is.na(next2_entry) && next2_entry == "d") {
+        brake <- "before"
+      } else if (!is.na(next_entry) && next_entry == "f") {
+        brake <- "after"
+      } else if (!is.na(next2_entry) && next2_entry == "f") {
+        brake <- "after"
+
+      # if next is j/k/y, set none  
+      } else if (!is.na(next_entry) && next_entry %in% c("j", "k", "y")) {
+        brake <- "none"
+      } else {
+        brake <- NA
+      }
+
+      # Append the converted data to the output data frame
+      df_converted <- rbind(df_converted, data.frame(
+        timestamp = ts, class = class, brake_lights = brake, erratic = erratic, stringsAsFactors = FALSE
+      ))
+
+    # If entry is not j or k, but y, set class to TPRS movement
+    } else if (entry == "y") {
+      # Check next entry for error
+      if (!is.na(next_entry) && !(next_entry %in% c("y", "j", "k"))) {
+        df_converted <- rbind(df_converted, data.frame(
+          timestamp = ts, class = "error", brake_lights = NA, erratic = NA, stringsAsFactors = FALSE
+        ))
+      } else {
+        # sets class to TPRS movement and appends to the output data frame
+        df_converted <- rbind(df_converted, data.frame(
+          timestamp = ts, class = "TPRS movement", brake_lights = NA, erratic = NA, stringsAsFactors = FALSE
+        ))
+      }
+    }
+    i <- i + 1
+  }
+
+  # Convert columns to appropriate types
+  df_converted$timestamp <- as.character(df_converted$timestamp)
+  df_converted$class <- as.factor(df_converted$class)
+  df_converted$brake_lights <- as.factor(df_converted$brake_lights)
+  df_converted$erratic <- as.logical(df_converted$erratic)
+
+  return(df_converted)
+}

@@ -14,6 +14,7 @@ elsarticle-harv.bst
 *_cache/
 *-tikzDictionary
 *_files/
+.vscode/settings.json
 rumble-strips.Rproj
 data/all_station_data.rds
 data/list_of_hourly_volumes
@@ -24,3 +25,4 @@ data/temp_data/station_summary
 data/temp_data/hourly_station_data
 *.svg
 /data/temp_data
+/rosm.cache/
