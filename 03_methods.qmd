@@ -16,7 +16,7 @@ This chapter describes the methodology designed by the research team to evaluate
 
 ## Layouts
 
-The team created a layout to use to test the effectiveness of TPRS at work sites. These layouts were set up at the arrays of TPRS placed in front of a work site. They comprised comprised of two Wavetronix radar detectors and two countCAM4 cameras from StreetLogic Pro mounted to trailers and tripods stationed on the side of the road next to the tapering line of cones that marked the beginning of a work zone. The layouts are depicted below with displaying the set-ups designed for both single lanes or passing lanes.
+The team designed layouts to test the effectiveness of TPRS at work sites. These layouts were set up at the arrays of TPRS positioned in front of each work site preceding the tapering line of cones that marked the beginning of the work zone. Each layout consisted of two Wavetronix radar detectors and two countCAM4 cameras from StreetLogic Pro. These devices were mounted on trailers and tripods stationed on the side of the road. The layouts are depicted below, showing the set-ups designed for both single-lane and passing-lane configurations.
 
 ![](MethodologydiagramPassingLaneClosure-4.svg){fig-align="center" width="672"}
 
@@ -24,13 +24,13 @@ The team created a layout to use to test the effectiveness of TPRS at work sites
 
 ![](MethodologydiagramPassingLaneClosure-6.svg){fig-align="center" width="681"}
 
-The research team primarily focused on testing the space between the individual TPRS to observe what kind of effect spacing would have on driver speed and behavior and the ability of the individual strips to stay in place without needing readjustment. The team developed a spacing system for contractors to use during observation days based on posted speed limit for the spacing between TPRS at the sites they observed. The different spacing specifications are derived from current standards from UDOT for TPRS spacing and general recommendations from PSS for their RoadQuake TPRS.
+The research team primarily focused on testing the space between individual TPRS to observe its effect on driver speed and behavior. They also examined whether the strips could remain in place without requiring frequent readjustments. The team developed a spacing system for contractors to use during observation days, tailored to the posted speed limit at each site. The different spacing specifications were derived from current UDOT standards for TPRS spacing and general recommendations from Plastic Safety Systems (PSS) for their RoadQuake TPRS system.
 
 ![](SpacingFigure.svg){fig-align="center" width="560"}
 
 ## Site Selection
 
-The team selected work sites available during the summer of 2025 based on how far away they had to drive from Provo. These sites were also selected because the research team was able to check AADT data from 2023 to ensure that a sufficient number of cars could be expected to traverse the rumble strips to make a reliable statistical measurement on the the potential effect spacing would have on TPRS arrays.
+The team selected work sites available during the summer of 2025 based on their driving distance from Provo. The research team used 2023 AADT data to estimate how many vehicles typically traveled on each road segment associated with a work site being considered for observation. This estimate ensured that the roads chosen for observation had enough traffic to support a reliable statistical analysis of the potential effect spacing would have on TPRS arrays.
 
 ## Data
 
