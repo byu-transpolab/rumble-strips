@@ -38,6 +38,7 @@ tar_option_set(
 ##target list#########################################
 
 source("R/functions.R")
+source("R/wavetronix.R")
 
 list(
   # Download Google Sheets as Excel files before anything else
@@ -188,7 +189,18 @@ list(
   tar_target(
     save_summary,
     write_csv(final_summary, "data/temp_data/station_summary")
-  )
+  ),
+
+
+
+  ## ===== ANALYSIS =====
+  tar_target(observations, read_observations("data/observation_data.csv")),
+  tar_target(wavetronix, read_wavetronix_folder("data/wavetronix"))
+
+
+
+
+
 )
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
