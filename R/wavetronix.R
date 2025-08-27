@@ -13,7 +13,7 @@ read_wavetronix <- function(file_path) {
 
   df |>
     dplyr::transmute(
-      road = road,
+      site = road,
       unit = unit,
       lane = stringr::str_remove(`LANE/APPROACH NAME`, "LANE_"),
       volume = VOLUME,
@@ -23,8 +23,10 @@ read_wavetronix <- function(file_path) {
       headway = HEADWAY,
       gap = GAP,
       sensor_time = lubridate::as_datetime(`SENSOR TIME (MM/dd/yy  HH:mm:ss)`, format = "%m/%d/%y %H:%M:%S"),
+      date = lubridate::date(sensor_time),
       interval = `INTERVAL (sec)`
-  )
+  ) |>
+    dplyr::filter(lane != "03")
 
 }
 
@@ -43,7 +45,18 @@ read_wavetronix_folder <- function(folder_path) {
   # Read each file
   dfs <- purrr::map(files, read_wavetronix) |>
     # Combine into a single data frame
-    dplyr::bind_rows(dfs)
+    dplyr::bind_rows()
   
   dfs
+}
+
+read_observations <- function(file_path) {
+
+  read_csv(file_path) |>
+    mutate(
+      strip_spacing = ifelse(is.na(strip_spacing), 0, strip_spacing),
+      strip_spacing = as_factor(strip_spacing),
+      date = lubridate::as_date(date, format = "%m/%d/%y"))
+
+
 }
