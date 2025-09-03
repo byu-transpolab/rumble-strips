@@ -26,6 +26,7 @@ wavetronix |>
   summarise(speed_85 = mean(speed_85))
 ```
 
+This is a t-test of means for one road comparing 35 ft spacing with no rumble strips.
 ```{r wtt}
 groups <- wavetronix |>
   group_by(site, unit, strip_spacing) |> 
@@ -53,5 +54,5 @@ list <- wlms$model |> setNames(wlms$site)
 
 
 ```{r}
-modelsummary(list, estimate = "{estimate} ({statistic})")
+modelsummary(list,  stars = TRUE)
 ```
