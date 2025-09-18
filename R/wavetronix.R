@@ -83,26 +83,48 @@ get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
     mutate(cumulative = cumsum(total))
 }
 
-# read simple camera_top file that you showed (time,event)
+# read camera_top files (time,event)
 read_camera_top <- function(path) {
   df <- readr::read_csv(path, col_names = FALSE, show_col_types = FALSE)
   names(df) <- c("time_str", "event")
   date_code <- stringr::str_extract(basename(path), "^\\d{8}")
   df <- df %>%
-    mutate(time_str = sub(":(\\d{1,3})$", ".\\1", time_str),
-           datetime = as.POSIXct(paste0(date_code, " ", time_str),
-                                 format = "%Y%m%d %H:%M:%OS", tz = Sys.timezone()))
+    mutate(time_str = sub(":(\\d{1,3})$", ".\\1", time_str))
   tibble(file = path, date_code = date_code, events = list(df))
 }
 
 plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
+  # wdf_sub: tibble with columns time (POSIXct) and cumulative
+  # camera_meta: tibble/list row with date_code and events (events is a tibble with time_str and event)
+  tz <- if (!is.null(attr(wdf_sub$time, "tzone")) && nzchar(attr(wdf_sub$time, "tzone"))) {
+    attr(wdf_sub$time, "tzone")
+  } else {
+    Sys.timezone()
+  }
+
+  # Extract camera event times (strings like "HH:MM:SS.SSS")
+  cam_times_posix <- NULL
+  if (!is.null(camera_meta) && !is.null(camera_meta$events) && length(camera_meta$events) >= 1) {
+    cam_df <- camera_meta$events[[1]]
+    if (nrow(cam_df) > 0 && "time_str" %in% names(cam_df)) {
+      # compose full datetime using date_code (YYYYMMDD) + time_str and parse fractional seconds
+      date_code <- camera_meta$date_code
+      cam_times_posix <- as.POSIXct(paste(date_code, cam_df$time_str),
+                                    format = "%Y%m%d %H:%M:%OS",
+                                    tz = tz)
+      cam_times_posix <- cam_times_posix[!is.na(cam_times_posix)]
+    }
+  }
+
   p <- ggplot(wdf_sub, aes(x = time, y = cumulative)) +
     geom_line(color = "steelblue") +
     theme_minimal() + labs(x = "Time", y = "Cumulative volume")
-  cam_times <- camera_meta$events[[1]]$datetime
-  if (length(cam_times) && !all(is.na(cam_times))) {
-    p <- p + geom_vline(xintercept = as.numeric(cam_times), color = "red", linetype = "dashed")
+
+  if (!is.null(cam_times_posix) && length(cam_times_posix) > 0) {
+    p <- p + geom_vline(xintercept = as.numeric(cam_times_posix),
+                        color = "red", linetype = "dashed")
   }
+
   dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
   ggsave(out_path, plot = p, width = 8, height = 4.5)
   out_path
