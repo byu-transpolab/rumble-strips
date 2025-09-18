@@ -194,27 +194,14 @@ list(
 
 
   ## ===== ANALYSIS =====
-  tar_target(observations, read_observations("data/observation_data.csv")),
+  tar_target(observations_file, "data/observation_data.csv", format = "file"),
+  tar_target(observations, read_observations(observations_file)),
 
   # puts all wavetronix data into one dataframe
   tar_target(wavetronix, read_wavetronix_folder("data/wavetronix")),
 
-  # list of camera_top files
-  tar_target(
-    list_camera_top_files, 
-    list.files("data/camera_top", pattern = "ct\\.csv$", full.names = TRUE),   
-  ),
-
-  # read each camera_top file
-  # outputs a tibble with columns: file, date_code, events
-  #   file is the file path, 
-  #   date_code is the YYYYMMDD date string extracted from the file name
-  #   events is a data frame with columns time_str and event
-  tar_target(
-    camera_top_data,
-    read_camera_top(list_camera_top_files),
-    pattern = map(list_camera_top_files)
-  ),
+  # put all camera_top data into one dataframe
+  tar_target(camera_top_data, get_camera_top_data("data/camera_top")),
 
   # get wavetronix data for each camera_top date
   tar_target(
