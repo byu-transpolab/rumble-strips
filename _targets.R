@@ -206,6 +206,10 @@ list(
   ),
 
   # read each camera_top file
+  # outputs a tibble with columns: file, date_code, events
+  #   file is the file path, 
+  #   date_code is the YYYYMMDD date string extracted from the file name
+  #   events is a data frame with columns time_str and event
   tar_target(
     camera_top_data,
     read_camera_top(list_camera_top_files),
@@ -223,7 +227,10 @@ list(
   tar_target(
     displacement_plots,
     {
-      out <- file.path("output", paste0("displacement_plot_", camera_top_data$date_code, ".svg"))
+      # use the branch's file name (camera_top_data$file), remove the "-ct.csv" suffix
+      base <- basename(camera_top_data$file)
+      name <- sub("-ct\\.csv$", "", base)         # remove trailing -ct.csv
+      out <- file.path("output", paste0("disp_plot_", name, ".svg"))
       plot_cumulative_with_camera(wavetronix_for_camera_top, camera_top_data, out)
     },
     pattern = map(camera_top_data, wavetronix_for_camera_top),
