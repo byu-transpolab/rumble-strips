@@ -71,10 +71,12 @@ read_observations <- function(file_path) {
 ### Helper functions for reading camera top files and wavetronix files
 
 # return per-date aggregated wavetronix (time, total, cumulative)
-get_wavetronix_for_date <- function(combined_df, date_code) {
+get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
   target_date <- as.Date(date_code, format = "%Y%m%d")
   combined_df %>%
     filter(date == target_date) %>%
+    # keep only requested lane (accept "1" or "01", etc.)
+    filter(stringr::str_detect(lane, paste0("^0*", lane_value, "$"))) %>%
     group_by(time = sensor_time) %>%
     summarise(total = sum(as.numeric(volume), na.rm = TRUE), .groups = "drop") %>%
     arrange(time) %>%
