@@ -202,7 +202,7 @@ list(
   # list of camera_top files
   tar_target(
     camera_files,
-    list.files("data/camera_top", pattern = "_ct\\.csv$", full.names = TRUE),
+    list.files("data/camera_top", pattern = "ct\\.csv$", full.names = TRUE),
     format = "file"
   ),
 
