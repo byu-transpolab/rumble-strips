@@ -201,32 +201,32 @@ list(
 
   # list of camera_top files
   tar_target(
-    camera_files, 
+    list_camera_top_files, 
     list.files("data/camera_top", pattern = "ct\\.csv$", full.names = TRUE),   
   ),
 
   # read each camera_top file
   tar_target(
-    camera_meta,
-    read_camera_top(camera_files),
-    pattern = map(camera_files)
+    camera_top_data,
+    read_camera_top(list_camera_top_files),
+    pattern = map(list_camera_top_files)
   ),
 
   # get wavetronix data for each camera_top date
   tar_target(
-    wavetronix_for_camera,
-    get_wavetronix_for_date(wavetronix, camera_meta$date_code),
-    pattern = map(camera_meta)
+    wavetronix_for_camera_top,
+    get_wavetronix_for_date(wavetronix, camera_top_data$date_code),
+    pattern = map(camera_top_data)
   ),
 
   # plot wavetronix cumulative with camera_top events
   tar_target(
-    camera_plots,
+    displacement_plots,
     {
-      out <- file.path("output", paste0("displacement_plot_", camera_meta$date_code, ".svg"))
-      plot_cumulative_with_camera(wavetronix_for_camera, camera_meta, out)
+      out <- file.path("output", paste0("displacement_plot_", camera_top_data$date_code, ".svg"))
+      plot_cumulative_with_camera(wavetronix_for_camera_top, camera_top_data, out)
     },
-    pattern = map(camera_meta, wavetronix_for_camera),
+    pattern = map(camera_top_data, wavetronix_for_camera_top),
     format = "file"
   )
 )
