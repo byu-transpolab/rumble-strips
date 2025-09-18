@@ -129,7 +129,7 @@ list(
   # Plot each station
   tar_target(
     plots,
-    map2(
+      map2(
       hourly_volumes$vector, 
       hourly_volumes$station_number, 
       ~ ggsave(
@@ -194,9 +194,14 @@ list(
 
 
   ## ===== ANALYSIS =====
-  tar_target(observations, read_observations("data/observation_data.csv")),
-  tar_target(wavetronix, read_wavetronix_folder("data/wavetronix"))
+  # tar_target(observations, read_observations("data/observation_data.csv")),
+  # tar_target(wavetronix, read_wavetronix_folder("data/wavetronix"))
 
+  # Cumulate wavetronix traffic volume 
+  tar_target(
+    cumulate_wavetronix,
+    traffic_total()
+  )
 
 
 
