@@ -1,3 +1,9 @@
+library(tidyverse)
+library(readr)
+library(readxl)
+library(lubridate)
+library(ggplot2)
+
 #' Read in a single raw file from Wavetonix
 #' 
 #' @param file_path path to Wavetronix file
@@ -60,3 +66,43 @@ read_observations <- function(file_path) {
 
 
 }
+
+
+### Helper functions for reading camera top files and wavetronix files
+
+# return per-date aggregated wavetronix (time, total, cumulative)
+get_wavetronix_for_date <- function(combined_df, date_code) {
+  target_date <- as.Date(date_code, format = "%Y%m%d")
+  combined_df %>%
+    filter(date == target_date) %>%
+    group_by(time = sensor_time) %>%
+    summarise(total = sum(as.numeric(volume), na.rm = TRUE), .groups = "drop") %>%
+    arrange(time) %>%
+    mutate(cumulative = cumsum(total))
+}
+
+# read simple camera_top file that you showed (time,event)
+read_camera_top <- function(path) {
+  df <- readr::read_csv(path, col_names = FALSE, show_col_types = FALSE)
+  names(df) <- c("time_str", "event")
+  date_code <- stringr::str_extract(basename(path), "^\\d{8}")
+  df <- df %>%
+    mutate(time_str = sub(":(\\d{1,3})$", ".\\1", time_str),
+           datetime = as.POSIXct(paste0(date_code, " ", time_str),
+                                 format = "%Y%m%d %H:%M:%OS", tz = Sys.timezone()))
+  tibble(file = path, date_code = date_code, events = list(df))
+}
+
+plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
+  p <- ggplot(wdf_sub, aes(x = time, y = cumulative)) +
+    geom_line(color = "steelblue") +
+    theme_minimal() + labs(x = "Time", y = "Cumulative volume")
+  cam_times <- camera_meta$events[[1]]$datetime
+  if (length(cam_times) && !all(is.na(cam_times))) {
+    p <- p + geom_vline(xintercept = as.numeric(cam_times), color = "red", linetype = "dashed")
+  }
+  dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
+  ggsave(out_path, plot = p, width = 8, height = 4.5)
+  out_path
+}
+

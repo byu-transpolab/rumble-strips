@@ -194,18 +194,42 @@ list(
 
 
   ## ===== ANALYSIS =====
-  # tar_target(observations, read_observations("data/observation_data.csv")),
-  # tar_target(wavetronix, read_wavetronix_folder("data/wavetronix"))
+  tar_target(observations, read_observations("data/observation_data.csv")),
 
-  # Cumulate wavetronix traffic volume 
+  # puts all wavetronix data into one dataframe
+  tar_target(wavetronix, read_wavetronix_folder("data/wavetronix")),
+
+  # list of camera_top files
   tar_target(
-    cumulate_wavetronix,
-    traffic_total()
+    camera_files,
+    list.files("data/camera_top", pattern = "_ct\\.csv$", full.names = TRUE),
+    format = "file"
+  ),
+
+  # read each camera_top file
+  tar_target(
+    camera_meta,
+    read_camera_top(camera_files),
+    pattern = map(camera_files)
+  ),
+
+  # get wavetronix data for each camera_top date
+  tar_target(
+    wavetronix_for_camera,
+    get_wavetronix_for_date(wavetronix, camera_meta$date_code),
+    pattern = map(camera_meta)
+  ),
+
+  # plot wavetronix cumulative with camera_top events
+  tar_target(
+    camera_plots,
+    {
+      out <- file.path("output", paste0("displacement_plot_", camera_meta$date_code, ".svg"))
+      plot_cumulative_with_camera(wavetronix_for_camera, camera_meta, out)
+    },
+    pattern = map(camera_meta, wavetronix_for_camera),
+    format = "file"
   )
-
-
-
-
 )
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
