@@ -120,9 +120,23 @@ plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
     geom_line(color = "steelblue") +
     theme_minimal() + labs(x = "Time", y = "Cumulative volume")
 
+
   if (!is.null(cam_times_posix) && length(cam_times_posix) > 0) {
-    p <- p + geom_vline(xintercept = as.numeric(cam_times_posix),
-                        color = "red", linetype = "dashed")
+    # normalize event values and match times
+    ev <- tolower(trimws(cam_df$event))
+    times_o <- cam_times_posix[ev == "o"]
+    times_i <- cam_times_posix[ev == "i"]
+    times_u <- cam_times_posix[ev == "u"]
+
+    if (length(times_o) > 0) {
+      p <- p + geom_vline(xintercept = as.numeric(times_o), color = "green", linetype = "dashed")
+    }
+    if (length(times_i) > 0) {
+      p <- p + geom_vline(xintercept = as.numeric(times_i), color = "yellow", linetype = "dashed")
+    }
+    if (length(times_u) > 0) {
+      p <- p + geom_vline(xintercept = as.numeric(times_u), color = "red", linetype = "dashed")
+    }
   }
 
   dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
