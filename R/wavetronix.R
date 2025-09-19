@@ -141,11 +141,20 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, observation
     ) |>
     dplyr::select(site, sensor_time, cumulative)
 
+  wspeed <- wavetronix |>
+    group_by(site, date) |>
+    summarise(speed = round(mean(speed_85)))
+
+  observations
+
+  wcum <- left_join(wcum, observations |> 
+    select(site, date, strip_spacing), by = c("site", "date"))
+
   # test code to make sure data is working
   ggplot() + 
-    geom_line(data = wcum, aes(x = sensor_time, y = cumulative, group = date)) + 
+    geom_line(data = wcum |> filter(site == "i70"), aes(x = sensor_time, y = cumulative, group = date)) + 
     geom_vline(data = camera_top_data, aes(xintercept = time, color = event)) +
-    facet_wrap(~date, scales = "free_x")
+    facet_wrap(~strip_spacing, scales = "free_x")
     
 
 
