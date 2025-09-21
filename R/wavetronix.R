@@ -86,7 +86,19 @@ get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
 
 # Return cummulative wavetronix volumes per date with average speed per date
 # tibble with columns: site, date, time, cumulative, speed
-cumulate_volume <- function(combined_df, lane_value = "01", unit_value = "w1") {
+cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "01", unit_value = "w1") {
+  # prepare observations table if provided (accepts path or data.frame)
+  obs_df <- NULL
+  if (!is.null(observation_data)) {
+    if (is.character(observation_data) && length(observation_data) == 1) {
+      obs_df <- readr::read_csv(observation_data, show_col_types = FALSE)
+    } else {
+      obs_df <- observation_data
+    }
+    obs_df <- obs_df %>%
+      dplyr::select(site, date, strip_spacing)
+  }
+
   combined_df %>%
     # filter to the unit/lane of interest (defaults to w1 lane 01)
     dplyr::filter(unit == unit_value) %>%
@@ -109,13 +121,25 @@ cumulate_volume <- function(combined_df, lane_value = "01", unit_value = "w1") {
   # compute 85th percentile speed per site per day
   daily_speed <- df %>%
     dplyr::group_by(site, date) %>%
-    dplyr::summarise(speed = round(mean(speed_85)))
+    dplyr::summarise(
+      speed = if (all(is.na(speed_85))) NA_real_ else as.numeric(stats::quantile(speed_85, probs = 0.85, na.rm = TRUE)),
+      .groups = "drop"
+    )
 
-  # join speed into the time series, format time as HHMMSS string, and return columns
-  daily_by_time %>%
-    dplyr::left_join(daily_speed, by = c("site", "date")) %>%
+  result <- daily_by_time %>%
+    dplyr::left_join(daily_speed, by = c("site", "date"))
+
+  if (!is.null(obs_df)) {
+    # preserve obs_df's strip_spacing type by joining directly
+    result <- result %>% dplyr::left_join(obs_df, by = c("site", "date"))
+  } else {
+    # add a placeholder column when no observations are provided
+    result <- result %>% dplyr::mutate(strip_spacing = NA)
+  }
+
+  result %>%
     dplyr::mutate(time = format(time, "%H%M%S")) %>%
-    dplyr::select(site, date, time, cumulative, speed)
+    dplyr::select(site, date, time, cumulative, speed, strip_spacing)
 }
 
 # read camera_top files (time,event)
@@ -158,7 +182,7 @@ get_camera_top_data <- function(folder_path) {
   dfs
 }
 
-make_displacement_plot_data <- function(wavetronix, camera_top_data, observation_data) {
+make_displacement_plot_data <- function(wavetronix, camera_top_data) {
 
   wcum <- wavetronix |>
     # only keep w1, because that's the unit where the 

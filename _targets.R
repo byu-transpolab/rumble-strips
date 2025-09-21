@@ -207,7 +207,7 @@ list(
 
   # calculate cumulative traffic volume for each day from Wavetronix data
   # returns tibble with: time <dttm>, total, cumulative
-  tar_target(cumulated_volume, cumulate_volume(wavetronix)),
+  tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),
 
   # plot wavetronix cumulative with camera_top events
   tar_target(
