@@ -253,24 +253,39 @@ plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
 # prepare tibble for statistical tests
 prepare_speed_data <- function(wavetronix, observations) {
   wavetronix %>%
+    dplyr::filter(lane == "01") %>%
     select(site, unit, date, time = sensor_time, speed_85) %>%
-    mutate(speed_85 = as.numeric(speed_85)) %>%
+    mutate(unit = as.factor(as.character(unit)),
+           speed_85 = as.numeric(speed_85)) %>%
     left_join(observations %>% select(site, date, strip_spacing), by = c("site", "date")) %>%
     filter(!is.na(speed_85), !is.na(strip_spacing))
 }
 
 
 # perform t-tests on speed_85 grouped by site, unit, strip_spacing
-t_test <- function(wavetronix) {
+paired_test <- function(speed_data) {
+  grouped <- speed_data %>%
+    group_by(site, strip_spacing) %>%
+    nest()
 
+  results <- grouped %>%
+    mutate(
+    t_test = map(data, ~ {
+      wide <- .x %>%
+        select(time, unit, speed_85) %>%
+        pivot_wider(names_from = unit, values_from = speed_85) %>%
+        filter(!is.na(w1), !is.na(w2))
 
-
- groups <- wavetronix |>
-  group_by(site, unit, strip_spacing) |> 
-  select(speed_85) |>
-  nest(-site, -unit, -strip_spacing) 
-
-t.test(groups$data[[5]], groups$data[[7]])
-t.test(groups$data[[9]], groups$data[[10]])
+      if ("w1" %in% names(wide) && "w2" %in% names(wide) &&
+          sum(!is.na(wide$w1)) >= 2 && sum(!is.na(wide$w2)) >= 2) {
+        t_test(wide, w1 ~ w2, paired = TRUE)
+      } else {
+        tibble(statistic = NA, p = NA)
+      }
+    })
+  ) %>%
+  unnest(t_test)
+  results
 }
+
 

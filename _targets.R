@@ -233,7 +233,8 @@ list(
   # for use in statistical tests of 85th percentile speed
   tar_target(speed_data, prepare_speed_data(wavetronix, observations)),
 
-  tar_target(basic_t_test, t_test(wavetronix))
+  # t-test of 85th percentile speed by unit (w1 vs w2)
+  tar_target(paired_t_test, paired_test(speed_data))
 )
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
