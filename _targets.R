@@ -197,18 +197,17 @@ list(
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
   tar_target(observations, read_observations(observations_file)),
 
-  # puts all wavetronix data into one dataframe
+  # puts all wavetronix data into one dataframe with columns:
+  # site, unit, lane, volume, occupancy, speed, speed_85, headway, gap, sensor_time, date, interval
   tar_target(wavetronix, read_wavetronix_folder("data/wavetronix")),
 
-  # put all camera_top data into one dataframe
+  # put all camera_top data into one dataframe with columns:
+  # time <dttm>, event, site
   tar_target(camera_top_data, get_camera_top_data("data/camera_top")),
 
-  # get wavetronix data for each camera_top date
-  tar_target(
-    wavetronix_for_camera_top,
-    get_wavetronix_for_date(wavetronix, camera_top_data$date_code),
-    pattern = map(camera_top_data)
-  ),
+  # calculate cumulative traffic volume for each day from Wavetronix data
+  # returns tibble with: time <dttm>, total, cumulative
+  tar_target(cumulated_volume, cumulate_volume(wavetronix)),
 
   # plot wavetronix cumulative with camera_top events
   tar_target(
@@ -222,7 +221,7 @@ list(
     },
     pattern = map(camera_top_data, wavetronix_for_camera_top),
     format = "file"
-  )
+  )   
 )
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.

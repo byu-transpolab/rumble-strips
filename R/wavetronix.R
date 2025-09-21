@@ -70,6 +70,7 @@ read_observations <- function(file_path) {
 
 ### Helper functions for reading camera top files and wavetronix files
 
+# depreciated
 # return per-date aggregated wavetronix (time, total, cumulative)
 get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
   target_date <- as.Date(date_code, format = "%Y%m%d")
@@ -81,6 +82,39 @@ get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
     summarise(total = sum(as.numeric(volume), na.rm = TRUE), .groups = "drop") %>%
     arrange(time) %>%
     mutate(cumulative = cumsum(total))
+}
+
+# Return cummulative wavetronix volumes per date with average speed per date
+# tibble with columns: date, time, cumulative, speed
+cumulate_volume <- function(combined_df, lane_value = "01", unit_value = "w1") {
+  combined_df %>%
+    # filter to the unit/lane of interest (defaults to w1 lane 01)
+    dplyr::filter(unit == unit_value) %>%
+    dplyr::filter(stringr::str_detect(lane, paste0("^0*", lane_value, "$"))) %>%
+    # ensure numeric columns
+    dplyr::mutate(
+      volume = as.numeric(volume),
+      speed_85 = as.numeric(speed_85)
+    ) -> df
+
+  # per-day total by timestamp
+  daily_by_time <- df %>%
+    dplyr::group_by(date, time = sensor_time) %>%
+    dplyr::summarise(total = sum(volume, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::arrange(date, time) %>%
+    dplyr::group_by(date) %>%
+    dplyr::mutate(cumulative = cumsum(total)) %>%
+    dplyr::ungroup()
+
+  # compute 85th percentile speed per day
+  daily_speed <- df %>%
+    dplyr::group_by(date) %>%
+    dplyr::summarise(speed = if (all(is.na(speed_85))) NA_real_ else as.numeric(stats::quantile(speed_85, probs = 0.85, na.rm = TRUE)), .groups = "drop")
+
+  # join speed into the time series and return requested columns
+  daily_by_time %>%
+    dplyr::left_join(daily_speed, by = "date") %>%
+    dplyr::select(date, time, cumulative, speed)
 }
 
 # read camera_top files (time,event)
