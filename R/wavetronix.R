@@ -267,24 +267,42 @@ paired_test <- function(speed_data) {
   grouped <- speed_data %>%
     group_by(site, strip_spacing) %>%
     nest()
-
+  
   results <- grouped %>%
     mutate(
-    t_test = map(data, ~ {
-      wide <- .x %>%
-        select(time, unit, speed_85) %>%
-        pivot_wider(names_from = unit, values_from = speed_85) %>%
-        filter(!is.na(w1), !is.na(w2))
+      t_test = map(data, ~ {
+        wide <- .x %>%
+          select(time, unit, speed_85) %>%
+          pivot_wider(names_from = unit, values_from = speed_85) %>%
+          filter(!is.na(w1), !is.na(w2))
+        
+        if ("w1" %in% names(wide) && "w2" %in% names(wide) &&
+            nrow(wide) >= 2) {
+          test <- tryCatch(
+            t.test(wide$w1, wide$w2, paired = TRUE),
+            error = function(e) NULL
+          )
+          
+          if (!is.null(test)) {
+            tibble(
+              statistic = test$statistic,
+              p_value = test$p.value,
+              mean_diff = test$estimate,
+              conf_low = test$conf.int[1],
+              conf_high = test$conf.int[2]
+            )
+          } else {
+            tibble(statistic = NA, p_value = NA, mean_diff = NA,
+                   conf_low = NA, conf_high = NA)
+          }
+        } else {
+          tibble(statistic = NA, p_value = NA, mean_diff = NA,
+                 conf_low = NA, conf_high = NA)
+        }
+      })
+    ) %>%
+    unnest(t_test)
 
-      if ("w1" %in% names(wide) && "w2" %in% names(wide) &&
-          sum(!is.na(wide$w1)) >= 2 && sum(!is.na(wide$w2)) >= 2) {
-        t_test(wide, w1 ~ w2, paired = TRUE)
-      } else {
-        tibble(statistic = NA, p = NA)
-      }
-    })
-  ) %>%
-  unnest(t_test)
   results
 }
 
