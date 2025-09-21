@@ -111,9 +111,10 @@ cumulate_volume <- function(combined_df, lane_value = "01", unit_value = "w1") {
     dplyr::group_by(date) %>%
     dplyr::summarise(speed = if (all(is.na(speed_85))) NA_real_ else as.numeric(stats::quantile(speed_85, probs = 0.85, na.rm = TRUE)), .groups = "drop")
 
-  # join speed into the time series and return requested columns
+  # convert POSIXct 'time' to hhmmss (character) and return requested columns
   daily_by_time %>%
     dplyr::left_join(daily_speed, by = "date") %>%
+    # dplyr::mutate(time = format(time, "%H%M%S")) %>% # if you want time as string
     dplyr::select(date, time, cumulative, speed)
 }
 
