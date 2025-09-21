@@ -184,42 +184,16 @@ get_camera_top_data <- function(folder_path) {
 
 make_displacement_plot_data <- function(wavetronix, camera_top_data) {
 
-  wcum <- wavetronix |>
-    # only keep w1, because that's the unit where the 
-    # rumble strips are installed
-    dplyr::filter(unit == "w1") |>
-    # only keep lane 01 data because that's the lane where
-    # the rumble strips are installed
-    dplyr::filter(lane == "01") |>
-    dplyr::group_by(site, date) |>
-    dplyr::arrange(sensor_time) |>
-    dplyr::mutate(
-      cumulative = cumsum(volume)
-      # TODO: make a time column that is just the time of
-      # day for the observation without the date
-    ) |>
-    dplyr::select(site, sensor_time, cumulative)
-
-  wspeed <- wavetronix |>
-    group_by(site, date) |>
-    summarise(speed = round(mean(speed_85)))
-
-  observations
-
-  wcum <- left_join(wcum, observations |> 
-    select(site, date, strip_spacing), by = c("site", "date"))
-
   # test code to make sure data is working
-  ggplot() + 
-    geom_line(data = wcum |> filter(site == "i70"), aes(x = sensor_time, y = cumulative, group = date)) + 
+  p <- ggplot() + 
+    geom_line(data = wavetronix |> filter(site == "i70"), aes(x = time, y = cumulative, group = date)) + 
     geom_vline(data = camera_top_data, aes(xintercept = time, color = event)) +
     facet_wrap(~strip_spacing, scales = "free_x")
+
+  out_path <- "output/displacement_plot.svg"
+  ggsave(out_path, plot = p, width = 8, height = 4.5)
+  out_path
     
-
-
-
-
-
 }
 
 plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
@@ -271,5 +245,32 @@ plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
   dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
   ggsave(out_path, plot = p, width = 8, height = 4.5)
   out_path
+}
+
+
+## Statistical analysis of speed ##
+
+# prepare tibble for statistical tests
+prepare_speed_data <- function(wavetronix, observations) {
+  wavetronix %>%
+    select(site, unit, date, time = sensor_time, speed_85) %>%
+    mutate(speed_85 = as.numeric(speed_85)) %>%
+    left_join(observations %>% select(site, date, strip_spacing), by = c("site", "date")) %>%
+    filter(!is.na(speed_85), !is.na(strip_spacing))
+}
+
+
+# perform t-tests on speed_85 grouped by site, unit, strip_spacing
+t_test <- function(wavetronix) {
+
+
+
+ groups <- wavetronix |>
+  group_by(site, unit, strip_spacing) |> 
+  select(speed_85) |>
+  nest(-site, -unit, -strip_spacing) 
+
+t.test(groups$data[[5]], groups$data[[7]])
+t.test(groups$data[[9]], groups$data[[10]])
 }
 

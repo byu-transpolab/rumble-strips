@@ -6,6 +6,7 @@
 # Load packages required to define the pipeline:
 library(targets)
 library(tidyverse)
+library(rstatix)
 library(googledrive)
 library(readxl)
 library(mlogit)
@@ -209,19 +210,30 @@ list(
   # returns tibble with: time <dttm>, total, cumulative
   tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),
 
+  # Plot volume and events for each day
+  tar_target(displacement_plots, 
+  make_displacement_plot_data(cumulated_volume, camera_top_data)),
+
   # plot wavetronix cumulative with camera_top events
-  tar_target(
-    displacement_plots,
-    {
-      # use the branch's file name (camera_top_data$file), remove the "-ct.csv" suffix
-      base <- basename(camera_top_data$file)
-      name <- sub("-ct\\.csv$", "", base)         # remove trailing -ct.csv
-      out <- file.path("output", paste0("disp_plot_", name, ".svg"))
-      plot_cumulative_with_camera(wavetronix_for_camera_top, camera_top_data, out)
-    },
-    pattern = map(camera_top_data, wavetronix_for_camera_top),
-    format = "file"
-  )   
+  # tar_target(
+  #   displacement_plots2,
+  #   {
+  #     # use the branch's file name (camera_top_data$file), remove the "-ct.csv" suffix
+  #    base <- basename(camera_top_data$file)
+  #    name <- sub("-ct\\.csv$", "", base)         # remove trailing -ct.csv
+  #    out <- file.path("output", paste0("disp_plot_", name, ".svg"))
+  #    plot_cumulative_with_camera(wavetronix_for_camera_top, camera_top_data, out)
+  #  },
+  #  pattern = map(camera_top_data, wavetronix_for_camera_top),
+  #  format = "file"
+  #)   
+
+  # create tibble from wavetronix data with columns:
+  # site, unit, date, time, speed_85, strip_spacing
+  # for use in statistical tests of 85th percentile speed
+  tar_target(speed_data, prepare_speed_data(wavetronix, observations)),
+
+  tar_target(basic_t_test, t_test(wavetronix))
 )
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
