@@ -182,18 +182,54 @@ get_camera_top_data <- function(folder_path) {
   dfs
 }
 
-make_displacement_plot_data <- function(wavetronix, camera_top_data) {
+make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir = "output") {
 
-  # test code to make sure data is working
-  p <- ggplot() + 
-    geom_line(data = wavetronix |> filter(site == "i70"), aes(x = time, y = cumulative, group = date)) + 
-    geom_vline(data = camera_top_data, aes(xintercept = time, color = event)) +
-    facet_wrap(~strip_spacing, scales = "free_x")
+  # Ensure datetime is properly formatted
+  wavetronix <- wavetronix %>%
+    mutate(datetime = ymd_hms(paste(date, str_pad(time, 6, pad = "0"))))
 
-  out_path <- "output/displacement_plot.svg"
-  ggsave(out_path, plot = p, width = 8, height = 4.5)
-  out_path
-    
+  # Create output directory if needed
+  if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+
+  # Get unique sites
+  sites <- unique(wavetronix$site)
+  output_paths <- list()
+
+  for (s in sites) {
+    wv_site <- wavetronix %>% filter(site == s)
+
+    # Get unique strip_spacing-date pairs for this site
+    spacing_dates <- wv_site %>%
+      group_by(site, strip_spacing) %>%
+      summarise(target_date = first(date), .groups = "drop")
+
+    # Filter wavetronix to only include rows matching spacing-date pairs
+    wv_filtered <- wv_site %>%
+      inner_join(spacing_dates, by = c("strip_spacing", "date" = "target_date"))
+
+    # Filter camera data to same site and matching dates
+    cam_filtered <- camera_top_data %>%
+      filter(site == s) %>%
+      mutate(date = as_date(time)) %>%
+      inner_join(spacing_dates, by = c("site", "date" = "target_date"))
+
+    # Plot
+    p <- ggplot() +
+      geom_line(data = wv_filtered,
+                aes(x = datetime, y = cumulative, color = as.factor(date))) +
+      geom_vline(data = cam_filtered,
+                 aes(xintercept = time, color = event), linetype = "dashed", alpha = 0.7) +
+      facet_wrap(~strip_spacing, scales = "free_x") +
+      labs(x = "Time", y = "Cumulative Volume") +
+      theme_minimal()
+
+    # Save plot
+    out_path <- file.path(output_dir, paste0("displacement_plot_", s, ".svg"))
+    ggsave(out_path, plot = p, width = 8, height = 4.5)
+    output_paths[[s]] <- out_path
+  }
+
+  return(output_paths)
 }
 
 plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
