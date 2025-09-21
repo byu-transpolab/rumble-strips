@@ -85,7 +85,7 @@ get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
 }
 
 # Return cummulative wavetronix volumes per date with average speed per date
-# tibble with columns: date, time, cumulative, speed
+# tibble with columns: site, date, time, cumulative, speed
 cumulate_volume <- function(combined_df, lane_value = "01", unit_value = "w1") {
   combined_df %>%
     # filter to the unit/lane of interest (defaults to w1 lane 01)
@@ -97,25 +97,25 @@ cumulate_volume <- function(combined_df, lane_value = "01", unit_value = "w1") {
       speed_85 = as.numeric(speed_85)
     ) -> df
 
-  # per-day total by timestamp
+  # per-site, per-day total by timestamp
   daily_by_time <- df %>%
-    dplyr::group_by(date, time = sensor_time) %>%
+    dplyr::group_by(site, date, time = sensor_time) %>%
     dplyr::summarise(total = sum(volume, na.rm = TRUE), .groups = "drop") %>%
-    dplyr::arrange(date, time) %>%
-    dplyr::group_by(date) %>%
+    dplyr::arrange(site, date, time) %>%
+    dplyr::group_by(site, date) %>%
     dplyr::mutate(cumulative = cumsum(total)) %>%
     dplyr::ungroup()
 
-  # compute 85th percentile speed per day
+  # compute 85th percentile speed per site per day
   daily_speed <- df %>%
-    dplyr::group_by(date) %>%
-    dplyr::summarise(speed = if (all(is.na(speed_85))) NA_real_ else as.numeric(stats::quantile(speed_85, probs = 0.85, na.rm = TRUE)), .groups = "drop")
+    dplyr::group_by(site, date) %>%
+    dplyr::summarise(speed = round(mean(speed_85)))
 
-  # convert POSIXct 'time' to hhmmss (character) and return requested columns
+  # join speed into the time series, format time as HHMMSS string, and return columns
   daily_by_time %>%
-    dplyr::left_join(daily_speed, by = "date") %>%
-    # dplyr::mutate(time = format(time, "%H%M%S")) %>% # if you want time as string
-    dplyr::select(date, time, cumulative, speed)
+    dplyr::left_join(daily_speed, by = c("site", "date")) %>%
+    dplyr::mutate(time = format(time, "%H%M%S")) %>%
+    dplyr::select(site, date, time, cumulative, speed)
 }
 
 # read camera_top files (time,event)
