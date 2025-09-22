@@ -200,8 +200,14 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
 
     # Get unique strip_spacing-date pairs for this site
     spacing_dates <- wv_site %>%
-      group_by(site, strip_spacing) %>%
-      summarise(target_date = first(date), .groups = "drop")
+  arrange(date) %>%
+  group_by(site, strip_spacing) %>%
+  slice(1) %>%  # keep only the first date per spacing
+  ungroup() %>%
+  mutate(strip_label = paste0(strip_spacing, " ft spacing, ", speed, " mph")) %>%
+  select(site, strip_spacing, date, strip_label) %>%
+  rename(target_date = date)
+
 
     # Filter wavetronix to only include rows matching spacing-date pairs
     wv_filtered <- wv_site %>%
@@ -216,11 +222,17 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
     # Plot
     p <- ggplot() +
       geom_line(data = wv_filtered,
-                aes(x = datetime, y = cumulative, color = as.factor(date))) +
+                aes(x = datetime, y = cumulative, group = date), color = "black") +
       geom_vline(data = cam_filtered,
-                 aes(xintercept = time, color = event), linetype = "dashed", alpha = 0.7) +
-      facet_wrap(~strip_spacing, scales = "free_x") +
-      labs(x = "Time", y = "Cumulative Volume") +
+             aes(xintercept = time, color = event),
+             linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
+      scale_color_manual(values = c(
+        "No movement" = "forestgreen",
+        "Movement detected" = "orange",
+        "Ineffective placement" = "red"
+      )) +
+      facet_wrap(~strip_label, scales = "free_x") +
+      labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
       theme_minimal()
 
     # Save plot
