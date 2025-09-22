@@ -210,23 +210,8 @@ list(
   # returns tibble with: time <dttm>, total, cumulative
   tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),
 
-  # Plot volume and events for each day
-  tar_target(displacement_plots, 
-  make_displacement_plot_data(cumulated_volume, camera_top_data)),
-
-  # plot wavetronix cumulative with camera_top events
-  # tar_target(
-  #   displacement_plots2,
-  #   {
-  #     # use the branch's file name (camera_top_data$file), remove the "-ct.csv" suffix
-  #    base <- basename(camera_top_data$file)
-  #    name <- sub("-ct\\.csv$", "", base)         # remove trailing -ct.csv
-  #    out <- file.path("output", paste0("disp_plot_", name, ".svg"))
-  #    plot_cumulative_with_camera(wavetronix_for_camera_top, camera_top_data, out)
-  #  },
-  #  pattern = map(camera_top_data, wavetronix_for_camera_top),
-  #  format = "file"
-  #)   
+  # Plot volume and events for each site
+  tar_target(displacement_plots, make_displacement_plot_data(cumulated_volume, camera_top_data)),  
 
   # create tibble from wavetronix data with columns:
   # site, unit, date, time, speed_85, strip_spacing
@@ -234,7 +219,9 @@ list(
   tar_target(speed_data, prepare_speed_data(wavetronix, observations)),
 
   # t-test of 85th percentile speed by unit (w1 vs w2)
-  tar_target(paired_t_test, paired_test(speed_data))
+  tar_target(paired_t_test, paired_test(speed_data)), 
+
+  tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test))
 )
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
@@ -244,3 +231,6 @@ list(
 #Next Step: Can we run this code on data files of our own making?
 #Can we make it easier for us to run our own data sets by asking for an input prompt for . . .  
 # . . . the code to prompt an input file name for it to run?
+
+
+

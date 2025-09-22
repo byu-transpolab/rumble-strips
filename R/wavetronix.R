@@ -354,4 +354,30 @@ paired_test <- function(speed_data) {
   results
 }
 
+plot_confidence_bounds <- function(paired_tibble) {
+
+  # Prepare data for plotting
+  plot_data <- paired_tibble %>%
+    mutate(strip_spacing = as.factor(strip_spacing)) %>%
+    filter(!is.na(conf_low), !is.na(conf_high)) %>%
+    mutate(id = row_number())
+
+  p <- ggplot(plot_data, aes(x = strip_spacing, y = mean_diff)) +
+    geom_linerange(aes(ymin = conf_low, ymax = conf_high, color = site),
+                   position = position_dodge(width = 0.6), linewidth = 1.2) +
+    geom_point(aes(y = mean_diff, color = site),
+               position = position_dodge(width = 0.6), size = 2) +
+    facet_wrap(~ site, scales = "free_x") +
+    theme_minimal(base_size = 14) +
+    labs(
+      x = "Strip Spacing",
+      y = "Speed Difference (w1 - w2)",
+      color = "Site"
+    )
+
+
+
+  ggsave("output/confidence_bounds_boxplot.svg", plot = p, width = 10, height = 6)
+  p  
+}
 
