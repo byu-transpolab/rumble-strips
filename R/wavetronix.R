@@ -327,7 +327,7 @@ paired_test <- function(speed_data) {
         if ("w1" %in% names(wide) && "w2" %in% names(wide) &&
             nrow(wide) >= 2) {
           test <- tryCatch(
-            t.test(wide$w1, wide$w2, paired = TRUE),
+            t.test(wide$w2, wide$w1, paired = TRUE),
             error = function(e) NULL
           )
           
@@ -354,14 +354,31 @@ paired_test <- function(speed_data) {
   results
 }
 
-plot_confidence_bounds <- function(paired_tibble) {
+plot_confidence_bounds <- function(paired_t_test) {
 
   # Prepare data for plotting
-  plot_data <- paired_tibble %>%
+  plot_data <- paired_t_test %>%
     mutate(strip_spacing = as.factor(strip_spacing)) %>%
-    filter(!is.na(conf_low), !is.na(conf_high)) %>%
-    mutate(id = row_number())
+    filter(!is.na(conf_low), !is.na(conf_high))
 
+  ggplot(plot_data, aes(y = site, x = mean_diff, 
+         xmin = conf_low, xmax = conf_high, 
+         color = strip_spacing)) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+    geom_errorbar(position = "dodge", height = 0.4, linewidth = 1) +
+    theme_minimal() +     
+    labs(
+      x = "Mean Speed Difference",
+      color = "Strip Spacing",
+      y = "Site"
+    ) 
+
+
+    geom_point(aes(y = strip_spacing), size = 3) +
+    facet_wrap(~ site, scales = "free_y") +
+    theme_minimal(base_size = 14) +
++
+    geom_vline(xintercept = 0, linetype = "dashed", color = "red")
   p <- ggplot(plot_data, aes(x = strip_spacing, y = mean_diff)) +
     geom_linerange(aes(ymin = conf_low, ymax = conf_high, color = site),
                    position = position_dodge(width = 0.6), linewidth = 1.2) +
