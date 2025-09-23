@@ -60,8 +60,8 @@ read_observations <- function(file_path) {
 
   read_csv(file_path) |>
     mutate(
-      strip_spacing = ifelse(is.na(strip_spacing), 0, strip_spacing),
-      strip_spacing = as_factor(strip_spacing),
+      spacing_type = ifelse(is.na(spacing_type), 0, spacing_type),
+      spacing_type = as_factor(spacing_type),
       date = lubridate::as_date(date, format = "%m/%d/%y"))
 
 
@@ -96,7 +96,7 @@ cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "
       obs_df <- observation_data
     }
     obs_df <- obs_df %>%
-      dplyr::select(site, date, strip_spacing)
+      dplyr::select(site, date, spacing_type)
   }
 
   combined_df %>%
@@ -130,16 +130,16 @@ cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "
     dplyr::left_join(daily_speed, by = c("site", "date"))
 
   if (!is.null(obs_df)) {
-    # preserve obs_df's strip_spacing type by joining directly
+    # preserve obs_df's spacing_type type by joining directly
     result <- result %>% dplyr::left_join(obs_df, by = c("site", "date"))
   } else {
     # add a placeholder column when no observations are provided
-    result <- result %>% dplyr::mutate(strip_spacing = NA)
+    result <- result %>% dplyr::mutate(spacing_type = NA)
   }
 
   result %>%
     dplyr::mutate(time = format(time, "%H%M%S")) %>%
-    dplyr::select(site, date, time, cumulative, speed, strip_spacing)
+    dplyr::select(site, date, time, cumulative, speed, spacing_type)
 }
 
 # read camera_top files (time,event)
@@ -198,20 +198,20 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
   for (s in sites) {
     wv_site <- wavetronix %>% filter(site == s)
 
-    # Get unique strip_spacing-date pairs for this site
+    # Get unique spacing_type-date pairs for this site
     spacing_dates <- wv_site %>%
   arrange(date) %>%
-  group_by(site, strip_spacing) %>%
+  group_by(site, spacing_type) %>%
   slice(1) %>%  # keep only the first date per spacing
   ungroup() %>%
-  mutate(strip_label = paste0(strip_spacing, " ft spacing, ", speed, " mph")) %>%
-  select(site, strip_spacing, date, strip_label) %>%
+  mutate(strip_label = paste0(spacing_type, " ft spacing, ", speed, " mph")) %>%
+  select(site, spacing_type, date, strip_label) %>%
   rename(target_date = date)
 
 
     # Filter wavetronix to only include rows matching spacing-date pairs
     wv_filtered <- wv_site %>%
-      inner_join(spacing_dates, by = c("strip_spacing", "date" = "target_date"))
+      inner_join(spacing_dates, by = c("spacing_type", "date" = "target_date"))
 
     # Filter camera data to same site and matching dates
     cam_filtered <- camera_top_data %>%
@@ -305,15 +305,15 @@ prepare_speed_data <- function(wavetronix, observations) {
     select(site, unit, date, time = sensor_time, speed_85) %>%
     mutate(unit = as.factor(as.character(unit)),
            speed_85 = as.numeric(speed_85)) %>%
-    left_join(observations %>% select(site, date, strip_spacing), by = c("site", "date")) %>%
-    filter(!is.na(speed_85), !is.na(strip_spacing))
+    left_join(observations %>% select(site, date, spacing_type), by = c("site", "date")) %>%
+    filter(!is.na(speed_85), !is.na(spacing_type))
 }
 
 
-# perform t-tests on speed_85 grouped by site, unit, strip_spacing
+# perform t-tests on speed_85 grouped by site, unit, spacing_type
 paired_test <- function(speed_data) {
   grouped <- speed_data %>%
-    group_by(site, strip_spacing) %>%
+    group_by(site, spacing_type) %>%
     nest()
   
   results <- grouped %>%
@@ -358,12 +358,12 @@ plot_confidence_bounds <- function(paired_t_test) {
 
   # Prepare data for plotting
   plot_data <- paired_t_test %>%
-    mutate(strip_spacing = as.factor(strip_spacing)) %>%
+    mutate(spacing_type = as.factor(spacing_type)) %>%
     filter(!is.na(conf_low), !is.na(conf_high))
 
   ggplot(plot_data, aes(y = site, x = mean_diff, 
          xmin = conf_low, xmax = conf_high, 
-         color = strip_spacing)) +
+         color = spacing_type)) +
     geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
     geom_errorbar(position = "dodge", height = 0.4, linewidth = 1) +
     theme_minimal() +     
@@ -374,12 +374,12 @@ plot_confidence_bounds <- function(paired_t_test) {
     ) 
 
 
-    geom_point(aes(y = strip_spacing), size = 3) +
+    geom_point(aes(y = spacing_type), size = 3) +
     facet_wrap(~ site, scales = "free_y") +
     theme_minimal(base_size = 14) +
 +
     geom_vline(xintercept = 0, linetype = "dashed", color = "red")
-  p <- ggplot(plot_data, aes(x = strip_spacing, y = mean_diff)) +
+  p <- ggplot(plot_data, aes(x = spacing_type, y = mean_diff)) +
     geom_linerange(aes(ymin = conf_low, ymax = conf_high, color = site),
                    position = position_dodge(width = 0.6), linewidth = 1.2) +
     geom_point(aes(y = mean_diff, color = site),
