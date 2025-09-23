@@ -204,7 +204,7 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
   group_by(site, spacing_type) %>%
   slice(1) %>%  # keep only the first date per spacing
   ungroup() %>%
-  mutate(strip_label = paste0(spacing_type, " ft spacing, ", speed, " mph")) %>%
+  mutate(strip_label = paste0(spacing_type, " ", speed, " mph")) %>%
   select(site, spacing_type, date, strip_label) %>%
   rename(target_date = date)
 
