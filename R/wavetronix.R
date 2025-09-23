@@ -244,57 +244,6 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
   return(output_paths)
 }
 
-plot_cumulative_with_camera <- function(wdf_sub, camera_meta, out_path) {
-  # wdf_sub: tibble with columns time (POSIXct) and cumulative
-  # camera_meta: tibble/list row with date_code and events (events is a tibble with time_str and event)
-  tz <- if (!is.null(attr(wdf_sub$time, "tzone")) && nzchar(attr(wdf_sub$time, "tzone"))) {
-    attr(wdf_sub$time, "tzone")
-  } else {
-    Sys.timezone()
-  }
-
-  # Extract camera event times (strings like "HH:MM:SS.SSS")
-  cam_times_posix <- NULL
-  if (!is.null(camera_meta) && !is.null(camera_meta$events) && length(camera_meta$events) >= 1) {
-    cam_df <- camera_meta$events[[1]]
-    if (nrow(cam_df) > 0 && "time_str" %in% names(cam_df)) {
-      # compose full datetime using date_code (YYYYMMDD) + time_str and parse fractional seconds
-      date_code <- camera_meta$date_code
-      cam_times_posix <- as.POSIXct(paste(date_code, cam_df$time_str),
-                                    format = "%Y%m%d %H:%M:%OS",
-                                    tz = tz)
-      cam_times_posix <- cam_times_posix[!is.na(cam_times_posix)]
-    }
-  }
-
-  p <- ggplot(wdf_sub, aes(x = time, y = cumulative)) +
-    geom_line(color = "steelblue") +
-    theme_minimal() + labs(x = "Time", y = "Cumulative volume")
-
-
-  if (!is.null(cam_times_posix) && length(cam_times_posix) > 0) {
-    # normalize event values and match times
-    ev <- tolower(trimws(cam_df$event))
-    times_o <- cam_times_posix[ev == "o"]
-    times_i <- cam_times_posix[ev == "i"]
-    times_u <- cam_times_posix[ev == "u"]
-
-    if (length(times_o) > 0) {
-      p <- p + geom_vline(xintercept = as.numeric(times_o), color = "green", linetype = "dashed")
-    }
-    if (length(times_i) > 0) {
-      p <- p + geom_vline(xintercept = as.numeric(times_i), color = "orange", linetype = "dashed")
-    }
-    if (length(times_u) > 0) {
-      p <- p + geom_vline(xintercept = as.numeric(times_u), color = "red", linetype = "dashed")
-    }
-  }
-
-  dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
-  ggsave(out_path, plot = p, width = 8, height = 4.5)
-  out_path
-}
-
 
 ## Statistical analysis of speed ##
 
@@ -306,7 +255,8 @@ prepare_speed_data <- function(wavetronix, observations) {
     mutate(unit = as.factor(as.character(unit)),
            speed_85 = as.numeric(speed_85)) %>%
     left_join(observations %>% select(site, date, spacing_type), by = c("site", "date")) %>%
-    filter(!is.na(speed_85), !is.na(spacing_type))
+    filter(!is.na(speed_85), !is.na(spacing_type)) %>%
+    mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG"))
 }
 
 
@@ -355,46 +305,31 @@ paired_test <- function(speed_data) {
 }
 
 plot_confidence_bounds <- function(paired_t_test) {
-
-  # Prepare data for plotting
+  # Prepare data
   plot_data <- paired_t_test %>%
     mutate(spacing_type = as.factor(spacing_type)) %>%
     filter(!is.na(conf_low), !is.na(conf_high))
 
-  ggplot(plot_data, aes(y = site, x = mean_diff, 
-         xmin = conf_low, xmax = conf_high, 
-         color = spacing_type)) +
+  # Build plot
+  p <- ggplot(plot_data, aes(y = site, 
+                             x = mean_diff, 
+                             color = spacing_type)) +
+    geom_errorbar(aes(xmin = conf_low, xmax = conf_high),
+                  orientation = "y",
+                  position = position_dodge(width = 0.6),
+                  height = 0.4,
+                  linewidth = 1.2) +
+    geom_point(position = position_dodge(width = 0.6), size = 2) +
     geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
-    geom_errorbar(position = "dodge", height = 0.4, linewidth = 1) +
-    theme_minimal() +     
-    labs(
-      x = "Mean Speed Difference",
-      color = "Strip Spacing",
-      y = "Site"
-    ) 
-
-
-    geom_point(aes(y = spacing_type), size = 3) +
-    facet_wrap(~ site, scales = "free_y") +
-    theme_minimal(base_size = 14) +
-+
-    geom_vline(xintercept = 0, linetype = "dashed", color = "red")
-  p <- ggplot(plot_data, aes(x = spacing_type, y = mean_diff)) +
-    geom_linerange(aes(ymin = conf_low, ymax = conf_high, color = site),
-                   position = position_dodge(width = 0.6), linewidth = 1.2) +
-    geom_point(aes(y = mean_diff, color = site),
-               position = position_dodge(width = 0.6), size = 2) +
-    facet_wrap(~ site, scales = "free_x") +
     theme_minimal(base_size = 14) +
     labs(
-      x = "Strip Spacing",
-      y = "Speed Difference (w1 - w2)",
-      color = "Site"
+      x = "Speed Difference",
+      y = "Site",
+      color = "Spacing Type"
     )
 
-
-
-  ggsave("output/confidence_bounds_boxplot.svg", plot = p, width = 10, height = 6)
-  p  
+  # Save and return
+  ggsave("output/confidence_bounds.svg", plot = p, width = 10, height = 8)
+  p
 }
 
