@@ -322,6 +322,12 @@ plot_confidence_bounds <- function(paired_t_test) {
     geom_point(position = position_dodge(width = 0.6), size = 2) +
     geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
     theme_minimal(base_size = 14) +
+    scale_color_manual(values = c(
+      "NO TPRS" = "#2E4756",
+      "UDOT" = "#3C7A89",
+      "PSS" = "#F49D37",
+      "LONG" = "#D81159" ),
+      breaks = c("LONG", "PSS", "UDOT", "NO TPRS")) +
     labs(
       x = "Speed Difference",
       y = "Site",
