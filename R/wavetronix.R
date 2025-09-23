@@ -188,8 +188,6 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
   wavetronix <- wavetronix %>%
     mutate(datetime = ymd_hms(paste(date, str_pad(time, 6, pad = "0"))))
 
-  # Create output directory if needed
-  if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
   # Get unique sites
   sites <- unique(wavetronix$site)
@@ -201,10 +199,12 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- wv_site %>%
   arrange(date) %>%
+  mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG")) %>%
   group_by(site, spacing_type) %>%
   slice(1) %>%  # keep only the first date per spacing
   ungroup() %>%
-  mutate(strip_label = paste0(spacing_type, " ", speed, " mph")) %>%
+  mutate(strip_label = paste0(spacing_type, " ", speed, " mph"),
+         strip_label = fct_inorder(strip_label)) %>%
   select(site, spacing_type, date, strip_label) %>%
   rename(target_date = date)
 
@@ -229,8 +229,8 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
       scale_color_manual(values = c(
         "No movement" = "forestgreen",
         "Movement detected" = "orange",
-        "Ineffective placement" = "red"
-      )) +
+        "Ineffective placement" = "red"),
+        breaks = c("No movement", "Movement detected", "Ineffective placement")) +
       facet_wrap(~strip_label, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
       theme_minimal()
