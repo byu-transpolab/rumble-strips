@@ -307,7 +307,14 @@ paired_test <- function(speed_data) {
 plot_confidence_bounds <- function(paired_t_test) {
   # Prepare data
   plot_data <- paired_t_test %>%
-    mutate(spacing_type = as.factor(spacing_type)) %>%
+    mutate(spacing_type = as.factor(spacing_type),
+    site = case_when(
+      site == "sr12" ~ "SR-12",
+      site == "us6" ~ "US-6",
+      site == "i70" ~ "I-70",
+      site == "us191" ~ "US-191",
+      TRUE ~ site)
+    ) %>%
     filter(!is.na(conf_low), !is.na(conf_high))
 
   # Build plot
