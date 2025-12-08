@@ -206,6 +206,10 @@ list(
   # time <dttm>, event, site
   tar_target(camera_top_data, get_camera_top_data("data/camera_top")),
 
+  # puts all camera_back data into one dataframe with columns:
+  # site, time <dttm>, class, brake, departure, flagged, state
+  tar_traget(camera_back_data, get_camera_back_data("data/camera_back")),
+
   # calculate cumulative traffic volume for each day from Wavetronix data
   # returns tibble with: time <dttm>, total, cumulative
   tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),

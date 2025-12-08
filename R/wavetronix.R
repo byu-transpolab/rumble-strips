@@ -182,6 +182,53 @@ get_camera_top_data <- function(folder_path) {
   dfs
 }
 
+#' Read a single camera_back CSV file
+#' 
+#' @param path path to camera_back CSV file (e.g., 20250708_sr12_cb_B.csv)
+#' 
+read_camera_back <- function(path) {
+  # Extract date and site from filename
+  # Example: 20250708_sr12_cb_B.csv
+  path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "_"))
+  date_code <- path_elements[1]
+  site <- path_elements[2]
+
+  # Read the CSV file
+  df <- readr::read_csv(path, show_col_types = FALSE)
+  
+  # Parse timestamp with date_code and convert to POSIXct
+  df %>%
+    dplyr::mutate(
+      site = site,
+      date = as.Date(date_code, format = "%Y%m%d"),
+      # normalize milliseconds separator (HH:MM:SS:MMM -> HH:MM:SS.MMM)
+      timestamp = sub(":(\\d{1,3})$", ".\\1", timestamp),
+      # combine date_code and time string for full datetime
+      time = as.POSIXct(paste0(date_code, " ", timestamp),
+                        format = "%Y%m%d %H:%M:%OS",
+                        tz = Sys.timezone()),
+      # ensure class is character if needed
+      class = as.character(class)
+    ) %>%
+    dplyr::select(site, date, time, class, brake, departure = avoidance, flagged = displacement, state)
+}
+
+# Read camera back data from folder and return combined dataframe
+get_camera_back_data <- function(folder_path) {
+  # Read all files in the folder
+  files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+
+  # Read each file
+  dfs <- purrr::map(files, read_camera_back) |>
+    # Combine into a single data frame
+    dplyr::bind_rows()
+  
+  dfs
+}
+
+
+
+
 make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir = "output") {
 
   # Ensure datetime is properly formatted
