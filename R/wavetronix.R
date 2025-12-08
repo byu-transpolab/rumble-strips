@@ -196,6 +196,9 @@ read_camera_back <- function(path) {
   # Read the CSV file
   df <- readr::read_csv(path, show_col_types = FALSE)
   
+  # Remove rows with NA in class column
+  df <- df %>% dplyr::filter(!is.na(class))
+
   # Parse timestamp with date_code and convert to POSIXct
   df %>%
     dplyr::mutate(
