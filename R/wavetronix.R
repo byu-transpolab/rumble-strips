@@ -330,6 +330,65 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
   return(output_paths)
 }
 
+# Make displacement plots for all sites and spacings with class volumes
+make_displacement_plots_class_data <- function(class_volume, camera_top_data, output_dir = "output") {
+
+  # Get unique sites
+  sites <- unique(class_volume$site)
+  output_paths <- list()
+
+  for (s in sites) {
+    cv_site <- class_volume %>% filter(site == s)
+
+    # Get unique spacing_type-date pairs for this site
+    spacing_dates <- cv_site %>%
+  arrange(date) %>%
+  mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG")) %>%
+  group_by(site, spacing_type) %>%
+  slice(1) %>%  # keep only the first date per spacing
+  ungroup() %>%
+  mutate(strip_label = paste0(spacing_type, " ", speed, " mph"),
+         strip_label = fct_inorder(strip_label)) %>%
+  select(site, spacing_type, date, strip_label) %>%
+  rename(target_date = date)
+
+
+    # Filter class_volume to only include rows matching spacing-date pairs
+    cv_filtered <- cv_site %>%
+      inner_join(spacing_dates, by = c("spacing_type", "date" = "target_date"))
+
+    # Filter camera data to same site and matching dates
+    cam_filtered <- camera_top_data %>%
+      filter(site == s) %>%
+      mutate(date = as_date(time)) %>%
+      inner_join(spacing_dates, by = c("site", "date" = "target_date"))
+
+    # Plot
+    p <- ggplot() +
+      geom_line(data = cv_filtered,
+                aes(x = datetime, y = cumulative, group = date), color = "black") +
+      geom_vline(data = cam_filtered,
+             aes(xintercept = time, color = event),
+             linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
+      scale_color_manual(values = c(
+        "No movement" = "forestgreen",
+        "Movement detected" = "orange",
+        "Ineffective placement" = "red"),
+        breaks = c("No movement", "Movement detected", "Ineffective placement")) +
+      facet_wrap(~strip_label, scales = "free_x") +
+      labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
+      theme_minimal()
+
+    # Save plot
+    out_path <- file.path(output_dir, paste0("class_displacement_plot", s, ".svg"))
+    ggsave(out_path, plot = p, width = 8, height = 4.5)
+    output_paths[[s]] <- out_path
+  }
+
+  return(output_paths)
+
+}
+
 
 ## Statistical analysis of speed ##
 

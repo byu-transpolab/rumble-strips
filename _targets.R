@@ -218,8 +218,11 @@ list(
   # returns tibble with: time <dttm>, class, total, cumulative
   tar_target(cumulated_class_volume, cumulate_class_volume(camera_back_data, observations)),
 
-  # Plot volume and events for each site
-  tar_target(displacement_plots, make_displacement_plot_data(cumulated_volume, camera_top_data)),  
+  # Plot volume and events for each site with wavetronix data
+  tar_target(displacement_plots_wave, make_displacement_plot_data(cumulated_volume, camera_top_data)),  
+
+  # Plot class volumes and events for each site with camera back data
+  tar_target(displacement_plots_cb, make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)),
 
   # create tibble from wavetronix data with columns:
   # site, unit, date, time, speed_85, strip_spacing
