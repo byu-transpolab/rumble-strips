@@ -142,6 +142,40 @@ cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "
     dplyr::select(site, date, time, cumulative, speed, spacing_type)
 }
 
+# Return cumulative class volumes per date
+# tibble with columns: site, date, time, class, cumulative, spacing_type
+cumulate_class_volume <- function(combined_df, observation_data = NULL) {
+  # prepare observations table if provided (accepts path or data.frame)
+  obs_df <- NULL
+  if (!is.null(observation_data)) {
+    if (is.character(observation_data) && length(observation_data) == 1) {
+      obs_df <- readr::read_csv(observation_data, show_col_types = FALSE)
+    } else {
+      obs_df <- observation_data
+    }
+    obs_df <- obs_df %>%
+      dplyr::select(site, date, spacing_type)
+  }
+
+  # keep all original rows and add a cumulative counter per site/date/class
+  result <- combined_df %>%
+    dplyr::arrange(site, date, class, time) %>%
+    dplyr::group_by(site, date, class) %>%
+    dplyr::mutate(cumulative = dplyr::row_number()) %>%
+    dplyr::ungroup()
+
+  if (!is.null(obs_df)) {
+    # join observations by site and date
+    result <- result %>% dplyr::left_join(obs_df, by = c("site", "date"))
+  } else {
+    # add a placeholder column when no observations are provided
+    result <- result %>% dplyr::mutate(spacing_type = NA)
+  }
+
+  result %>%
+    dplyr::select(site, date, time, class, cumulative, spacing_type)
+}
+
 # read camera_top files (time,event)
 read_camera_top <- function(path) {
 
