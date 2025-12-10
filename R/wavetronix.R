@@ -338,7 +338,39 @@ missing_offsets <- function(cb_data) {
 
 }
 
+# Add Offsets to camera back data
+add_offsets_to_cb <- function(cb_data, offsets_csv = "data/cb_offsets.csv") {
+  # read offsets file
+  offsets <- read_csv(offsets_csv, col_types = cols(
+    date = col_date(),
+    session = col_character(),
+    offset = col_time()
+  ))
+  
+  # compute the adjustment needed for each session
+  adjustments <- cb_data %>%
+    group_by(date, session) %>%
+    summarise(first_time = min(time), .groups = "drop") %>%
+    left_join(offsets, by = c("date", "session")) %>%
+    mutate(
+      adjustment = if_else(!is.na(offset),
+                           as.numeric(difftime(offset, hms::as_hms(first_time), units = "secs")),
+                           NA_real_)
+    )
+  
+  # apply the adjustment back to cb_data
+  cb_data %>%
+    left_join(adjustments %>% select(date, session, adjustment),
+              by = c("date", "session")) %>%
+    mutate(
+      time = if_else(!is.na(adjustment),
+                     time + seconds(adjustment),
+                     time)
+    ) %>%
+    select(-adjustment)
 
+
+}
 
 # Plots cumulative volume and TPRS displacement events using wavetronix data
 make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir = "output") {
