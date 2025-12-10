@@ -144,7 +144,7 @@ cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "
 
 # Return cumulative class volumes per date
 # tibble with columns: site, date, time, class, cumulative, spacing_type
-cumulate_class_volume <- function(combined_df, observation_data = NULL) {
+cumulate_class_volume <- function(class_volume, observation_data = NULL) {
   # prepare observations table if provided (accepts path or data.frame)
   obs_df <- NULL
   if (!is.null(observation_data)) {
@@ -157,8 +157,16 @@ cumulate_class_volume <- function(combined_df, observation_data = NULL) {
       dplyr::select(site, date, spacing_type)
   }
 
+    # Define vehicle class groups
+  class_volume <- class_volume %>%
+    mutate(class = case_when(
+      class %in% c("passenger", "motorcycle") ~ "Passenger",
+      class == "truck" ~ "Truck",
+      TRUE ~ "other"
+    ))
+
   # keep all original rows and add a cumulative counter per site/date/class
-  result <- combined_df %>%
+  result <- class_volume %>%
     dplyr::arrange(site, date, class, time) %>%
     dplyr::group_by(site, date, class) %>%
     dplyr::mutate(cumulative = dplyr::row_number()) %>%
@@ -362,7 +370,8 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
 }
 
 # Plots cumulative class volumes and TPRS displacement events using cb data
-make_displacement_plots_class_data <- function(class_volume, camera_top_data, output_dir = "output") {
+make_displacement_plot_class_data <- function(class_volume, camera_top_data, output_dir = "output") {
+
 
   # Get unique sites
   sites <- unique(class_volume$site)
@@ -373,15 +382,15 @@ make_displacement_plots_class_data <- function(class_volume, camera_top_data, ou
 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- cv_site %>%
-  arrange(date) %>%
-  mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG")) %>%
-  group_by(site, spacing_type) %>%
-  slice(1) %>%  # keep only the first date per spacing
-  ungroup() %>%
-  mutate(strip_label = paste0(spacing_type, " ", speed, " mph"),
-         strip_label = fct_inorder(strip_label)) %>%
-  select(site, spacing_type, date, strip_label) %>%
-  rename(target_date = date)
+    arrange(date) %>%
+    mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG")) %>%
+    group_by(site, spacing_type) %>%
+    slice(1) %>%  # keep only the first date per spacing
+    ungroup() %>%
+    mutate(strip_label = paste0(spacing_type),
+          strip_label = fct_inorder(strip_label)) %>%
+    select(site, spacing_type, date, strip_label) %>%
+    rename(target_date = date)
 
 
     # Filter class_volume to only include rows matching spacing-date pairs
@@ -394,20 +403,21 @@ make_displacement_plots_class_data <- function(class_volume, camera_top_data, ou
       mutate(date = as_date(time)) %>%
       inner_join(spacing_dates, by = c("site", "date" = "target_date"))
 
-    # Plot
-    p <- ggplot() +
-      geom_line(data = cv_filtered,
-                aes(x = datetime, y = cumulative, group = date), color = "black") +
+    # Plot: two cumulative lines (passenger and truck)
+    p <- ggplot(cv_filtered, aes(x = time, y = cumulative, color = class)) +
+      geom_line(linewidth = 1) +
       geom_vline(data = cam_filtered,
              aes(xintercept = time, color = event),
              linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
       scale_color_manual(values = c(
+        "Passenger" = "blue",
+        "Truck" = "brown",
         "No movement" = "forestgreen",
         "Movement detected" = "orange",
         "Ineffective placement" = "red"),
         breaks = c("No movement", "Movement detected", "Ineffective placement")) +
       facet_wrap(~strip_label, scales = "free_x") +
-      labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
+      labs(x = "Time", y = "Cumulative Volume", color = "Legend") +
       theme_minimal()
 
     # Save plot
