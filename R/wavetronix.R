@@ -221,7 +221,7 @@ get_camera_top_data <- function(folder_path) {
 #' @param path path to camera_back CSV file (e.g., 20250708_sr12_cb_B.csv)
 #' 
 read_camera_back <- function(path) {
-  # Extract date and site from filename
+  # Extract date, site and session data from filename
   # Example: 20250708_sr12_cb_B.csv
   path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "_"))
   date_code <- path_elements[1]
@@ -246,10 +246,41 @@ read_camera_back <- function(path) {
       time = as.POSIXct(paste0(date_code, " ", timestamp),
                         format = "%Y%m%d %H:%M:%OS",
                         tz = Sys.timezone()),
-      # ensure class is character if needed
-      class = as.character(class)
+
+      # interpret j, k, l as passenger, truck, motorcycle
+      class = case_when(
+        class == "j" ~ "passenger",
+        class == "k" ~ "truck",
+        class == "l" ~ "motorcycle",
+        TRUE ~ as.character(class)
+      ),
+      # interpret d, f, NA as before, after, no brake
+      brake = case_when(
+        brake == "d" ~ "before",
+        brake == "f" ~ "after",
+        is.na(brake) ~ "no brake",
+        TRUE ~ as.character(brake)
+      ),
+      # interpret b , NA as avoided, not avoided
+      departure = case_when(
+        avoidance == "b" ~ "avoided",
+        is.na(avoidance) ~ "not avoided",
+        TRUE ~ as.character(avoidance)
+      ),
+      # interpret y as yes, NA as no
+      flagged = case_when(
+        displacement == "y" ~ "yes",
+        is.na(displacement) ~ "no",
+        TRUE ~ as.character(displacement)
+      ),
+      # interpret '9' as lane 2, NA as lane 1
+      lane = case_when(
+        state == "9" ~ "lane 2",
+        is.na(state) ~ "lane 1",
+        TRUE ~ as.character(state)
+      )
     ) %>%
-    dplyr::select(site, date, time, session, class, brake, departure = avoidance, flagged = displacement, state)
+    dplyr::select(site, date, time, session, class, brake, departure, flagged, lane)
 }
 
 # Read camera back data from folder and return combined dataframe
