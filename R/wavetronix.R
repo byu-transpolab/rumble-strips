@@ -315,12 +315,27 @@ time_between_sessions <- function(cb_data) {
     ) %>%
     # keep only rows where both A and B exist
     filter(!is.na(last_A) & !is.na(first_B)) %>%
+    # calculate time difference in minutes
     mutate(
       diff_mins  = as.numeric(difftime(first_B, last_A, units = "mins"))
     )
+}
 
+# List which sessions do not have the correct time offset
+missing_offsets <- function(cb_data) {
+  cb_data %>%
+    group_by(date, site, session) %>%
+    # find the first timestamp of each session
+    summarise(
+      first_time = min(time),
+      .groups = "drop"
+    ) %>%
+    # extract time-of-day
+    mutate(first_tod = hms::as_hms(first_time)) %>%
+    # keep only rows where the first time-of-day <= 00:01:00
+    filter(first_tod <= hms::as_hms("00:01:00")) %>%
+    select(site, date, session, first_time)
 
-  return(df)
 }
 
 
