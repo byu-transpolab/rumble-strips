@@ -296,6 +296,9 @@ get_camera_back_data <- function(folder_path) {
   # Read all files in the folder
   files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
 
+  # Exclude cb_offsets.csv
+  files <- files[!grepl("cb_offsets\\.csv$", files)]
+
   # Read each file
   dfs <- purrr::map(files, read_camera_back) |>
     # Combine into a single data frame
