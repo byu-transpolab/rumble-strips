@@ -372,13 +372,15 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
 # Plots cumulative class volumes and TPRS displacement events using cb data
 make_displacement_plot_class_data <- function(class_volume, camera_top_data, output_dir = "output") {
 
-
   # Get unique sites
   sites <- unique(class_volume$site)
+
+  # Make an empty list to store output paths
   output_paths <- list()
 
   for (s in sites) {
     cv_site <- class_volume %>% filter(site == s)
+    cam_site <- camera_top_data %>% filter(site == s)
 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- cv_site %>%
@@ -387,41 +389,31 @@ make_displacement_plot_class_data <- function(class_volume, camera_top_data, out
     group_by(site, spacing_type) %>%
     slice(1) %>%  # keep only the first date per spacing
     ungroup() %>%
-    mutate(strip_label = paste0(spacing_type),
-          strip_label = fct_inorder(strip_label)) %>%
-    select(site, spacing_type, date, strip_label) %>%
+    select(spacing_type, date) %>%
     rename(target_date = date)
 
-
-    # Filter class_volume to only include rows matching spacing-date pairs
-    cv_filtered <- cv_site %>%
-      inner_join(spacing_dates, by = c("spacing_type", "date" = "target_date"))
-
-    # Filter camera data to same site and matching dates
-    cam_filtered <- camera_top_data %>%
-      filter(site == s) %>%
-      mutate(date = as_date(time)) %>%
-      inner_join(spacing_dates, by = c("site", "date" = "target_date"))
-
     # Plot: two cumulative lines (passenger and truck)
-    p <- ggplot(cv_filtered, aes(x = time, y = cumulative, color = class)) +
-      geom_line(linewidth = 1) +
-      geom_vline(data = cam_filtered,
-             aes(xintercept = time, color = event),
-             linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
+    p <- ggplot() + 
+      geom_line(data = cv_site,
+                aes(x = time, y = cumulative, color = class, group = class),
+                linewidth = 1) +
+      #geom_vline(data = cam_site,
+      #          aes(xintercept = time, color = event),
+      #          linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
       scale_color_manual(values = c(
         "Passenger" = "blue",
         "Truck" = "brown",
         "No movement" = "forestgreen",
         "Movement detected" = "orange",
         "Ineffective placement" = "red"),
-        breaks = c("No movement", "Movement detected", "Ineffective placement")) +
-      facet_wrap(~strip_label, scales = "free_x") +
+        breaks = c("Passenger", "Truck", 
+                  "No movement", "Movement detected", "Ineffective placement")) +
+      facet_wrap(~spacing_type, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "Legend") +
       theme_minimal()
 
     # Save plot
-    out_path <- file.path(output_dir, paste0("class_displacement_plot", s, ".svg"))
+    out_path <- file.path(output_dir, paste0("class_displacement_plot_", s, ".svg"))
     ggsave(out_path, plot = p, width = 8, height = 4.5)
     output_paths[[s]] <- out_path
   }
