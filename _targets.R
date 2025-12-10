@@ -214,6 +214,10 @@ list(
   # returns tibble with: time <dttm>, total, cumulative
   tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),
 
+  # calculate cumulative traffic volume for each class, each day, from camera back data
+  # returns tibble with: time <dttm>, class, total, cumulative
+  tar_target(cumulated_class_volume, cumulate_class_volume(camera_back_data, observations)),
+
   # Plot volume and events for each site
   tar_target(displacement_plots, make_displacement_plot_data(cumulated_volume, camera_top_data)),  
 

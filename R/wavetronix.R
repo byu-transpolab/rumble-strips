@@ -192,6 +192,7 @@ read_camera_back <- function(path) {
   path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "_"))
   date_code <- path_elements[1]
   site <- path_elements[2]
+  session <- path_elements[4]
 
   # Read the CSV file
   df <- readr::read_csv(path, show_col_types = FALSE)
@@ -203,6 +204,7 @@ read_camera_back <- function(path) {
   df %>%
     dplyr::mutate(
       site = site,
+      session = session,
       date = as.Date(date_code, format = "%Y%m%d"),
       # normalize milliseconds separator (HH:MM:SS:MMM -> HH:MM:SS.MMM)
       timestamp = sub(":(\\d{1,3})$", ".\\1", timestamp),
@@ -213,7 +215,7 @@ read_camera_back <- function(path) {
       # ensure class is character if needed
       class = as.character(class)
     ) %>%
-    dplyr::select(site, date, time, class, brake, departure = avoidance, flagged = displacement, state)
+    dplyr::select(site, date, time, session, class, brake, departure = avoidance, flagged = displacement, state)
 }
 
 # Read camera back data from folder and return combined dataframe
