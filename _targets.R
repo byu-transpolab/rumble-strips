@@ -199,30 +199,57 @@ list(
   tar_target(observations, read_observations(observations_file)),
 
   # puts all wavetronix data into one dataframe with columns:
-  # site, unit, lane, volume, occupancy, speed, speed_85, headway, gap, sensor_time, date, interval
-  tar_target(wavetronix, read_wavetronix_folder("data/wavetronix")),
+  # site, unit, lane, volume, occupancy, speed, speed_85,
+  # headway, gap, sensor_time, date, interval
+  tar_target(wavetronix_files,
+    list.files("data/wavetronix", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(wavetronix, read_wavetronix_folder(wavtetronix_files)),
 
-  # put all camera_top data into one dataframe with columns:
-  # time <dttm>, event, site
-  tar_target(camera_top_data, get_camera_top_data("data/camera_top")),
+  # puts all camera top data into one dataframe with columns:
+  # time, event, site
+  tar_target(
+    camera_top_files, 
+    list.files("data/camera_top", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(
+    camera_top_data,
+    get_camera_top_data(camera_top_files)
+  ),
 
-  # puts all camera_back data into one dataframe with columns:
-  # site, time <dttm>, class, brake, departure, flagged, state
-  tar_target(camera_back_data, get_camera_back_data("data/camera_back")),
+  # puts all camera back data into one dataframe with columns:
+  # site, date, time, session, class, brake, departure, flagged, lane
+  tar_target(
+    camera_back_files,
+    list.files("data/camera_back", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(
+    camera_back_data,
+    get_camera_back_data(camera_back_files)
+  ),
 
   # calculate cumulative traffic volume for each day from Wavetronix data
   # returns tibble with: time <dttm>, total, cumulative
   tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),
 
-  # calculate cumulative traffic volume for each class, each day, from camera back data
+  # calculate cumulative traffic volume for each class from camera back data
   # returns tibble with: time <dttm>, class, total, cumulative
-  tar_target(cumulated_class_volume, cumulate_class_volume(camera_back_data, observations)),
+  tar_target(cumulated_class_volume,
+    cumulate_class_volume(camera_back_data, observations)
+  ),
 
   # Plot volume and events for each site with wavetronix data
-  tar_target(displacement_plots_wave, make_displacement_plot_data(cumulated_volume, camera_top_data)),  
+  tar_target(displacement_plots_wave,
+    make_displacement_plot_data(cumulated_volume, camera_top_data)
+  ),
 
   # Plot class volumes and events for each site with camera back data
-  tar_target(displacement_plots_cb, make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)),
+  tar_target(displacement_plots_cb,
+    make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
+  ),
 
   # create tibble from wavetronix data with columns:
   # site, unit, date, time, speed_85, strip_spacing
