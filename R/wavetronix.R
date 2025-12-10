@@ -304,6 +304,8 @@ get_camera_back_data <- function(folder_path) {
     # Combine into a single data frame
     dplyr::bind_rows()
   
+  add_offsets_to_cb(dfs)
+
   dfs
 }
 
