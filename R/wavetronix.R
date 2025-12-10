@@ -298,7 +298,7 @@ get_camera_back_data <- function(folder_path) {
 
 
 
-
+# Plots cumulative volume and TPRS displacement events using wavetronix data
 make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir = "output") {
 
   # Ensure datetime is properly formatted
@@ -361,7 +361,7 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
   return(output_paths)
 }
 
-# Make displacement plots for all sites and spacings with class volumes
+# Plots cumulative class volumes and TPRS displacement events using cb data
 make_displacement_plots_class_data <- function(class_volume, camera_top_data, output_dir = "output") {
 
   # Get unique sites
