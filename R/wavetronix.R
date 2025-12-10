@@ -157,7 +157,7 @@ cumulate_class_volume <- function(class_volume, observation_data = NULL) {
       dplyr::select(site, date, spacing_type)
   }
 
-    # Define vehicle class groups
+  # Define vehicle class groups
   class_volume <- class_volume %>%
     mutate(class = case_when(
       class %in% c("passenger", "motorcycle") ~ "Passenger",
@@ -181,7 +181,7 @@ cumulate_class_volume <- function(class_volume, observation_data = NULL) {
   }
 
   result %>%
-    dplyr::select(site, date, time, class, cumulative, spacing_type)
+    dplyr::select(site, time, session, class, cumulative, spacing_type)
 }
 
 # read camera_top files (time,event)
@@ -302,6 +302,25 @@ get_camera_back_data <- function(folder_path) {
     dplyr::bind_rows()
   
   dfs
+}
+
+# Find how much time passed between session A and B in camera_back_data
+time_between_sessions <- function(cb_data) {
+  cb_data %>%
+    group_by(site, date) %>%
+    summarise(
+      last_A   = if (any(session == "A")) max(time[session == "A"]) else NA,
+      first_B  = if (any(session == "B")) min(time[session == "B"]) else NA,
+      .groups = "drop"
+    ) %>%
+    # keep only rows where both A and B exist
+    filter(!is.na(last_A) & !is.na(first_B)) %>%
+    mutate(
+      diff_mins  = as.numeric(difftime(first_B, last_A, units = "mins"))
+    )
+
+
+  return(df)
 }
 
 
