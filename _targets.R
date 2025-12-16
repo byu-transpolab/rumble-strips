@@ -202,10 +202,12 @@ list(
   # site, unit, lane, volume, occupancy, speed, speed_85,
   # headway, gap, sensor_time, date, interval
   tar_target(wavetronix_files,
-    list.files("data/wavetronix", full.names = TRUE),
+    "data/wavetronix",
     format = "file"
   ),
-  tar_target(wavetronix, read_wavetronix_folder(wavtetronix_files)),
+  tar_target(wavetronix,
+    read_wavetronix_folder(wavetronix_files)
+  ),
 
   # puts all camera top data into one dataframe with columns:
   # time, event, site

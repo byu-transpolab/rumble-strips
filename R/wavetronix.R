@@ -293,18 +293,38 @@ read_camera_back <- function(path) {
 
 # Read camera back data from folder and return combined dataframe
 get_camera_back_data <- function(folder_path) {
-  # Read all files in the folder
-  files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+   # Accept either a single folder path or a character vector of file paths
+  if (length(folder_path) == 1 && dir.exists(folder_path)) {
+    files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+  } else {
+    files <- folder_path
+  }
 
   # Exclude cb_offsets.csv
   files <- files[!grepl("cb_offsets\\.csv$", files)]
+
+  # Ensure we have files
+  if (length(files) == 0) {
+    return(tibble(
+      site = character(),
+      date = as.Date(character()),
+      time = as.POSIXct(character()),
+      session = character(),
+      class = character(),
+      brake = character(),
+      departure = character(),
+      flagged = character(),
+      lane = character()
+    ))
+  }
 
   # Read each file
   dfs <- purrr::map(files, read_camera_back) |>
     # Combine into a single data frame
     dplyr::bind_rows()
   
-  add_offsets_to_cb(dfs)
+  # Apply offsets to timestamps
+  dfs <-add_offsets_to_cb(dfs)
 
   dfs
 }
@@ -337,14 +357,15 @@ missing_offsets <- function(cb_data) {
     ) %>%
     # extract time-of-day
     mutate(first_tod = hms::as_hms(first_time)) %>%
-    # keep only rows where the first time-of-day <= 00:01:00
-    filter(first_tod <= hms::as_hms("00:01:00")) %>%
+    # keep only rows where the first time-of-day <= 01:00:00
+    filter(first_tod <= hms::as_hms("01:00:00")) %>%
     select(site, date, session, first_time)
 
 }
 
 # Add Offsets to camera back data
-add_offsets_to_cb <- function(cb_data, offsets_csv = "data/cb_offsets.csv") {
+add_offsets_to_cb <- function(cb_data, 
+                              offsets_csv = "data/camera_back/cb_offsets.csv") {
   # read offsets file
   offsets <- read_csv(offsets_csv, col_types = cols(
     date = col_date(),
@@ -359,7 +380,9 @@ add_offsets_to_cb <- function(cb_data, offsets_csv = "data/cb_offsets.csv") {
     left_join(offsets, by = c("date", "session")) %>%
     mutate(
       adjustment = if_else(!is.na(offset),
-                           as.numeric(difftime(offset, hms::as_hms(first_time), units = "secs")),
+                           as.numeric(difftime(offset, 
+                           hms::as_hms(first_time), 
+                           units = "secs")),
                            NA_real_)
     )
   
@@ -373,12 +396,12 @@ add_offsets_to_cb <- function(cb_data, offsets_csv = "data/cb_offsets.csv") {
                      time)
     ) %>%
     select(-adjustment)
-
-
 }
 
 # Plots cumulative volume and TPRS displacement events using wavetronix data
-make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir = "output") {
+make_displacement_plot_data <- function(wavetronix,
+                                        camera_top_data,
+                                        output_dir = "output") {
 
   # Ensure datetime is properly formatted
   wavetronix <- wavetronix %>%
@@ -395,7 +418,11 @@ make_displacement_plot_data <- function(wavetronix, camera_top_data, output_dir 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- wv_site %>%
   arrange(date) %>%
-  mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG")) %>%
+  mutate(spacing_type = fct_relevel(spacing_type, 
+                                    "NO TPRS", 
+                                    "UDOT", 
+                                    "PSS", 
+                                    "LONG")) %>%
   group_by(site, spacing_type) %>%
   slice(1) %>%  # keep only the first date per spacing
   ungroup() %>%
