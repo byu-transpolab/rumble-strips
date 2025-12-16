@@ -193,22 +193,7 @@ read_camera_top <- function(path) {
   site <- path_elements[2]
 
 
-  readr::read_csv(path, col_names = c("time", "event"), 
-    show_col_types = FALSE) |>
-    mutate(
-      site = site,
-      time = str_c(date_code, time, sep = " "),
-      # remove the last 3 digits of the time
-      # because they are the milliseconds
-      time = substr(time, start = 1, stop= nchar(time) - 4),
-      time = lubridate::as_datetime(time, format = "%Y%m%d %H:%M:%S"),
-      event = case_when(
-        event == "o" ~ "No movement",
-        event == "i" ~ "Movement detected",
-        event == "u" ~ "Ineffective placement"
-      )
-      
-    )
+  df<-read_csv(path, col_names = c("time", "event"), show_col_types = FALSE)
 
 }
 
@@ -231,7 +216,7 @@ get_camera_top_data <- function(folder_path) {
 read_camera_back <- function(path) {
   # Extract date, site and session data from filename
   # Example: 20250708_sr12_cb_B.csv
-  path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "_"))
+  path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "-"))
   date_code <- path_elements[1]
   site <- path_elements[2]
   session <- path_elements[4]
