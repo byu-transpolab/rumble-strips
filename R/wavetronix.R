@@ -193,13 +193,32 @@ read_camera_top <- function(path) {
   site <- path_elements[2]
 
 
-  df<-read_csv(path, col_names = c("time", "event"), show_col_types = FALSE)
-
+  df<-read_csv(path, show_col_types = FALSE)
+  
+  df %>%
+    mutate(
+      site = site,
+      date = as.Date(date_code, format = "%Y%m%d"),
+      event = case_when(
+        state == "0" ~ "Reset",
+        state == "1" ~ "Some Movement",
+        state == "2" ~ "Moderate Movement",
+        state == "3" ~ "Significant Movement",
+        state == "4" ~ "Out of Specification",
+        TRUE ~ as.character(state)
+      )
+    ) %>%
+    select(site, date, time = timestamp, event)
 }
 
+# expects a vector of files and returns a combined dataframe
 get_camera_top_data <- function(folder_path) {
-  # Read all files in the folder
-  files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+ # Accept either a single folder path or a character vector of file paths
+  if (length(folder_path) == 1 && dir.exists(folder_path)) {
+    files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+  } else {
+    files <- folder_path
+  }
 
   # Read each file
   dfs <- purrr::map(files, read_camera_top) |>
