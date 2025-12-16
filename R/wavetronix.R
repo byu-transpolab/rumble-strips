@@ -303,21 +303,6 @@ get_camera_back_data <- function(folder_path) {
   # Exclude cb_offsets.csv
   files <- files[!grepl("cb_offsets\\.csv$", files)]
 
-  # Ensure we have files
-  if (length(files) == 0) {
-    return(tibble(
-      site = character(),
-      date = as.Date(character()),
-      time = as.POSIXct(character()),
-      session = character(),
-      class = character(),
-      brake = character(),
-      departure = character(),
-      flagged = character(),
-      lane = character()
-    ))
-  }
-
   # Read each file
   dfs <- purrr::map(files, read_camera_back) |>
     # Combine into a single data frame
@@ -325,6 +310,11 @@ get_camera_back_data <- function(folder_path) {
   
   # Apply offsets to timestamps
   dfs <-add_offsets_to_cb(dfs)
+
+  # Remove flagged entries, and then the column itself
+  dfs <- dfs %>%
+    dplyr::filter(flagged != "yes") %>%
+    dplyr::select(-flagged)
 
   dfs
 }
@@ -373,29 +363,16 @@ add_offsets_to_cb <- function(cb_data,
     offset = col_time()
   ))
   
-  # compute the adjustment needed for each session
-  adjustments <- cb_data %>%
-    group_by(date, session) %>%
-    summarise(first_time = min(time), .groups = "drop") %>%
+  # join offsets and apply them directly
+  cb_data %>%
     left_join(offsets, by = c("date", "session")) %>%
     mutate(
-      adjustment = if_else(!is.na(offset),
-                           as.numeric(difftime(offset, 
-                           hms::as_hms(first_time), 
-                           units = "secs")),
-                           NA_real_)
-    )
-  
-  # apply the adjustment back to cb_data
-  cb_data %>%
-    left_join(adjustments %>% select(date, session, adjustment),
-              by = c("date", "session")) %>%
-    mutate(
-      time = if_else(!is.na(adjustment),
-                     time + seconds(adjustment),
+      time = if_else(!is.na(offset),
+                     time + hms::as_hms(offset),
                      time)
     ) %>%
-    select(-adjustment)
+    select(-offset)
+
 }
 
 # Plots cumulative volume and TPRS displacement events using wavetronix data
