@@ -1,0 +1,68 @@
+library(patchwork)
+library(gridExtra)
+
+str(cb)
+head(cb)
+
+cb %>%
+  # Create a group for combining sr12 July 7 and July 11
+  mutate(
+    combined_group = case_when(
+      site == "sr12" & date %in% as.Date(c("2025-07-07", "2025-07-11")) ~ "sr12_combined",
+      TRUE ~ paste0(site, "_", date)
+    )
+  ) %>%
+  # Group by site and day for headway calculation
+  group_by(site, date) %>%
+  # Sort by time
+  arrange(time, .by_group = TRUE) %>%
+  # Calculate headway (time difference between consecutive cars)
+  mutate(headway = c(NA, diff(as.numeric(time)))) %>%
+  # Now regroup by the combined_group for output
+  ungroup() %>%
+  group_by(combined_group) %>%
+  nest() %>%
+  # Sort by combined_group
+  arrange(combined_group) %>%
+  # Create and save individual vector plots
+  pmap(function(combined_group, data) {
+    filename <- paste0("headway_", combined_group, ".svg")
+    
+    # Determine x-axis limit based on site
+    x_limit <- if (grepl("us191", combined_group)) 500 else 200
+    
+    # Extract outliers
+    outliers <- data %>%
+      filter(headway > x_limit) %>%
+      select(headway) %>%
+      arrange(desc(headway)) %>%
+      mutate(headway = round(headway, 1),
+             row_id = row_number())
+    
+    # Create histogram
+    p_hist <- data %>%
+      ggplot(aes(x = headway)) +
+      geom_histogram(binwidth = 2, fill = "steelblue", alpha = 0.7, aes(y = after_stat(density)), na.rm = TRUE) +
+      geom_density(color = "steelblue", linewidth = 1, na.rm = TRUE) +
+      scale_x_continuous(limits = c(0, x_limit)) +
+      labs(title = paste0("Headway Distribution - ", combined_group),
+           x = "Headway (seconds between cars)",
+           y = "Density") +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5, size = 14))
+    
+    # Add outliers as text annotation if any exist
+    if (nrow(outliers) > 0) {
+      outlier_text <- paste(paste0(outliers$headway, "s"), collapse = "\n")
+      outlier_title <- paste0("Outliers (>", x_limit, "s):\n")
+      full_text <- paste0(outlier_title, outlier_text)
+      
+      p_hist <- p_hist +
+        annotate("text", x = x_limit * 0.7, y = Inf, label = full_text, 
+                 vjust = 1.1, hjust = 0.5, size = 3.5, family = "monospace",
+                 bbox = list(boxcolour = "white", fill = "white", alpha = 0.9, pad = 1))
+    }
+    
+    # Save the histogram
+    ggsave(filename, plot = p_hist, device = svglite, width = 10, height = 6)
+  })
