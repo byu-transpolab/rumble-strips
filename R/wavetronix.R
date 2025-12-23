@@ -193,28 +193,32 @@ read_camera_top <- function(path) {
   site <- path_elements[2]
 
 
-  readr::read_csv(path, col_names = c("time", "event"), 
-    show_col_types = FALSE) |>
+  df<-read_csv(path, show_col_types = FALSE)
+  
+  df %>%
     mutate(
       site = site,
-      time = str_c(date_code, time, sep = " "),
-      # remove the last 3 digits of the time
-      # because they are the milliseconds
-      time = substr(time, start = 1, stop= nchar(time) - 4),
-      time = lubridate::as_datetime(time, format = "%Y%m%d %H:%M:%S"),
+      date = as.Date(date_code, format = "%Y%m%d"),
       event = case_when(
-        event == "o" ~ "No movement",
-        event == "i" ~ "Movement detected",
-        event == "u" ~ "Ineffective placement"
+        state == "0" ~ "Reset",
+        state == "1" ~ "Some Movement",
+        state == "2" ~ "Moderate Movement",
+        state == "3" ~ "Significant Movement",
+        state == "4" ~ "Out of Specification",
+        TRUE ~ as.character(state)
       )
-      
-    )
-
+    ) %>%
+    select(site, date, time = timestamp, event)
 }
 
+# expects a vector of files and returns a combined dataframe
 get_camera_top_data <- function(folder_path) {
-  # Read all files in the folder
-  files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+ # Accept either a single folder path or a character vector of file paths
+  if (length(folder_path) == 1 && dir.exists(folder_path)) {
+    files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+  } else {
+    files <- folder_path
+  }
 
   # Read each file
   dfs <- purrr::map(files, read_camera_top) |>
@@ -231,7 +235,7 @@ get_camera_top_data <- function(folder_path) {
 read_camera_back <- function(path) {
   # Extract date, site and session data from filename
   # Example: 20250708_sr12_cb_B.csv
-  path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "_"))
+  path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "-"))
   date_code <- path_elements[1]
   site <- path_elements[2]
   session <- path_elements[4]
