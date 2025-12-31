@@ -243,7 +243,7 @@ list(
     format = "file"
   ),
   tar_target(
-    woker_exposure_data,
+    worker_exposure_data,
     get_worker_exposure_data(worker_exposure_files, observations)
   ),
   
