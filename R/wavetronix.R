@@ -415,7 +415,10 @@ get_worker_exposure_data <- function(folder_path, observations) {
           TRUE ~ as.character(state)
         )
       ) %>%
-      dplyr::select(site, date, time = timestamp, event)
+      dplyr::select(site, date, time = timestamp, event) %>%
+      # Filter out numeric events (the event counting software
+      # used 0-9 for internal purposes)
+      dplyr::filter(!event %in% as.character(0:9))
   }) |>
     # Combine into a single data frame
     dplyr::bind_rows()
