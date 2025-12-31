@@ -520,6 +520,8 @@ make_displacement_plot_class_data <- function(class_volume, camera_top_data, out
   for (s in sites) {
     # Filter class volume data to this site, all days
     cv_site <- class_volume %>% filter(site == s)
+    # Remove July 11 data if present (no displacement data that day)
+    cv_site <- cv_site %>% filter(as.Date(time) != as.Date("2025-07-11"))
     # Filter camera data to this site, all days
     cam_site <- camera_top_data %>% filter(site == s)
 
