@@ -379,6 +379,50 @@ add_offsets_to_cb <- function(cb_data,
 
 }
 
+get_worker_exposure_data <- function(folder_path, observations) {
+   # Accept either a single folder path or a character vector of file paths
+  if (length(folder_path) == 1 && dir.exists(folder_path)) {
+    files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+  } else {
+    files <- folder_path
+  }
+
+  # Read each file
+  dfs <- purrr::map(files, function(path) {
+    # Extract date from filename
+    path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "-"))
+    date_code <- path_elements[1]
+
+    # Find site from observations data
+    site <- observations %>%
+      filter(date == as.Date(date_code, format = "%Y%m%d")) %>%
+      pull(site) %>%
+      unique()
+
+    df <- readr::read_csv(path, show_col_types = FALSE)
+
+    df %>%
+      dplyr::mutate(
+        site = site,
+        date = as.Date(date_code, format = "%Y%m%d"),
+        event = case_when(
+          brake == "d" ~ "Arrival",
+          brake == "f" ~ "Departure",
+          avoidance == "b" ~ "Vehicle Passing",
+          class == "j" ~ "Waiting for Gap",
+          class == "k" ~ "Entering Roadway",
+          class == "l" ~ "Exiting Roadway",
+          TRUE ~ as.character(state)
+        )
+      ) %>%
+      dplyr::select(site, date, time = timestamp, event)
+  }) |>
+    # Combine into a single data frame
+    dplyr::bind_rows()
+  
+  dfs
+}
+
 # Plots cumulative volume and TPRS displacement events using wavetronix data
 make_displacement_plot_data <- function(wavetronix,
                                         camera_top_data,
