@@ -227,6 +227,10 @@ get_camera_top_data <- function(folder_path) {
   dfs <- purrr::map(files, read_camera_top) |>
     # Combine into a single data frame
     dplyr::bind_rows()
+
+  dfs <- dfs %>%
+    arrange(time) %>%
+    filter(event != lag(event) | is.na(lag(event)))
   
   dfs
 }
@@ -430,21 +434,22 @@ get_worker_exposure_data <- function(folder_path, observations) {
 }
 
 # Plots cumulative volume and TPRS displacement events using wavetronix data
-make_displacement_plot_data <- function(wavetronix,
+make_displacement_plot_data <- function(cumulated_volume,
                                         camera_top_data,
                                         output_dir = "output") {
 
   # Ensure datetime is properly formatted
-  wavetronix <- wavetronix %>%
-    mutate(datetime = ymd_hms(paste(date, str_pad(time, 6, pad = "0"))))
+  cumulated_volume <- cumulated_volume %>%
+    mutate(datetime = ymd_hms(paste(date, str_pad(time, 6, pad = "0")))) %>%
+    select(site, date, datetime, cumulative, speed, spacing_type)
 
 
   # Get unique sites
-  sites <- unique(wavetronix$site)
+  sites <- unique(cumulated_volume$site)
   output_paths <- list()
 
   for (s in sites) {
-    wv_site <- wavetronix %>% filter(site == s)
+    wv_site <- cumulated_volume %>% filter(site == s)
 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- wv_site %>%
@@ -459,35 +464,36 @@ make_displacement_plot_data <- function(wavetronix,
       ungroup() %>%
       mutate(strip_label = paste0(spacing_type, " ", speed, " mph"),
             strip_label = fct_inorder(strip_label)) %>%
-      select(site, spacing_type, date, strip_label) %>%
-      rename(target_date = date)
+      select(spacing_type, target_date = date, strip_label)
 
 
     # Filter wavetronix to only include rows matching spacing-date pairs
     wv_filtered <- wv_site %>%
-      inner_join(spacing_dates, by = c("spacing_type", "date" = "target_date"))
+      inner_join(spacing_dates,
+                by = c("spacing_type", "date" = "target_date")) %>%
+      rename(time = datetime)
 
     # Filter camera data to same site and matching dates
     cam_filtered <- camera_top_data %>%
       filter(site == s) %>%
-      mutate(date = as_date(time)) %>%
+      mutate(date = as.Date(time)) %>%
       inner_join(spacing_dates, by = c("date" = "target_date"))
 
     # Plot
     p <- ggplot() +
       geom_line(data = wv_filtered,
-                aes(x = datetime, y = cumulative, group = date), color = "black") +
+                aes(x = time, y = cumulative, group = date), color = "black") +
       geom_vline(data = cam_filtered,
              aes(xintercept = time, color = event),
              linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
       scale_color_manual(values = c(
-        "Reset"                = "forestgreen",
-        "Some Movement"        = "orange",
-        "Moderate Movement"    = "red",
-        "Significant Movement" = "purple",
-        "Out of Specification" = "black"),
+        "Reset"                = "#1E822F",
+        "Some Movement"        = "#879D35",
+        "Moderate Movement"    = "#F0B73B",
+        "Significant Movement" = "#E96123",
+        "Out of Specification" = "#E10A0A"),
       breaks = c("Passenger", "Truck",
-                 "Reset", " Some Movement", "Moderate Movement",
+                 "Reset", "Some Movement", "Moderate Movement",
                  "Significant Movement", "Out of Specification")) +
       facet_wrap(~strip_label, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
@@ -551,7 +557,7 @@ make_displacement_plot_class_data <- function(class_volume, camera_top_data, out
         "Significant Movement" = "#E96123",
         "Out of Specification" = "#E10A0A"),
       breaks = c("Passenger", "Truck",
-                 "Reset", " Some Movement", "Moderate Movement",
+                 "Reset", "Some Movement", "Moderate Movement",
                  "Significant Movement", "Out of Specification")) +
       facet_wrap(~spacing_type, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "Legend") +
