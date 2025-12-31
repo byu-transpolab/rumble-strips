@@ -263,9 +263,9 @@ list(
   ),
 
   # Plot class volumes and events for each site with camera back data
-  #tar_target(displacement_plots_cb,
-  #  make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
-  #),
+  tar_target(displacement_plots_cb,
+    make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
+  ),
 
   # create tibble from wavetronix data with columns:
   # site, unit, date, time, speed_85, strip_spacing

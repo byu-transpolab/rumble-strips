@@ -505,21 +505,25 @@ make_displacement_plot_class_data <- function(class_volume, camera_top_data, out
   output_paths <- list()
 
   for (s in sites) {
+    # Filter class volume data to this site, all days
     cv_site <- class_volume %>% filter(site == s)
+    # Filter camera data to this site, all days
     cam_site <- camera_top_data %>% filter(site == s)
 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- cv_site %>%
-    arrange(date) %>%
-    mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG")) %>%
-    group_by(site, spacing_type) %>%
-    slice(1) %>%  # keep only the first date per spacing
-    ungroup() %>%
-    select(spacing_type, date) %>%
-    rename(target_date = date)
-
+      mutate(date = as.Date(time)) %>%
+      arrange(date) %>%
+      mutate(spacing_type = fct_relevel(spacing_type,
+                            "NO TPRS", "UDOT", "PSS", "LONG")) %>%
+      group_by(site, spacing_type) %>%
+      slice(1) %>%  # keep only the first date per spacing
+      ungroup() %>%
+      select(spacing_type, date) %>%
+      rename(target_date = date)
+      
     # Plot: two cumulative lines (passenger and truck)
-    p <- ggplot() + 
+    p <- ggplot() +
       geom_line(data = cv_site,
                 aes(x = time, y = cumulative, color = class, group = class),
                 linewidth = 1) +
