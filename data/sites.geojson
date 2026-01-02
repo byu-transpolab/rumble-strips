@@ -1,0 +1,73 @@
+{
+    "features": [
+        {
+            "geometry": {
+                "coordinates": [
+                    -112.31353454615856,
+                    37.744754661334426
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "Location": "Mile marker 6.5",
+                "Roadway": "SR-12",
+                "Start": "2025-07-07",
+                "End": "2025-07-11",
+                "site": 1
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    -110.481569,
+                    39.456055
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "Location": "20 miles W of Wellington",
+                "Roadway": "US-6",
+                "Start": "2025-07-15",
+                "End": "2025-07-18",
+                "site": 2
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    -112.46206053446042,
+                    38.57343203416073
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "Location": "Clear Creek Summit",
+                "Roadway": "I-70",
+                "Start": "2025-07-29",
+                "End": "2025-08-01",
+                "site": 3
+            },
+            "type": "Feature"
+        },
+        {
+            "geometry": {
+                "coordinates": [
+                    -110.62478,
+                    39.97207
+                ],
+                "type": "Point"
+            },
+            "properties": {
+                "Location": "North of summit",
+                "Roadway": "US-191",
+                "Start": "2025-08-05",
+                "End": "2025-08-08",
+                "site": 4
+            },
+            "type": "Feature"
+        }
+    ],
+    "type": "FeatureCollection"
+}

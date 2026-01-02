@@ -6,6 +6,7 @@
 # Load packages required to define the pipeline:
 library(targets)
 library(tidyverse)
+library(rstatix)
 library(googledrive)
 library(readxl)
 library(mlogit)
@@ -38,6 +39,7 @@ tar_option_set(
 ##target list#########################################
 
 source("R/functions.R")
+source("R/wavetronix.R")
 
 list(
   # Download Google Sheets as Excel files before anything else
@@ -128,7 +130,7 @@ list(
   # Plot each station
   tar_target(
     plots,
-    map2(
+      map2(
       hourly_volumes$vector, 
       hourly_volumes$station_number, 
       ~ ggsave(
@@ -188,7 +190,92 @@ list(
   tar_target(
     save_summary,
     write_csv(final_summary, "data/temp_data/station_summary")
-  )
+  ),
+
+
+
+  ## ===== ANALYSIS =====
+  tar_target(observations_file, "data/observation_data.csv", format = "file"),
+  tar_target(observations, read_observations(observations_file)),
+
+  # puts all wavetronix data into one dataframe with columns:
+  # site, unit, lane, volume, occupancy, speed, speed_85,
+  # headway, gap, sensor_time, date, interval
+  tar_target(wavetronix_files,
+    "data/wavetronix",
+    format = "file"
+  ),
+  tar_target(wavetronix,
+    read_wavetronix_folder(wavetronix_files)
+  ),
+
+  # puts all camera top data into one dataframe with columns:
+  # time, event, site
+  tar_target(
+    camera_top_files, 
+    list.files("data/camera_top", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(
+    camera_top_data,
+    get_camera_top_data(camera_top_files)
+  ),
+
+  # puts all camera back data into one dataframe with columns:
+  # site, date, time, session, class, brake, departure, flagged, lane
+  tar_target(
+    camera_back_files,
+    list.files("data/camera_back", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(
+    camera_back_data,
+    get_camera_back_data(camera_back_files)
+  ),
+  
+  # puts all worker exposure data into one dataframe with columns:
+  # site, date, time, event
+  # events are one of the following:
+  #(arrive, depart, vehicle_pass, look for gap, enter road, exit road)
+  tar_target(
+    worker_exposure_files,
+    list.files("data/worker_exposure", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(
+    worker_exposure_data,
+    get_worker_exposure_data(worker_exposure_files, observations)
+  ),
+  
+  # calculate cumulative traffic volume for each day from Wavetronix data
+  # returns tibble with: time <dttm>, total, cumulative
+  tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),
+
+  # calculate cumulative traffic volume for each class from camera back data
+  # returns tibble with: time <dttm>, class, total, cumulative
+  tar_target(cumulated_class_volume,
+    cumulate_class_volume(camera_back_data, observations)
+  ),
+
+  # Plot volume and events for each site with wavetronix data
+  tar_target(displacement_plots_wave,
+    make_displacement_plot_data(cumulated_volume, camera_top_data)
+  ),
+
+  # Plot class volumes and events for each site with camera back data
+  tar_target(displacement_plots_cb,
+    make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
+  ),
+
+  # create tibble from wavetronix data with columns:
+  # site, unit, date, time, speed_85, strip_spacing
+  # for use in statistical tests of 85th percentile speed
+  tar_target(speed_data, prepare_speed_data(wavetronix, observations)),
+
+  # t-test of 85th percentile speed by unit (w1 vs w2)
+  tar_target(paired_t_test, paired_test(speed_data)), 
+
+  tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test))
 )
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
@@ -198,3 +285,6 @@ list(
 #Next Step: Can we run this code on data files of our own making?
 #Can we make it easier for us to run our own data sets by asking for an input prompt for . . .  
 # . . . the code to prompt an input file name for it to run?
+
+
+
