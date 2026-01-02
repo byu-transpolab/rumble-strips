@@ -232,7 +232,21 @@ list(
     camera_back_data,
     get_camera_back_data(camera_back_files)
   ),
-
+  
+  # puts all worker exposure data into one dataframe with columns:
+  # site, date, time, event
+  # events are one of the following:
+  #(arrive, depart, vehicle_pass, look for gap, enter road, exit road)
+  tar_target(
+    worker_exposure_files,
+    list.files("data/worker_exposure", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(
+    worker_exposure_data,
+    get_worker_exposure_data(worker_exposure_files, observations)
+  ),
+  
   # calculate cumulative traffic volume for each day from Wavetronix data
   # returns tibble with: time <dttm>, total, cumulative
   tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),
@@ -249,9 +263,9 @@ list(
   ),
 
   # Plot class volumes and events for each site with camera back data
-  #tar_target(displacement_plots_cb,
-  #  make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
-  #),
+  tar_target(displacement_plots_cb,
+    make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
+  ),
 
   # create tibble from wavetronix data with columns:
   # site, unit, date, time, speed_85, strip_spacing

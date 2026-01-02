@@ -198,7 +198,10 @@ read_camera_top <- function(path) {
   df %>%
     mutate(
       site = site,
-      date = as.Date(date_code, format = "%Y%m%d"),
+      # date = as.Date(date_code, format = "%Y%m%d"),
+      time = as.POSIXct(paste0(date_code, " ", timestamp),
+                        format = "%Y%m%d %H:%M:%OS",
+                        tz = Sys.timezone()),
       event = case_when(
         state == "0" ~ "Reset",
         state == "1" ~ "Some Movement",
@@ -208,7 +211,7 @@ read_camera_top <- function(path) {
         TRUE ~ as.character(state)
       )
     ) %>%
-    select(site, date, time = timestamp, event)
+    select(site, time, event)
 }
 
 # expects a vector of files and returns a combined dataframe
@@ -224,6 +227,10 @@ get_camera_top_data <- function(folder_path) {
   dfs <- purrr::map(files, read_camera_top) |>
     # Combine into a single data frame
     dplyr::bind_rows()
+
+  dfs <- dfs %>%
+    arrange(time) %>%
+    filter(event != lag(event) | is.na(lag(event)))
   
   dfs
 }
@@ -379,62 +386,115 @@ add_offsets_to_cb <- function(cb_data,
 
 }
 
+get_worker_exposure_data <- function(folder_path, observations) {
+   # Accept either a single folder path or a character vector of file paths
+  if (length(folder_path) == 1 && dir.exists(folder_path)) {
+    files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+  } else {
+    files <- folder_path
+  }
+
+  # Read each file
+  dfs <- purrr::map(files, function(path) {
+    # Extract date from filename
+    path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "-"))
+    date_code <- path_elements[1]
+
+    # Find site from observations data
+    site <- observations %>%
+      filter(date == as.Date(date_code, format = "%Y%m%d")) %>%
+      pull(site) %>%
+      unique()
+
+    df <- readr::read_csv(path, show_col_types = FALSE)
+
+    df %>%
+      dplyr::mutate(
+        site = site,
+        date = as.Date(date_code, format = "%Y%m%d"),
+        event = case_when(
+          brake == "d" ~ "Arrival",
+          brake == "f" ~ "Departure",
+          avoidance == "b" ~ "Vehicle Passing",
+          class == "j" ~ "Waiting for Gap",
+          class == "k" ~ "Entering Roadway",
+          class == "l" ~ "Exiting Roadway",
+          TRUE ~ as.character(state)
+        )
+      ) %>%
+      dplyr::select(site, date, time = timestamp, event) %>%
+      # Filter out numeric events (the event counting software
+      # used 0-9 for internal purposes)
+      dplyr::filter(!event %in% as.character(0:9))
+  }) |>
+    # Combine into a single data frame
+    dplyr::bind_rows()
+  
+  dfs
+}
+
 # Plots cumulative volume and TPRS displacement events using wavetronix data
-make_displacement_plot_data <- function(wavetronix,
+make_displacement_plot_data <- function(cumulated_volume,
                                         camera_top_data,
                                         output_dir = "output") {
 
   # Ensure datetime is properly formatted
-  wavetronix <- wavetronix %>%
-    mutate(datetime = ymd_hms(paste(date, str_pad(time, 6, pad = "0"))))
+  cumulated_volume <- cumulated_volume %>%
+    mutate(datetime = ymd_hms(paste(date, str_pad(time, 6, pad = "0")))) %>%
+    select(site, date, datetime, cumulative, speed, spacing_type)
 
 
   # Get unique sites
-  sites <- unique(wavetronix$site)
+  sites <- unique(cumulated_volume$site)
   output_paths <- list()
 
   for (s in sites) {
-    wv_site <- wavetronix %>% filter(site == s)
+    wv_site <- cumulated_volume %>% filter(site == s)
 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- wv_site %>%
-  arrange(date) %>%
-  mutate(spacing_type = fct_relevel(spacing_type, 
-                                    "NO TPRS", 
-                                    "UDOT", 
-                                    "PSS", 
-                                    "LONG")) %>%
-  group_by(site, spacing_type) %>%
-  slice(1) %>%  # keep only the first date per spacing
-  ungroup() %>%
-  mutate(strip_label = paste0(spacing_type, " ", speed, " mph"),
-         strip_label = fct_inorder(strip_label)) %>%
-  select(site, spacing_type, date, strip_label) %>%
-  rename(target_date = date)
+      arrange(date) %>%
+      mutate(spacing_type = fct_relevel(spacing_type,
+                                        "NO TPRS",
+                                        "UDOT",
+                                        "PSS",
+                                        "LONG")) %>%
+      group_by(site, spacing_type) %>%
+      slice(1) %>%  # keep only the first date per spacing
+      ungroup() %>%
+      mutate(strip_label = paste0(spacing_type, " ", speed, " mph"),
+            strip_label = fct_inorder(strip_label)) %>%
+      select(spacing_type, target_date = date, strip_label)
 
 
     # Filter wavetronix to only include rows matching spacing-date pairs
     wv_filtered <- wv_site %>%
-      inner_join(spacing_dates, by = c("spacing_type", "date" = "target_date"))
+      inner_join(spacing_dates,
+                by = c("spacing_type", "date" = "target_date")) %>%
+      rename(time = datetime)
 
     # Filter camera data to same site and matching dates
     cam_filtered <- camera_top_data %>%
       filter(site == s) %>%
-      mutate(date = as_date(time)) %>%
-      inner_join(spacing_dates, by = c("site", "date" = "target_date"))
+      mutate(date = as.Date(time)) %>%
+      inner_join(spacing_dates, by = c("date" = "target_date"))
 
     # Plot
     p <- ggplot() +
       geom_line(data = wv_filtered,
-                aes(x = datetime, y = cumulative, group = date), color = "black") +
+                aes(x = time, y = cumulative, group = date), color = "black") +
       geom_vline(data = cam_filtered,
              aes(xintercept = time, color = event),
              linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
       scale_color_manual(values = c(
-        "No movement" = "forestgreen",
-        "Movement detected" = "orange",
-        "Ineffective placement" = "red"),
-        breaks = c("No movement", "Movement detected", "Ineffective placement")) +
+        "Reset"                = "#1E822F",
+        "Some Movement"        = "#879D35",
+        "Moderate Movement"    = "#F0B73B",
+        "Significant Movement" = "#E96123",
+        "Out of Specification" = "#E10A0A"),
+      breaks = c("Passenger", "Truck",
+                 "Reset", "Some Movement", "Moderate Movement",
+                 "Significant Movement", "Out of Specification")) +
       facet_wrap(~strip_label, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
       theme_minimal()
@@ -458,35 +518,49 @@ make_displacement_plot_class_data <- function(class_volume, camera_top_data, out
   output_paths <- list()
 
   for (s in sites) {
+    # Filter class volume data to this site, all days
     cv_site <- class_volume %>% filter(site == s)
+    # Remove July 11 data if present (no displacement data that day)
+    cv_site <- cv_site %>% filter(as.Date(time) != as.Date("2025-07-11"))
+    # Filter camera data to this site, all days
     cam_site <- camera_top_data %>% filter(site == s)
 
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- cv_site %>%
-    arrange(date) %>%
-    mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG")) %>%
-    group_by(site, spacing_type) %>%
-    slice(1) %>%  # keep only the first date per spacing
-    ungroup() %>%
-    select(spacing_type, date) %>%
-    rename(target_date = date)
+      mutate(date = as.Date(time)) %>%
+      arrange(date) %>%
+      mutate(spacing_type = fct_relevel(spacing_type,
+                            "NO TPRS", "UDOT", "PSS", "LONG")) %>%
+      group_by(site, spacing_type) %>%
+      slice(1) %>%  # keep only the first date per spacing
+      ungroup() %>%
+      select(spacing_type, date) %>%
+      rename(target_date = date)
+
+    # Add spacing_type to camera data
+    cam_site <- cam_site %>%
+      mutate(date = as.Date(time)) %>%
+      inner_join(spacing_dates, by = c("date" = "target_date"))
 
     # Plot: two cumulative lines (passenger and truck)
-    p <- ggplot() + 
+    p <- ggplot() +
       geom_line(data = cv_site,
                 aes(x = time, y = cumulative, color = class, group = class),
                 linewidth = 1) +
-      #geom_vline(data = cam_site,
-      #          aes(xintercept = time, color = event),
-      #          linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
+      geom_vline(data = cam_site,
+                aes(xintercept = time, color = event),
+                linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
       scale_color_manual(values = c(
-        "Passenger" = "blue",
-        "Truck" = "brown",
-        "No movement" = "forestgreen",
-        "Movement detected" = "orange",
-        "Ineffective placement" = "red"),
-        breaks = c("Passenger", "Truck", 
-                  "No movement", "Movement detected", "Ineffective placement")) +
+        "Passenger"            = "blue",
+        "Truck"                = "brown",
+        "Reset"                = "#1E822F",
+        "Some Movement"        = "#879D35",
+        "Moderate Movement"    = "#F0B73B",
+        "Significant Movement" = "#E96123",
+        "Out of Specification" = "#E10A0A"),
+      breaks = c("Passenger", "Truck",
+                 "Reset", "Some Movement", "Moderate Movement",
+                 "Significant Movement", "Out of Specification")) +
       facet_wrap(~spacing_type, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "Legend") +
       theme_minimal()
