@@ -1,0 +1,148 @@
+site,date,time,event
+sr12,2025-07-07,13:38:28:668,Arrival
+sr12,2025-07-07,13:38:31:651,Vehicle Passing
+sr12,2025-07-07,13:38:35:401,Vehicle Passing
+sr12,2025-07-07,13:38:37:152,Vehicle Passing
+sr12,2025-07-07,13:38:39:902,Vehicle Passing
+sr12,2025-07-07,13:38:51:153,Vehicle Passing
+sr12,2025-07-07,13:39:23:015,Vehicle Passing
+sr12,2025-07-07,13:39:55:653,Vehicle Passing
+sr12,2025-07-07,13:40:01:151,Vehicle Passing
+sr12,2025-07-07,13:40:05:156,Waiting for Gap
+sr12,2025-07-07,13:40:08:455,Entering Roadway
+sr12,2025-07-07,13:40:22:904,Exiting Roadway
+sr12,2025-07-07,13:40:28:403,Waiting for Gap
+sr12,2025-07-07,13:40:38:157,Entering Roadway
+sr12,2025-07-07,13:40:50:153,Exiting Roadway
+sr12,2025-07-07,13:41:11:404,Vehicle Passing
+sr12,2025-07-07,13:41:13:905,Vehicle Passing
+sr12,2025-07-07,13:41:16:654,Waiting for Gap
+sr12,2025-07-07,13:41:19:155,Entering Roadway
+sr12,2025-07-07,13:41:33:902,Waiting for Gap
+sr12,2025-07-07,13:41:33:903,Exiting Roadway
+sr12,2025-07-07,13:41:38:656,Vehicle Passing
+sr12,2025-07-07,13:41:39:903,Waiting for Gap
+sr12,2025-07-07,13:41:55:154,Vehicle Passing
+sr12,2025-07-07,13:42:02:404,Vehicle Passing
+sr12,2025-07-07,13:42:02:906,Entering Roadway
+sr12,2025-07-07,13:42:09:402,Waiting for Gap
+sr12,2025-07-07,13:42:15:170,Vehicle Passing
+sr12,2025-07-07,13:42:15:654,Waiting for Gap
+sr12,2025-07-07,13:42:19:656,Vehicle Passing
+sr12,2025-07-07,13:42:27:154,Vehicle Passing
+sr12,2025-07-07,13:42:30:656,Vehicle Passing
+sr12,2025-07-07,13:42:35:404,Entering Roadway
+sr12,2025-07-07,13:42:51:654,Exiting Roadway
+sr12,2025-07-07,13:42:57:402,Entering Roadway
+sr12,2025-07-07,13:43:03:900,Waiting for Gap
+sr12,2025-07-07,13:43:03:901,Exiting Roadway
+sr12,2025-07-07,13:43:06:659,Vehicle Passing
+sr12,2025-07-07,13:43:08:659,Vehicle Passing
+sr12,2025-07-07,13:43:11:653,Vehicle Passing
+sr12,2025-07-07,13:43:13:656,Vehicle Passing
+sr12,2025-07-07,13:43:17:151,Vehicle Passing
+sr12,2025-07-07,13:43:19:653,Vehicle Passing
+sr12,2025-07-07,13:43:20:653,Vehicle Passing
+sr12,2025-07-07,13:43:28:156,Entering Roadway
+sr12,2025-07-07,13:43:48:656,Exiting Roadway
+sr12,2025-07-07,13:44:43:905,Vehicle Passing
+sr12,2025-07-07,13:45:08:406,Departure
+sr12,2025-07-07,13:45:11:656,Vehicle Passing
+sr12,2025-07-07,13:45:16:656,Vehicle Passing
+sr12,2025-07-07,13:45:18:653,Vehicle Passing
+sr12,2025-07-07,13:45:20:404,Vehicle Passing
+us6,2025-07-15,16:18:36:902,Arrival
+us6,2025-07-15,16:18:38:401,Vehicle Passing
+us6,2025-07-15,16:18:41:652,Vehicle Passing
+us6,2025-07-15,16:18:42:652,Vehicle Passing
+us6,2025-07-15,16:19:03:152,Vehicle Passing
+us6,2025-07-15,16:19:05:902,Vehicle Passing
+us6,2025-07-15,16:19:10:903,Vehicle Passing
+us6,2025-07-15,16:19:11:653,Waiting for Gap
+us6,2025-07-15,16:19:12:151,Vehicle Passing
+us6,2025-07-15,16:19:13:652,Entering Roadway
+us6,2025-07-15,16:19:34:150,Waiting for Gap
+us6,2025-07-15,16:19:34:151,Exiting Roadway
+us6,2025-07-15,16:19:47:902,Vehicle Passing
+us6,2025-07-15,16:19:51:900,Vehicle Passing
+us6,2025-07-15,16:20:03:901,Vehicle Passing
+us6,2025-07-15,16:20:05:902,Entering Roadway
+us6,2025-07-15,16:20:28:153,Exiting Roadway
+us6,2025-07-15,16:20:39:152,Vehicle Passing
+us6,2025-07-15,16:20:41:302,Vehicle Passing
+us6,2025-07-15,16:20:53:652,Departure
+us6,2025-07-17,15:56:15:402,Arrival
+us6,2025-07-17,15:56:21:652,Vehicle Passing
+us6,2025-07-17,15:56:28:402,Waiting for Gap
+us6,2025-07-17,15:56:29:901,Entering Roadway
+us6,2025-07-17,15:57:02:652,Exiting Roadway
+us6,2025-07-17,15:57:16:402,Vehicle Passing
+us6,2025-07-17,15:57:22:902,Vehicle Passing
+us6,2025-07-17,15:57:27:652,Vehicle Passing
+us6,2025-07-17,15:57:30:402,Vehicle Passing
+us6,2025-07-17,15:57:33:651,Vehicle Passing
+us6,2025-07-17,15:57:36:652,Vehicle Passing
+us6,2025-07-17,15:57:54:652,Vehicle Passing
+us6,2025-07-17,15:57:57:652,Vehicle Passing
+us6,2025-07-17,15:58:06:652,Vehicle Passing
+us6,2025-07-17,15:58:09:902,Vehicle Passing
+us6,2025-07-17,15:58:12:652,Vehicle Passing
+us6,2025-07-17,15:58:14:152,Vehicle Passing
+us6,2025-07-17,15:58:18:902,Vehicle Passing
+us6,2025-07-17,15:58:22:152,Vehicle Passing
+us6,2025-07-17,15:58:38:651,Vehicle Passing
+us6,2025-07-17,15:58:56:652,Departure
+us6,2025-07-18,09:18:18:151,Arrival
+us6,2025-07-18,09:18:33:902,Vehicle Passing
+us6,2025-07-18,09:18:40:651,Vehicle Passing
+us6,2025-07-18,09:18:49:153,Vehicle Passing
+us6,2025-07-18,09:18:58:155,Vehicle Passing
+us6,2025-07-18,09:19:08:905,Vehicle Passing
+us6,2025-07-18,09:19:21:657,Vehicle Passing
+us6,2025-07-18,09:19:23:452,Vehicle Passing
+us6,2025-07-18,09:19:30:401,Vehicle Passing
+us6,2025-07-18,09:19:33:405,Vehicle Passing
+us6,2025-07-18,09:19:35:406,Vehicle Passing
+us6,2025-07-18,09:19:51:906,Vehicle Passing
+us6,2025-07-18,09:20:32:405,Waiting for Gap
+us6,2025-07-18,09:20:35:904,Entering Roadway
+us6,2025-07-18,09:20:56:156,Exiting Roadway
+us6,2025-07-18,09:21:06:655,Vehicle Passing
+us6,2025-07-18,09:21:16:156,Waiting for Gap
+us6,2025-07-18,09:21:18:402,Entering Roadway
+us6,2025-07-18,09:21:30:402,Exiting Roadway
+us6,2025-07-18,09:21:37:907,Waiting for Gap
+us6,2025-07-18,09:21:40:404,Entering Roadway
+us6,2025-07-18,09:21:56:654,Waiting for Gap
+us6,2025-07-18,09:21:56:655,Exiting Roadway
+us6,2025-07-18,09:22:10:406,Vehicle Passing
+us6,2025-07-18,09:22:11:156,Entering Roadway
+us6,2025-07-18,09:22:32:654,Exiting Roadway
+us6,2025-07-18,09:22:53:905,Waiting for Gap
+us6,2025-07-18,09:22:56:403,Entering Roadway
+us6,2025-07-18,09:23:15:656,Exiting Roadway
+us6,2025-07-18,09:23:19:903,Vehicle Passing
+us6,2025-07-18,09:23:40:904,Vehicle Passing
+us6,2025-07-18,09:24:20:902,Vehicle Passing
+us6,2025-07-18,09:25:16:655,Vehicle Passing
+us6,2025-07-18,09:25:17:903,Departure
+i70,2025-07-29,16:26:34:406,Arrival
+i70,2025-07-29,16:26:38:655,Entering Roadway
+i70,2025-07-29,16:27:10:152,Exiting Roadway
+i70,2025-07-29,16:27:10:905,Vehicle Passing
+i70,2025-07-29,16:27:27:503,Vehicle Passing
+i70,2025-07-29,16:27:32:401,Departure
+i70,2025-07-31,11:59:07:200,Vehicle Passing
+i70,2025-07-31,11:59:10:901,Arrival
+i70,2025-07-31,11:59:16:404,Entering Roadway
+i70,2025-07-31,11:59:40:652,Exiting Roadway
+i70,2025-07-31,11:59:50:102,Vehicle Passing
+i70,2025-07-31,11:59:53:302,Vehicle Passing
+i70,2025-07-31,11:59:55:402,Vehicle Passing
+i70,2025-07-31,12:00:04:652,Vehicle Passing
+i70,2025-07-31,12:00:08:152,Vehicle Passing
+i70,2025-07-31,12:00:19:652,Vehicle Passing
+i70,2025-07-31,12:00:31:802,Vehicle Passing
+i70,2025-07-31,12:00:34:402,Vehicle Passing
+i70,2025-07-31,12:00:40:403,Vehicle Passing
+i70,2025-07-31,12:00:42:655,Departure
