@@ -255,6 +255,9 @@ raff_overall_col <- raff_overall %>%
 
 utils::View(raff_overall_col, title = "Critical headway (Raff): OVERALL")
 
+#export raff_overall_col to CSV titled Critical headway (Raff): OVERALL to box drive
+readr::write_csv(raff_overall_col, "/Users/benjaminhailstone/Library/CloudStorage/Box-Box/2024-tprs/output/Critical_headway_Raff_OVERALL.csv")
+
 #Note: We have a critical time! Now, we will compare that t_c value against each site/day distribution.
 # We're taking a value representing the overall behavior of worker headway acceptance/rejection, 
 # and comparing it against the distributions of headways for each site/day.
