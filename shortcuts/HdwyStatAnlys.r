@@ -23,10 +23,22 @@ if (length(missing_cols) > 0) {
 # 1) Parse timestamps (with milliseconds) and order ----
 events <- worker_exposure_data %>%
   mutate(
-    # Combine date + time; parse fractional seconds robustly
-    ts = as.POSIXct(paste(date, time),
-                    tz = "UTC",
-                    format = "%Y-%m-%d %H:%M:%OS")
+    # Extract the HH:MM:SS part and the millisecond part
+    sec_part = str_extract(time, "^\\d{2}:\\d{2}:\\d{2}"),
+    ms_part  = str_extract(time, ":(\\d{1,3})$") %>% str_remove("^:"),
+
+    # Normalize to "HH:MM:SS.mmm" and pad ms to 3 digits if needed
+    time_norm = paste0(sec_part, ".", str_pad(ms_part, width = 3, side = "left", pad = "0")),
+
+    # Combine date + normalized time; parse milliseconds via %OS
+    ts = as.POSIXct(
+      paste(date, time_norm),
+      tz = "UTC",
+      format = "%Y-%m-%d %H:%M:%OS"
+    ),
+    
+    # Create a formatted display column with millisecond precision
+    ts_display = paste(date, time_norm)
   ) %>%
   arrange(site, date, ts)
 
@@ -36,8 +48,11 @@ vp <- events %>%
   group_by(site, date) %>%
   arrange(ts, .by_group = TRUE) %>%
   mutate(
-    prev_vp_ts = lag(ts),
-    headway_s  = as.numeric(ts - prev_vp_ts, units = "secs")
+    prev_vp_ts_numeric = lag(ts),
+    prev_vp_ts_display = lag(ts_display),
+    current_vp_ts_numeric = ts,
+    current_vp_ts_display = ts_display,
+    headway_s  = as.numeric(ts - prev_vp_ts_numeric, units = "secs")
   ) %>%
   ungroup()
 
@@ -52,10 +67,10 @@ wfg_events <- events %>%
 vp_wfg <- vp %>%
   left_join(wfg_events, by = c("site", "date")) %>%
   group_by(site, date) %>%
-  arrange(ts, .by_group = TRUE) %>%
+  arrange(current_vp_ts_numeric, .by_group = TRUE) %>%
   mutate(
     last_wfg_ts = {
-      map2_dbl(ts, wfg_ts_vec, ~ {
+      map2_dbl(current_vp_ts_numeric, wfg_ts_vec, ~ {
         if (is.null(.y) || length(.y) == 0) {
           NA_real_
         } else {
@@ -89,14 +104,14 @@ headways_all <- vp_wfg %>%
     has_er = map_lgl(er_ts_vec, ~ !is.null(.x) && length(.x) > 0),
     # Define interval start depending on whether a WFG exists
     bound_start = case_when(
-      !is.na(last_wfg_ts) & !is.na(prev_vp_ts) ~ as.POSIXct(pmax(as.numeric(prev_vp_ts),
+      !is.na(last_wfg_ts) & !is.na(prev_vp_ts_numeric) ~ as.POSIXct(pmax(as.numeric(prev_vp_ts_numeric),
                                                                  as.numeric(last_wfg_ts)),
                                                             origin = "1970-01-01", tz = "UTC"),
-      !is.na(last_wfg_ts) &  is.na(prev_vp_ts) ~ last_wfg_ts,  # First VP after WFG (no couplet yet)
-      is.na(last_wfg_ts)                        ~ prev_vp_ts   # No WFG: interval starts at previous VP
+      !is.na(last_wfg_ts) &  is.na(prev_vp_ts_numeric) ~ last_wfg_ts,  # First VP after WFG (no couplet yet)
+      is.na(last_wfg_ts)                        ~ prev_vp_ts_numeric   # No WFG: interval starts at previous VP
     ),
     # Check for ER strictly inside (bound_start, ts)
-    er_in_interval = pmap_lgl(list(bound_start, ts, er_ts_vec), ~ {
+    er_in_interval = pmap_lgl(list(bound_start, current_vp_ts_numeric, er_ts_vec), ~ {
       if (is.null(..3) || length(..3) == 0) FALSE
       else any(..3 > ..1 & ..3 < ..2)
     }),
@@ -114,8 +129,8 @@ headways_all <- vp_wfg %>%
   ) %>%
   select(
     site, date,
-    prev_vp_ts,
-    current_vp_ts = ts,
+    prev_vp_ts = prev_vp_ts_display,
+    current_vp_ts = current_vp_ts_display,
     last_wfg_ts,
     bound_start,
     headway_s,
@@ -229,10 +244,25 @@ raff_by_site_date <- gaps %>%
 
 # Output Previews (open in tabs) ----
 utils::View(headways_all,      title = "Headways: ALL Vehicle Passing rows")
-utils::View(headways_couplets, title = "Headways: Vehicle Passing couplets only")
-utils::View(headway_summary_by_site, title = "Summary by site & status")
-utils::View(event_pair_counts, title = "Event pair counts")
-utils::View(event_triplet_counts, title = "Event triplet counts")
-utils::View(raff_overall,       title = "Critical headway (Raff): OVERALL")
-utils::View(raff_by_site,       title = "Critical headway (Raff): by SITE")
-utils::View(raff_by_site_date,  title = "Critical headway (Raff): by SITE + DATE")
+raff_overall_col <- raff_overall %>%
+  tidyr::pivot_longer(everything(), names_to = "metric", values_to = "value") %>%
+  mutate(
+    # try to coerce to numeric and round to 3 decimals when possible
+    value_num = suppressWarnings(as.numeric(value)),
+    value = ifelse(!is.na(value_num), format(round(value_num, 3), nsmall = 3), as.character(value))
+  ) %>%
+  select(metric, value)
+
+utils::View(raff_overall_col, title = "Critical headway (Raff): OVERALL")
+
+#Note: We have a critical time! Now, we will compare that t_c value against each site/day distribution.
+# We're taking a value representing the overall behavior of worker headway acceptance/rejection, 
+# and comparing it against the distributions of headways for each site/day.
+
+#utils::View(headways_couplets, title = "Headways: Vehicle Passing couplets only")
+#utils::View(headway_summary_by_site, title = "Summary by site & status")
+#utils::View(event_pair_counts, title = "Event pair counts")
+#utils::View(event_triplet_counts, title = "Event triplet counts")
+#utils::View(raff_overall,       title = "Critical headway (Raff): OVERALL")
+#utils::View(raff_by_site,       title = "Critical headway (Raff): by SITE")
+#utils::View(raff_by_site_date,  title = "Critical headway (Raff): by SITE + DATE")
