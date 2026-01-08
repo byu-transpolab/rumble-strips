@@ -48,3 +48,7 @@ utils::View(ct)
 #Use this to look at the wavetronix tibble
 wv <- tar_read(wavetronix)
 utils::View(wv)
+
+#Use this to look at the worker_exposure_data tibble
+w_e_d <- tar_read(worker_exposure_data)
+utils::View(w_e_d)
