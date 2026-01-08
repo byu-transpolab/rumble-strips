@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 })
 
 # ==== CONFIG ====
-out_dir <- "/Users/benjaminhailstone/Documents/GitHub/rumble-strips/data/Avoidance Pie Charts"
+out_dir <- "/Users/benjaminhailstone/Library/CloudStorage/Box-Box/2024-tprs/output/avoidance_pie_charts"
 if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 # Validate `cb`
