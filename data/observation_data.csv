@@ -1,4 +1,4 @@
-﻿date,site,strip_spacing,trailer_spacing,gopro_spacing,spacing_type
+﻿date,site,strip_spacing,trailer_spacing,gopro_spacing,spacing_type, dist_wav, dist_camera
 7/7/2025,sr12,20,762,75,UDOT
 7/8/2025,sr12,0,851,80,NO TPRS
 7/9/2025,sr12,25,878,76,PSS
