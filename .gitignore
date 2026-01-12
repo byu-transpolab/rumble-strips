@@ -15,6 +15,7 @@ elsarticle-harv.bst
 *-tikzDictionary
 *_files/
 .vscode/settings.json
+.DS_Store
 rumble-strips.Rproj
 data/all_station_data.rds
 data/list_of_hourly_volumes
