@@ -40,6 +40,7 @@ tar_option_set(
 
 source("R/functions.R")
 source("R/wavetronix.R")
+source("R/displacement.R")
 
 list(
   # Download Google Sheets as Excel files before anything else
@@ -278,8 +279,11 @@ list(
   tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test)),
 
   tar_target(displacement_data, 
-    compile_displacement_data(wavetronix, camera_back_data, camera_top_data)
-  )
+    compile_displacement_data(wavetronix, camera_back_data, camera_top_data)),
+
+  tar_target(state_transition, estimate_state_transition(displacement_data))
+
+) # closes list of targets
 
 
 

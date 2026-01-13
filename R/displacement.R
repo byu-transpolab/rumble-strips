@@ -1,8 +1,6 @@
 # Helper Functionsn related to calculating TPRS Displacement
 
 library(tidyverse)
-library(readr)
-library(readxl)
 library(lubridate)
 library(ggplot2)
 
@@ -43,3 +41,40 @@ displacement_data <- cb %>%
   return(displacement_data)
 }
 
+#' Estimate the state transition probabilities based on the compiled displacement data
+#' 
+#' @param displacement a data frame containing the compiled displacement data
+#'
+#' @return a data frame containing the state transition probabilities and associated 
+#'         traffic characteristics for each site and time bin
+#' 
+estimate_state_transition <- function(displacement_data) {
+  # Identify state transitions and number each period of continuous state for each site
+  displacement <- displacement_data %>%
+    arrange(site, time) %>%
+    group_by(site) %>%
+    mutate(prev_state = lag(state),
+           state_change = state != prev_state & !is.na(prev_state),
+           period_id = cumsum(state_change) +1) %>%
+    ungroup()
+  
+    # Summarize traffic per period
+traffic_summary <- displacement %>%
+    group_by(site, period_id) %>%
+    summarize(total_volume = n(),
+              mean_speed = mean(speed, na.rm = TRUE),
+              passenger_volume = sum(class == "passenger", na.rm = TRUE),
+              truck_volume = sum(class == "truck", na.rm = TRUE),
+              motorcycle_volume = sum(class == "motorcycle", na.rm = TRUE),
+              start_time = min(time),
+              end_time = max(time),
+              state = first(state),
+              .groups = "drop") %>%
+    arrange(state) %>%
+    group_by(site) %>%
+    mutate(next_state = lead(state)) %>%
+    ungroup() %>%
+    filter(!is.na(next_state) & next_state != "Reset") # Only keep periods with an end transition
+  
+  return(traffic_summary)
+}
