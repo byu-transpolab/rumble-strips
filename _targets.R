@@ -275,8 +275,13 @@ list(
   # t-test of 85th percentile speed by unit (w1 vs w2)
   tar_target(paired_t_test, paired_test(speed_data)), 
 
-  tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test))
-)
+  tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test)),
+
+  tar_target(displacement_data, 
+    compile_displacement_data(wavetronix, camera_back_data, camera_top_data)
+  )
+
+
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
 #tbbl instead of a list of vectors. Each vector is the info for one station.

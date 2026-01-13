@@ -28,14 +28,18 @@ compile_displacement_data <- function(wavetronix, camera_back_data, camera_top_d
   
   # Process camera top data
   ct <- camera_top_data %>%
-    select(time, event) %>%
-    mutate(bin = floor_date(time, unit = "15 minutes"))
+    select(event_time = time, state = event)
   
   # Combine all processed data into a single data frame
-combined_data <- cb %>%
+displacement_data <- cb %>%
   left_join(wav, by = "bin") %>%
-  bind_rows(camera_top_data %>% select(time, event))
+  left_join(ct, join_by(time >= event_time)) %>%
+  group_by(time) %>%
+  slice_max(event_time, n = 1, with_ties = FALSE) %>%
+  ungroup() %>%
+  select(site, time, class, speed, state)
 
   
-  return(combined_data)
+  return(displacement_data)
 }
+
