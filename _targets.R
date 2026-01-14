@@ -281,7 +281,7 @@ list(
   tar_target(displacement_data, 
     compile_displacement_data(wavetronix, camera_back_data, camera_top_data)),
 
-  tar_target(state_transition, estimate_state_transition(displacement_data))
+  tar_target(transition_data, estimate_state_transition(displacement_data))
 
 ) # closes list of targets
 
