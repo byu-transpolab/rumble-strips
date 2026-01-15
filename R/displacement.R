@@ -169,8 +169,7 @@ p <- ggplot(plot_data, aes(x = transition_id, y = volume, fill = vehicle_type)) 
                     labels = c("motorcycle_volume" = "Motorcycle",
                                "passenger_volume" = "Passenger",
                                "truck_volume" = "Truck")) +
-  labs(title = "Traffic Volume by Spacing Type and End State",
-       x = "Site - Spacing Type", y = "Vehicle Volume") +
+  labs(x = "Site - Spacing Type", y = "Vehicle Volume") +
   theme_minimal(base_size = 12) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         panel.grid.major.x = element_blank(),
@@ -179,6 +178,6 @@ p <- ggplot(plot_data, aes(x = transition_id, y = volume, fill = vehicle_type)) 
   coord_cartesian(clip = "off")
 
   # Save and return
-  ggsave("output/volume-per-transition.svg", plot = p, width = 8, height = 11)
+  ggsave("output/volume-per-transition.svg", plot = p, width = 14, height = 14)
   p
 }
