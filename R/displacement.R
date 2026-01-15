@@ -70,7 +70,7 @@ estimate_state_transition <- function(displacement_data) {
     mutate(date = as.Date(time)) %>%
     arrange(time) %>%
     group_by(date) %>%
-           prev_state = lag(state),
+    mutate(prev_state = lag(state),
            state_change = state != prev_state & !is.na(prev_state),
            period_id = cumsum(state_change) +1) %>%
     ungroup()

@@ -279,9 +279,14 @@ list(
   tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test)),
 
   tar_target(displacement_data, 
-    compile_displacement_data(wavetronix, camera_back_data, camera_top_data)),
+    compile_displacement_data(wavetronix, 
+                            camera_back_data, 
+                            camera_top_data, 
+                            observations)),
 
-  tar_target(transition_data, estimate_state_transition(displacement_data))
+  tar_target(transition_data, estimate_state_transition(displacement_data)),
+
+  tar_target(plot_transition_data, plot_transition_data(transition_data))
 
 ) # closes list of targets
 
