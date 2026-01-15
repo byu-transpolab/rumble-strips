@@ -137,7 +137,7 @@ plot_data <- transition_data %>%
   
 # Compute ranges for each end_state, used to make colored background rectangles
 state_ranges <- plot_data %>%
-  distinct(end_state, site_spacing) %>%
+  distinct(end_state, transition_id) %>%
   mutate(x_pos = row_number()) %>%
   group_by(end_state) %>%
   summarize(xmin = min(x_pos) - 0.5,
@@ -154,7 +154,7 @@ state_ranges <- plot_data %>%
 
 
 # Build chart
-ggplot(plot_data, aes(x = site_spacing, y = volume, fill = vehicle_type)) +
+ggplot(plot_data, aes(x = transition_id, y = volume, fill = vehicle_type)) +
   # Background rectangles
   geom_rect(data = state_ranges,
             aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf),
@@ -164,7 +164,7 @@ ggplot(plot_data, aes(x = site_spacing, y = volume, fill = vehicle_type)) +
   geom_bar(stat = "identity", width = 0.8) +
   # Mean speed labels above bars
   geom_text(data = plot_data,
-            aes(x = site_spacing, y = total_volume, label = round(mean_speed, 1)),
+            aes(x = transition_id, y = total_volume, label = round(mean_speed, 1)),
             inherit.aes = FALSE,
             vjust = -0.6, fontface = "bold", size = 3.5) +
   scale_fill_brewer(palette = "Set2", name = "Vehicle Type",
