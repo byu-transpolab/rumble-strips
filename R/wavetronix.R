@@ -675,7 +675,7 @@ plot_confidence_bounds <- function(paired_t_test) {
     )
 
   # Save and return
-  ggsave("output/confidence_bounds.svg", plot = p, width = 10, height = 8)
+  ggsave("output/change-in-speeds.svg", plot = p, width = 10, height = 8)
   p
 }
 
