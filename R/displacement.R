@@ -114,7 +114,9 @@ estimate_state_transition <- function(displacement_data) {
       start_state = state,
       end_state = next_state) %>%
       # Exclude transitions into Reset and periods less than 1 minute
-      filter(end_state != "Reset" & duration > 1)
+      filter(end_state != "Reset" & duration > 1) %>%
+      # Add an ID for each entry (needed for plotting later)
+      mutate(transition_id = row_number())
 
 
   return(transition_data)
@@ -123,10 +125,12 @@ estimate_state_transition <- function(displacement_data) {
 plot_transition_data <-function(transition_data) {
 
 plot_data <- transition_data %>%
-  #create a compact label for x-axis
-  mutate(site_spacing = paste(site, "-", spacing_type)) %>%
-  mutate(site_spacing = factor(site_spacing, levels = unique(site_spacing))) %>%
-  arrange(end_state, spacing_type, site) %>%
+  #create a unique label for each transition period
+  mutate(transition_id = paste(site, "-", spacing_type, "-", transition_id)) %>%
+  #put the periods in order of end_state, then transition_id, then site...
+  arrange(end_state, transition_id, site) %>%
+  #...and THEN make transition_id a factor with levels in that order
+  mutate(transition_id = factor(transition_id, levels = unique(transition_id))) %>%
   # Reshape data to long format for stacked bar plotting
   pivot_longer(cols = c(passenger_volume, truck_volume, motorcycle_volume),
     names_to = "vehicle_type", values_to = "volume")
@@ -150,7 +154,6 @@ state_ranges <- plot_data %>%
 
 
 # Build chart
-
 ggplot(plot_data, aes(x = site_spacing, y = volume, fill = vehicle_type)) +
   # Background rectangles
   geom_rect(data = state_ranges,
