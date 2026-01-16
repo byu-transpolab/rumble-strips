@@ -22,6 +22,7 @@ pivot_trailer_spacing <- function(observations) {
                 values_from = trailer_spacing,
                 values_fn = ~ paste(.x, collapse = "/"))
 
+write.csv(trailer_spacing, "output/trailer_spacing.csv", row.names = FALSE)
 return(trailer_spacing)
 }
 
@@ -34,5 +35,6 @@ pivot_camera_spacing <- function(observations) {
                 values_from = gopro_spacing,
                 values_fn = ~ paste(.x, collapse = "/"))
 
+write.csv(camera_spacing, "output/camera_spacing.csv", row.names = FALSE)
 return(camera_spacing)
 }
