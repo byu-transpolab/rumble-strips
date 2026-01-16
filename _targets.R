@@ -302,16 +302,3 @@ list(
   tar_target(transition_data_plot, plot_transition_data(transition_data))
 
 ) # closes list of targets
-
-
-
-#Next Step: How to save the plot based on a given station number is what we have to figure out next.
-#tbbl instead of a list of vectors. Each vector is the info for one station.
-#instead of having tar_target hourly_volumes (line 85) return a list of vectors, have it return a table.
-
-#Next Step: Can we run this code on data files of our own making?
-#Can we make it easier for us to run our own data sets by asking for an input prompt for . . .  
-# . . . the code to prompt an input file name for it to run?
-
-
-
