@@ -282,10 +282,12 @@ list(
   # t-test of 85th percentile speed by unit (w1 vs w2)
   tar_target(paired_t_test, paired_test(speed_data)), 
 
+# plot confidence bounds for the t-test results of speed
   tar_target(confidence_bounds,
   plot_confidence_bounds(paired_t_test)
   ),
 
+# compile speed, class, and displacement state into one data frame
   tar_target(displacement_data, 
     compile_displacement_data(wavetronix, 
                             camera_back_data, 
@@ -293,8 +295,10 @@ list(
                             observations)
   ),
 
+# Total vehicle volumes for each displacement state
   tar_target(transition_data, estimate_state_transition(displacement_data)),
 
+# Plot the vehicle volumes for each displacement transition
   tar_target(transition_data_plot, plot_transition_data(transition_data))
 
 ) # closes list of targets
