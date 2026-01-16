@@ -9,10 +9,28 @@ library(svglite)   # for ggsave(..., device = svglite)
 # Optional: remove if not used
 # library(patchwork)
 # library(gridExtra)
+# Configure output directory (portable across machines)
+out_dir <- file.path(path.expand("~"), "Library/CloudStorage/Box-Box/2024-tprs/output/headway_histograms/")
+cat("\n=== DIAGNOSTICS ===")
+cat("\nConfigured output directory:", out_dir)
+cat("\nDirectory exists before creation?", dir.exists(out_dir))
+if (!dir.exists(out_dir)) {
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  cat("\nDirectory created.")
+}
+cat("\nDirectory exists after creation?", dir.exists(out_dir))
+cat("\nDirectory writable?", file.access(out_dir, mode = 2) == 0)
+cat("\n===================\n")
 
-# Configure output directory
-out_dir <- "/Users/benjaminhailstone/Library/CloudStorage/Box-Box/2024-tprs/output/headway_histograms"
-if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+# Load critical headway value from HdwyStatAnlys.r analysis
+if (!exists("raff_overall")) {
+  stop("\n❌ ERROR: 'raff_overall' not found in environment.\n",
+       "Please run 'HdwyStatAnlys.r' first to generate the critical headway Raff table.\n",
+       "Then run this script to create histograms with the critical headway line.\n")
+}
+
+t_c_critical <- raff_overall$t_c_critical_s
+cat("✓ Using critical headway t_c =", round(t_c_critical, 2), "seconds\n")
 
 # Inspect input (as in your original)
 str(cb)
@@ -87,7 +105,7 @@ purrr::pwalk(groups_nested, function(combined_group, data, n, mean_headway, sd_h
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5, size = 14))
 
-  # --- Stats annotation (top-left) ---
+  # --- Stats annotation (top-right) ---
   fmt_val <- function(x) ifelse(is.na(x), "NA", sprintf("%.1f s", x))
   stats_text <- paste0(
     "n = ", n, "\n",
@@ -98,9 +116,9 @@ purrr::pwalk(groups_nested, function(combined_group, data, n, mean_headway, sd_h
   p_hist <- p_hist +
     annotate(
       "label",
-      x = x_limit * 0.05, y = Inf,
+      x = x_limit * 0.95, y = Inf,
       label = stats_text,
-      vjust = 1.1, hjust = 0, size = 3.5,
+      vjust = 1.1, hjust = 1, size = 3.5,
       fill = "white", color = "black", label.size = 0.2
     )
 
@@ -119,9 +137,36 @@ purrr::pwalk(groups_nested, function(combined_group, data, n, mean_headway, sd_h
       )
   }
 
+  # --- Add critical headway vertical line ---
+  if (!is.na(t_c_critical) && t_c_critical <= x_limit) {
+    p_hist <- p_hist +
+      geom_vline(
+        xintercept = t_c_critical,
+        color = "red",
+        linetype = "dashed",
+        linewidth = 1
+      ) +
+      annotate(
+        "text",
+        x = t_c_critical,
+        y = Inf,
+        label = sprintf("Critical headway\nt_c = %.1f s", t_c_critical),
+        vjust = 1.5,
+        hjust = ifelse(t_c_critical < x_limit * 0.5, -0.1, 1.1),
+        color = "red",
+        size = 3.5,
+        fontface = "bold"
+      )
+  }
+
   # Save SVG
-  ggsave(filename, plot = p_hist, device = svglite, width = 10, height = 6)
+  full_path <- file.path(out_dir, filename)
+  ggsave(full_path, plot = p_hist, device = svglite, width = 10, height = 6)
+  cat("\n✓ Saved:", full_path)
+  cat("\n  File exists?", file.exists(full_path), "| Size:", file.size(full_path), "bytes")
 })
+
+cat("\n\n=== All histograms saved to:", out_dir, "===")
 
 utils::View(stats_tbl)
 
