@@ -197,8 +197,13 @@ list(
 
 
   ## ===== ANALYSIS =====
+  # read observation_data.csv into a tibble
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
   tar_target(observations, read_observations(observations_file)),
+
+  # pivot observations to show trailer and camera spacing
+  tar_target(trailer_spacing, pivot_trailer_spacing(observations)),
+  tar_target(camera_spacing, pivot_camera_spacing(observations)),
 
   # puts all wavetronix data into one dataframe with columns:
   # site, unit, lane, volume, occupancy, speed, speed_85,
@@ -290,7 +295,7 @@ list(
 
   tar_target(transition_data, estimate_state_transition(displacement_data)),
 
-  tar_target(plot_transition_data, plot_transition_data(transition_data))
+  tar_target(transition_data_plot, plot_transition_data(transition_data))
 
 ) # closes list of targets
 

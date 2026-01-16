@@ -16,11 +16,23 @@ read_observations <- function(file_path) {
 
 # Pivot observation data to show trailer spacing
 pivot_trailer_spacing <- function(observations) {
-  observations |>
-    select( site, spacing_type, trailer_spacing) |>
+  trailer_spacing <- observations %>%
+    select( site, spacing_type, trailer_spacing) %>%
     pivot_wider(names_from = spacing_type, 
-                values_from = trailer_spacing)
+                values_from = trailer_spacing,
+                values_fn = ~ paste(.x, collapse = "/"))
+
+return(trailer_spacing)
 }
 
 
 # Pivot observation data to show camera spacing data
+pivot_camera_spacing <- function(observations) {
+  camera_spacing <- observations %>%
+    select( site, spacing_type, gopro_spacing) %>%
+    pivot_wider(names_from = spacing_type, 
+                values_from = gopro_spacing,
+                values_fn = ~ paste(.x, collapse = "/"))
+
+return(camera_spacing)
+}
