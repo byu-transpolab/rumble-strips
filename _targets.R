@@ -40,6 +40,7 @@ tar_option_set(
 
 source("R/functions.R")
 source("R/wavetronix.R")
+source("R/displacement.R")
 
 list(
   # Download Google Sheets as Excel files before anything else
@@ -264,7 +265,7 @@ list(
 
   # Plot class volumes and events for each site with camera back data
   tar_target(displacement_plots_cb,
-    make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
+  make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
   # create tibble from wavetronix data with columns:
@@ -275,8 +276,24 @@ list(
   # t-test of 85th percentile speed by unit (w1 vs w2)
   tar_target(paired_t_test, paired_test(speed_data)), 
 
-  tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test))
-)
+  tar_target(confidence_bounds,
+  plot_confidence_bounds(paired_t_test)
+  ),
+
+  tar_target(displacement_data, 
+    compile_displacement_data(wavetronix, 
+                            camera_back_data, 
+                            camera_top_data, 
+                            observations)
+  ),
+
+  tar_target(transition_data, estimate_state_transition(displacement_data)),
+
+  tar_target(plot_transition_data, plot_transition_data(transition_data))
+
+) # closes list of targets
+
+
 
 #Next Step: How to save the plot based on a given station number is what we have to figure out next.
 #tbbl instead of a list of vectors. Each vector is the info for one station.

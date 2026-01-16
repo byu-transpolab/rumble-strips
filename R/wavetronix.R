@@ -28,7 +28,9 @@ read_wavetronix <- function(file_path) {
       speed_85 = `85% SPEED (mph)`,
       headway = HEADWAY,
       gap = GAP,
-      sensor_time = lubridate::as_datetime(`SENSOR TIME (MM/dd/yy  HH:mm:ss)`, format = "%m/%d/%y %H:%M:%S"),
+      sensor_time = lubridate::as_datetime(`SENSOR TIME (MM/dd/yy  HH:mm:ss)`,
+                    format = "%m/%d/%y %H:%M:%S",
+                    tz = "America/Denver"),
       date = lubridate::date(sensor_time),
       interval = `INTERVAL (sec)`
   ) |>
@@ -412,7 +414,7 @@ get_worker_exposure_data <- function(folder_path, observations) {
       dplyr::mutate(
         site = site,
         date = as.Date(date_code, format = "%Y%m%d"),
-        event = case_when(
+        event = case_when(  
           brake == "d" ~ "Arrival",
           brake == "f" ~ "Departure",
           avoidance == "b" ~ "Vehicle Passing",
@@ -673,7 +675,7 @@ plot_confidence_bounds <- function(paired_t_test) {
     )
 
   # Save and return
-  ggsave("output/confidence_bounds.svg", plot = p, width = 10, height = 8)
+  ggsave("output/change-in-speeds.svg", plot = p, width = 10, height = 8)
   p
 }
 
