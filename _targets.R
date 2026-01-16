@@ -41,6 +41,7 @@ tar_option_set(
 source("R/functions.R")
 source("R/wavetronix.R")
 source("R/displacement.R")
+source("R/observations.R")
 
 list(
   # Download Google Sheets as Excel files before anything else
