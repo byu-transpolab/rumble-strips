@@ -13,7 +13,8 @@ read_observations <- function(file_path) {
   read_csv(file_path) |>
     mutate(
       spacing_type = ifelse(is.na(spacing_type), 0, spacing_type),
-      spacing_type = as_factor(spacing_type),
+      spacing_type = factor(spacing_type,
+      levels = c("NO TPRS", "UDOT", "PSS", "LONG")),
       date = lubridate::mdy(date))
 
 }
@@ -135,7 +136,14 @@ read_camera_top <- function(path) {
         state == "3" ~ "Significant Movement",
         state == "4" ~ "Out of Specification",
         TRUE ~ as.character(state)
-      )
+      ),
+      event = factor(event,
+        levels = c(
+          "Reset",
+          "Some Movement",
+          "Moderate Movement",
+          "Significant Movement",
+          "Out of Specification")
     ) %>%
     select(site, time, event)
 }
