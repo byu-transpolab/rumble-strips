@@ -39,6 +39,7 @@ tar_option_set(
 ##target list#########################################
 
 source("R/hourly_volumes.R")
+source("R/csv2tibble.R")
 source("R/wavetronix.R")
 source("R/displacement.R")
 source("R/observations.R")
@@ -255,13 +256,21 @@ list(
     get_worker_exposure_data(worker_exposure_files, observations)
   ),
 
-### Pivoting observation data to show trailer and camera spacing ############
+  ### Trailer and camera spacing #############################################
+  # Helper functions are found in R/observations.R
 
   # pivot observations to show trailer and camera spacing
   tar_target(trailer_spacing, pivot_trailer_spacing(observations)),
   tar_target(camera_spacing, pivot_camera_spacing(observations)),
-  
-### TPRS Displacement Analysis and Plots ####################################
+
+  ### Changes in Speed Analysis ##############################################
+  # Helper functions are being developed
+
+  ### Driver TPRS Avoidance Analysis #########################################
+  # Helper functions are being developed
+
+  ### TPRS displacement by volume Analysis ###################################
+  # Helper functions are found in R/displacement_by_volume.R
 
   # calculate cumulative traffic volume for each day from Wavetronix data
   # returns tibble with: time <dttm>, total, cumulative
@@ -283,31 +292,26 @@ list(
   make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
-  # create tibble from wavetronix data with columns:
-  # site, unit, date, time, speed_85, strip_spacing
-  # for use in statistical tests of 85th percentile speed
-  tar_target(speed_data, prepare_speed_data(wavetronix, observations)),
+  ### TPRS Displacement by impact energy Analysis ##################
+  # Helper Functions are found in R/displacement_by_energy.R
 
-  # t-test of 85th percentile speed by unit (w1 vs w2)
-  tar_target(paired_t_test, paired_test(speed_data)), 
-
-# plot confidence bounds for the t-test results of speed
-  tar_target(confidence_bounds,
-  plot_confidence_bounds(paired_t_test)
-  ),
-
-# compile speed, class, and displacement state into one data frame
-  tar_target(displacement_data, 
-    compile_displacement_data(wavetronix, 
-                            camera_back_data, 
-                            camera_top_data, 
+  # compile speed, class, and displacement state into one data frame
+  tar_target(displacement_data,
+    compile_displacement_data(wavetronix,
+                            camera_back_data,
+                            camera_top_data,
                             observations)
   ),
 
-# Total vehicle volumes for each displacement state
+  # Total vehicle volumes for each displacement state
   tar_target(transition_data, estimate_state_transition(displacement_data)),
 
-# Plot the vehicle volumes for each displacement transition
+  # Plot the vehicle volumes for each displacement transition
   tar_target(transition_data_plot, plot_transition_data(transition_data))
+
+### Worker Exposure Analysis #######################################
+# Helper functions are being developed
+
+
 
 ) # closes list of targets
