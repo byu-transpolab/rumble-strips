@@ -1,6 +1,12 @@
 # This file has the helper functions related to analyzing
 # TPRS displacement as it relates to vehicle volume.
 
+library(tidyverse)
+library(readr)
+library(readxl)
+library(lubridate)
+library(ggplot2)
+
 # Return cummulative wavetronix volumes per date with average speed per date
 # tibble with columns: site, date, time, cumulative, speed
 cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "01", unit_value = "w1") {

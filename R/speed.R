@@ -1,5 +1,11 @@
 # This file contains helper functions related to driver speed analysis.
 
+library(tidyverse)
+library(readr)
+library(readxl)
+library(lubridate)
+library(ggplot2)
+
 # prepare tibble for statistical tests
 prepare_speed_data <- function(wavetronix, observations) {
   wavetronix %>%
