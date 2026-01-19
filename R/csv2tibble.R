@@ -125,10 +125,9 @@ read_camera_top <- function(path) {
   df %>%
     mutate(
       site = site,
-      # date = as.Date(date_code, format = "%Y%m%d"),
       time = as.POSIXct(paste0(date_code, " ", timestamp),
                         format = "%Y%m%d %H:%M:%OS",
-                        tz = Sys.timezone()),
+                        tz = "America/Denver"),
       event = case_when(
         state == "0" ~ "Reset",
         state == "1" ~ "Some Movement",
@@ -143,7 +142,7 @@ read_camera_top <- function(path) {
           "Some Movement",
           "Moderate Movement",
           "Significant Movement",
-          "Out of Specification")
+          "Out of Specification"))
     ) %>%
     select(site, time, event)
 }
@@ -207,7 +206,7 @@ read_camera_back <- function(path) {
       # combine date_code and time string for full datetime
       time = as.POSIXct(paste0(date_code, " ", timestamp),
                         format = "%Y%m%d %H:%M:%OS",
-                        tz = Sys.timezone()),
+                        tz = "America/Denver"),
 
       # interpret j, k, l as passenger, truck, motorcycle
       class = case_when(
@@ -337,9 +336,14 @@ get_worker_exposure_data <- function(folder_path, observations) {
           class == "k" ~ "Entering Roadway",
           class == "l" ~ "Exiting Roadway",
           TRUE ~ as.character(state)
-        )
+        ),
+        # normalize milliseconds separator
+        timestamp = sub(":(\\d{1,3})$", ".\\1", timestamp),
+        time = as.POSIXct(paste0(date_code, " ", timestamp),
+                          format = "%Y%m%d %H:%M:%OS",
+                          tz = "America/Denver")
       ) %>%
-      dplyr::select(site, date, time = timestamp, event) %>%
+      dplyr::select(site, date, time, event) %>%
       # Filter out numeric events (the event counting software
       # used 0-9 for internal purposes)
       dplyr::filter(!event %in% as.character(0:9))
