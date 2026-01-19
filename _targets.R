@@ -281,6 +281,9 @@ list(
   plot_confidence_bounds(paired_t_test)
   ),
 
+  ### Driver Braking Analysis ################################################
+  # Helper functions are being developed
+
   ### Driver TPRS Avoidance Analysis #########################################
   # Helper functions are being developed
 
@@ -307,7 +310,7 @@ list(
   make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
-  ### TPRS Displacement by impact energy Analysis ##################
+  ### TPRS Displacement by impact energy Analysis ############################
   # Helper Functions are found in R/displacement_by_energy.R
 
   # compile speed, class, and displacement state into one data frame
@@ -324,7 +327,7 @@ list(
   # Plot the vehicle volumes for each displacement transition
   tar_target(transition_data_plot, plot_transition_data(transition_data))
 
-  ### Worker Exposure Analysis #######################################
+  ### Worker Exposure Analysis ###############################################
   # Helper functions are being developed
 
 ) # closes list of targets
