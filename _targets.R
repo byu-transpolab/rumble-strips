@@ -38,7 +38,7 @@ tar_option_set(
 
 ##target list#########################################
 
-source("R/functions.R")
+source("R/hourly_volumes.R")
 source("R/wavetronix.R")
 source("R/displacement.R")
 source("R/observations.R")
