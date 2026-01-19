@@ -40,6 +40,8 @@ tar_option_set(
 
 source("R/functions.R")
 source("R/wavetronix.R")
+source("R/displacement.R")
+source("R/observations.R")
 
 list(
   # Download Google Sheets as Excel files before anything else
@@ -195,8 +197,13 @@ list(
 
 
   ## ===== ANALYSIS =====
+  # read observation_data.csv into a tibble
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
   tar_target(observations, read_observations(observations_file)),
+
+  # pivot observations to show trailer and camera spacing
+  tar_target(trailer_spacing, pivot_trailer_spacing(observations)),
+  tar_target(camera_spacing, pivot_camera_spacing(observations)),
 
   # puts all wavetronix data into one dataframe with columns:
   # site, unit, lane, volume, occupancy, speed, speed_85,
@@ -264,7 +271,7 @@ list(
 
   # Plot class volumes and events for each site with camera back data
   tar_target(displacement_plots_cb,
-    make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
+  make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
   # create tibble from wavetronix data with columns:
@@ -275,16 +282,23 @@ list(
   # t-test of 85th percentile speed by unit (w1 vs w2)
   tar_target(paired_t_test, paired_test(speed_data)), 
 
-  tar_target(confidence_bounds, plot_confidence_bounds(paired_t_test))
-)
+# plot confidence bounds for the t-test results of speed
+  tar_target(confidence_bounds,
+  plot_confidence_bounds(paired_t_test)
+  ),
 
-#Next Step: How to save the plot based on a given station number is what we have to figure out next.
-#tbbl instead of a list of vectors. Each vector is the info for one station.
-#instead of having tar_target hourly_volumes (line 85) return a list of vectors, have it return a table.
+# compile speed, class, and displacement state into one data frame
+  tar_target(displacement_data, 
+    compile_displacement_data(wavetronix, 
+                            camera_back_data, 
+                            camera_top_data, 
+                            observations)
+  ),
 
-#Next Step: Can we run this code on data files of our own making?
-#Can we make it easier for us to run our own data sets by asking for an input prompt for . . .  
-# . . . the code to prompt an input file name for it to run?
+# Total vehicle volumes for each displacement state
+  tar_target(transition_data, estimate_state_transition(displacement_data)),
 
+# Plot the vehicle volumes for each displacement transition
+  tar_target(transition_data_plot, plot_transition_data(transition_data))
 
-
+) # closes list of targets
