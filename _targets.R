@@ -40,9 +40,11 @@ tar_option_set(
 
 source("R/hourly_volumes.R")
 source("R/csv2tibble.R")
-source("R/wavetronix.R")
-source("R/displacement.R")
 source("R/observations.R")
+source("R/speed.R")
+source("R/displacement_by_volume.R")
+source("R/displacement_by_energy.R")
+
 
 list(
   # Download Google Sheets as Excel files before anything else
