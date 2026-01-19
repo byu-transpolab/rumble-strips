@@ -264,7 +264,20 @@ list(
   tar_target(camera_spacing, pivot_camera_spacing(observations)),
 
   ### Changes in Speed Analysis ##############################################
-  # Helper functions are being developed
+  # Helper functions are found in R/speed.R
+
+  # create tibble from wavetronix data with columns:
+  # site, unit, date, time, speed_85, strip_spacing
+  # for use in statistical tests of 85th percentile speed
+  tar_target(speed_data, prepare_speed_data(wavetronix, observations)),
+
+  # t-test of 85th percentile speed by unit (w1 vs w2)
+  tar_target(paired_t_test, paired_test(speed_data)), 
+
+# plot confidence bounds for the t-test results of speed
+  tar_target(confidence_bounds,
+  plot_confidence_bounds(paired_t_test)
+  ),
 
   ### Driver TPRS Avoidance Analysis #########################################
   # Helper functions are being developed
@@ -309,9 +322,7 @@ list(
   # Plot the vehicle volumes for each displacement transition
   tar_target(transition_data_plot, plot_transition_data(transition_data))
 
-### Worker Exposure Analysis #######################################
-# Helper functions are being developed
-
-
+  ### Worker Exposure Analysis #######################################
+  # Helper functions are being developed
 
 ) # closes list of targets
