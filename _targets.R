@@ -196,14 +196,15 @@ list(
 
 
 
-  ## ===== ANALYSIS =====
-  # read observation_data.csv into a tibble
+  ## ===== ANALYSIS ===== ##
+
+  ### Reading in CSV files and returning tibbles #############################
+  # helper functions are found in R/csv2tibble.R
+
+  # read observation_data.csv into a tibble with columns:
+  # date, site, strip_spacing, trailer_spacing, gopro_spacing, spacing_type
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
   tar_target(observations, read_observations(observations_file)),
-
-  # pivot observations to show trailer and camera spacing
-  tar_target(trailer_spacing, pivot_trailer_spacing(observations)),
-  tar_target(camera_spacing, pivot_camera_spacing(observations)),
 
   # puts all wavetronix data into one dataframe with columns:
   # site, unit, lane, volume, occupancy, speed, speed_85,
@@ -239,7 +240,7 @@ list(
     camera_back_data,
     get_camera_back_data(camera_back_files)
   ),
-  
+
   # puts all worker exposure data into one dataframe with columns:
   # site, date, time, event
   # events are one of the following:
@@ -253,7 +254,15 @@ list(
     worker_exposure_data,
     get_worker_exposure_data(worker_exposure_files, observations)
   ),
+
+### Pivoting observation data to show trailer and camera spacing ############
+
+  # pivot observations to show trailer and camera spacing
+  tar_target(trailer_spacing, pivot_trailer_spacing(observations)),
+  tar_target(camera_spacing, pivot_camera_spacing(observations)),
   
+### TPRS Displacement Analysis and Plots ####################################
+
   # calculate cumulative traffic volume for each day from Wavetronix data
   # returns tibble with: time <dttm>, total, cumulative
   tar_target(cumulated_volume, cumulate_volume(wavetronix, observations)),

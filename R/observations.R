@@ -2,18 +2,6 @@
 
 library(tidyverse)
 
-# Read the csv file into a tibble
-read_observations <- function(file_path) {
-
-  read_csv(file_path) |>
-    mutate(
-      spacing_type = ifelse(is.na(spacing_type), 0, spacing_type),
-      spacing_type = as_factor(spacing_type),
-      date = lubridate::mdy(date))
-
-
-}
-
 # Pivot observation data to show trailer spacing
 pivot_trailer_spacing <- function(observations) {
   trailer_spacing <- observations %>%
