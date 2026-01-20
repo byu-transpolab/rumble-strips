@@ -105,7 +105,7 @@ summarize_displacement_data <- function(displacement_data) {
   return (displacement_data)
 }
 
-filter_displacement_summary <- (displacement_data) {
+filter_displacement_summary <- function(displacement_data) {
   # Focus on just energy per transition (exclude volumes and mean speeds)
   # I know we put a lot of effort into summarizing that data, but it's not used.
   # I keep the summary there in case we want to use it later.
@@ -115,6 +115,7 @@ filter_displacement_summary <- (displacement_data) {
     arrange(date, start_time) %>%
     group_by(date) %>%
     # Only keep series of transitions that start with "Reset"
+    # OR where start_state == lag(next_state)
     mutate(
     # Apply row-by-row validation using accumulate
     valid = accumulate(
@@ -143,9 +144,42 @@ filter_displacement_summary <- (displacement_data) {
     )[-1] # remove the initial TRUE used to start accumulate
     ) %>% 
     filter(valid) %>%
+    select(-valid, -start_time) %>%
     ungroup()
   
   return(transition_data)
+}
+
+prep_transition_data <- function(transition_data) {
+  # Take in the filtered transition_data provided by filter_displacement_summary
+  # and prepare it for plotting
+
+  # Step 1: make the basis for the final tibble, plot_data
+  base_rows <- transition_data %>%
+    transmute(
+      site,
+      date,
+      spacing_type,
+      state = next_state,
+      energy
+    )
+
+  # Step 2: Add rows where state = "Reset" and energy = 0.0
+  reset_rows <- transition_data %>%
+    filter(start_state == "Reset") %>%
+    transmute(
+      site,
+      date, 
+      spacing_type,
+      state = start_state, # "Reset"
+      energy = 0.0
+    )
+
+  # Step 3: Bind the reset_rows and base_rows together and return
+  plot_data <- bind_rows(reset_rows, base_rows) %>%
+    arrange(spacing_type, site)
+
+  return(plot_data)
 }
 
 plot_transition_data <-function(transition_data) {
