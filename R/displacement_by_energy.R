@@ -102,6 +102,10 @@ summarize_displacement_data <- function(displacement_data) {
            !is.na(next_state) & 
            start_state != "Out of Specification")
 
+  return (displacement_data)
+}
+
+filter_displacement_summary <- (displacement_data) {
   # Focus on just energy per transition (exclude volumes and mean speeds)
   # I know we put a lot of effort into summarizing that data, but it's not used.
   # I keep the summary there in case we want to use it later.
@@ -141,7 +145,6 @@ summarize_displacement_data <- function(displacement_data) {
     filter(valid) %>%
     ungroup()
   
-
   return(transition_data)
 }
 
