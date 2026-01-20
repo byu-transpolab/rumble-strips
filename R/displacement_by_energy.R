@@ -175,23 +175,93 @@ prep_transition_data <- function(transition_data) {
       energy = 0.0
     )
 
-  # Step 3: Bind the reset_rows and base_rows together and return
+  # Step 3: Bind the reset_rows and base_rows together...
   plot_data <- bind_rows(reset_rows, base_rows) %>%
-    arrange(spacing_type, site)
+    arrange(spacing_type, site) %>%
+    mutate(
+        # ...Ensure state factors are properly ordered...
+        state = factor(
+          state,
+          levels = c(
+            "Reset",
+            "Some Movement",
+            "Moderate Movement",
+            "Significant Movement",
+            "Out of Specification"
+          ),
+          ordered = TRUE
+        ),
+        # ...Group lines so they start at Reset. Used in later plotting.
+        segment_id = cumsum(state == "Reset")
+      ) %>%
+      # Add cumulative energy column and keeping previous energy column.
+      group_by(site, date, spacing_type, segment_id) %>%
+      arrange(state, .by_group = TRUE) %>%
+      mutate(cum_energy = cumsum(energy)) %>%
+      ungroup()
 
   return(plot_data)
 }
 
-plot_transition_data <-function(transition_data) {
-  p <- ggplot(transition_data, aes(x = end_state, y = energy, color = spacing_type)) +
-    geom_line(alpha = 0.6) +
-    geom_smooth(method = "loess", se = FALSE) +
-    labs(x = "Displacement State", y = "energy (million lb*mi/hr)", color = "spacing_type") +
-    theme_minimal(base_size = 12) +
-    theme(legend.position = "right")
+plot_transition_data_spacing <- function(plot_data) {
+# Plot the prepared plot_data and color by spacing type.
+
+  p <- plot_data %>%
+ggplot(
+    aes(
+      x = state,
+      y = cum_energy, # <----- Can change between cum_energy and energy.
+      color = spacing_type,
+      group = interaction(spacing_type, segment_id)
+    )
+  ) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    x = "Displacement",
+    y = " Cumulative Energy (millions of lbs * mi / hr)",
+    color = "Spacing Type"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
 
   # Save and return
-  ggsave("output/energy-per-transition.svg", plot = p, width = 10, height = 6)
+  ggsave("output/energy-per-transition-by-spacing.svg", 
+    plot = p, width = 10, height = 6)
+  p
+}
+
+plot_transition_data_site <- function(plot_data) {
+# Plot the prepared plot_data and color by spacing type.
+
+  p <- plot_data %>%
+ggplot(
+    aes(
+      x = state,
+      y = cum_energy, # <----- Can change between cum_energy and energy.
+      color = site,
+      group = interaction(spacing_type, segment_id)
+    )
+  ) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    x = "Displacement",
+    y = " Cumulative Energy (millions of lbs * mi / hr)",
+    color = "Spacing Type"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+
+  # Save and return
+  ggsave("output/energy-per-transition-by-site.svg", 
+    plot = p, width = 10, height = 6)
   p
 }
 
