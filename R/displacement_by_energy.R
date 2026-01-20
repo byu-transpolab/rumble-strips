@@ -11,7 +11,7 @@ library(ggplot2)
 #' @param camera_back_data a data frame containing the camera back data
 #' @param camera_top_data a data frame containing the camera top data
 #' 
-compile_displacement_data <- function(wavetronix, camera_back_data, camera_top_data, observation_data) {
+compile_displacement_data <- function(wavetronix, camera_back_data, camera_top_data, observations) {
   # Process wavetronix data
   # only keep site, unit=w1, lane=01, volume, speed, sensor_time
   wav <- wavetronix %>%
@@ -31,7 +31,7 @@ compile_displacement_data <- function(wavetronix, camera_back_data, camera_top_d
     select(event_time = time, state = event)
 
   # Process observation data
-  obs <- observation_data %>%
+  obs <- observations %>%
     select(date, spacing_type)
   
   # Combine all processed data into a single data frame
@@ -52,8 +52,15 @@ displacement_data <- cb %>%
               "Some Movement", 
               "Moderate Movement", 
               "Significant Movement", 
-              "Out of Specification"))) %>%
-  select(site, time, class, speed, spacing_type, state)
+              "Out of Specification")),
+        # Energy is a made up metric: speed * weight (lbs)
+        # Weight assumptions came from top Google search results in lbs
+        energy = case_when(
+          class == "motorcycle" ~ speed * 800,
+          class == "passenger"  ~ speed * 4419,
+          class == "truck"      ~ speed * 40000)
+        ) %>%
+  select(site, time, class, speed, energy, spacing_type, state)
 
   
   return(displacement_data)
@@ -65,7 +72,6 @@ displacement_data <- cb %>%
 #'
 #' @return a data frame containing the state transition probabilities and associated 
 #'         traffic characteristics for each site and time bin
-#' 
 estimate_state_transition <- function(displacement_data) {
   # Identify state transitions and number each period of continuous state for each site
   displacement <- displacement_data %>%
@@ -84,6 +90,7 @@ estimate_state_transition <- function(displacement_data) {
     summarise(
       site              = first(site),
       mean_speed        = mean(speed, na.rm = TRUE),
+      energy            = sum(energy, na.rm = TRUE),
       motorcycle_volume = sum(class == "motorcycle", na.rm = TRUE),
       passenger_volume  = sum(class == "passenger",  na.rm = TRUE),
       truck_volume      = sum(class == "truck",      na.rm = TRUE),
@@ -95,11 +102,11 @@ estimate_state_transition <- function(displacement_data) {
     # Ensure chronological order within day
     arrange(date, start_time) %>%
     group_by(date) %>%
+    # Calculate duration of each period in minutes
+    mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) %>%,
     # The "state the period turned into" is the next period's state that day
     mutate(next_state = lead(state)) %>%
     ungroup() %>%
-    # Compute duration after we know start/end
-    mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) %>%
     # Keep only periods that actually transition into something
     filter(!is.na(next_state)) %>%
     # Final shape: one row per period with the "turned-into" state
@@ -108,6 +115,7 @@ estimate_state_transition <- function(displacement_data) {
       date,
       duration,
       mean_speed,
+      energy,
       total_volume = motorcycle_volume + passenger_volume + truck_volume,
       motorcycle_volume,
       passenger_volume,
