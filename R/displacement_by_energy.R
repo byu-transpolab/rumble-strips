@@ -66,77 +66,90 @@ displacement_data <- cb %>%
   return(displacement_data)
 }
 
-#' Estimate the state transition probabilities based on the compiled displacement data
-#' 
-#' @param displacement_data a data frame containing the compiled displacement data
-#'
-#' @return a data frame containing the state transition probabilities and associated 
-#'         traffic characteristics for each site and time bin
-estimate_state_transition <- function(displacement_data) {
+# Summarize the energy and other values per state transition
+summarize_displacement_data <- function(displacement_data) {
   # Identify state transitions and number each period of continuous state for each site
-  displacement <- displacement_data %>%
-    mutate(date = as.Date(time)) %>%
+  state_change <- displacement_data %>%
     arrange(time) %>%
-    group_by(date) %>%
-    mutate(prev_state = lag(state),
+    mutate(date = as.Date(time),
+           prev_state = lag(state),
            state_change = state != prev_state & !is.na(prev_state),
-           period_id = cumsum(state_change) +1) %>%
-    ungroup()
+           period_id = cumsum(state_change) +1)
   
-    # Summarize traffic per period
-  transition_data <- displacement %>%
-    arrange(date, time) %>%
-    group_by(date, period_id) %>%
+    # Summarize traffic per state transition
+  displacement_summary <- state_change %>%
+    # For each period, create one row that ...
+    group_by(period_id) %>%
+    # ... summarizes the following data.
     summarise(
       site              = first(site),
-      mean_speed        = mean(speed, na.rm = TRUE),
-      energy            = sum(energy, na.rm = TRUE),
+      date              = first(date),
+      spacing_type      = first(spacing_type),
+      start_time        = min(time, na.rm = TRUE),
+      end_time          = max(time, na.rm = TRUE),
+      start_state       = first(state),
+      energy            = sum(energy, na.rm = TRUE) / 1000000, # convert to million lb*mi/hr,
       motorcycle_volume = sum(class == "motorcycle", na.rm = TRUE),
       passenger_volume  = sum(class == "passenger",  na.rm = TRUE),
       truck_volume      = sum(class == "truck",      na.rm = TRUE),
-      start_time        = min(time, na.rm = TRUE),
-      end_time          = max(time, na.rm = TRUE),
-      spacing_type      = first(spacing_type),
-      state             = first(state),
+      mean_speed        = mean(speed, na.rm = TRUE),
       .groups = "drop") %>%
-    # Ensure chronological order within day
+    # Calculate duration and next state for each summary row
+    mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins")),
+           next_state = lead(start_state)) %>%
+    # Filter out transitions that meet the following criteria:
+    filter(next_state != "Reset" & 
+           !is.na(next_state) & 
+           start_state != "Out of Specification")
+
+  # Focus on just energy per transition (exclude volumes and mean speeds)
+  # I know we put a lot of effort into summarizing that data, but it's not used.
+  # I keep the summary there in case we want to use it later.
+  transition_data <- displacement_summary %>%
+    select(site, date, start_time, spacing_type, start_state, next_state, 
+          energy) %>%
     arrange(date, start_time) %>%
     group_by(date) %>%
-    # Calculate duration of each period in minutes (need for later filtering)
-    mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) %>%
-    # The "state the period turned into" is the next period's state that day
-    mutate(next_state = lead(state)) %>%
-    ungroup() %>%
-    # Keep only periods that actually transition into something
-    filter(!is.na(next_state)) %>%
-    # Final shape: one row per period with the "turned-into" state
-    transmute(
-      site,
-      date,
-      duration,
-      mean_speed,
-      energy,
-      total_volume = motorcycle_volume + passenger_volume + truck_volume,
-      motorcycle_volume,
-      passenger_volume,
-      truck_volume,
-      spacing_type,
-      start_state = state,
-      end_state = next_state) %>%
-      # Exclude transitions into Reset and periods less than 1 minute
-      filter(end_state != "Reset" & duration > 1) %>%
-      # Add an ID for each entry (needed for plotting later)
-      mutate(transition_id = row_number())
+    # Only keep series of transitions that start with "Reset"
+    mutate(
+    # Apply row-by-row validation using accumulate
+    valid = accumulate(
+      .x = row_number(),
+      .f = function(prev_valid, i) {
+        # First row rule of the day must start with Reset
+        if (i == 1) {
+          return(start_state[i] == "Reset")
+        }
 
+        # If previous row invalid, current row is invalid
+        if (!prev_valid) {
+          # Only valid if this row resets
+          return(start_state[i] == "Reset")
+        }
+
+        # If this row is a Reset → always valid
+        if (start_state[i] == "Reset") {
+          return(TRUE)
+        }
+
+        # Otherwise normal rule: must match previous next_state
+        return(start_state[i] == next_state[i - 1])
+      },
+      .init = TRUE
+    )[-1] # remove the initial TRUE used to start accumulate
+    ) %>% 
+    filter(valid) %>%
+    ungroup()
+  
 
   return(transition_data)
 }
 
-lineplot_transition_data <-function(transition_data) {
-  p <- ggplot(transition_data, aes(x = energy, y = mean_speed, color = end_state)) +
-    geom_point(alpha = 0.6) +
+plot_transition_data <-function(transition_data) {
+  p <- ggplot(transition_data, aes(x = end_state, y = energy, color = spacing_type)) +
+    geom_line(alpha = 0.6) +
     geom_smooth(method = "loess", se = FALSE) +
-    labs(x = "Energy (speed * weight)", y = "Mean Speed (mph)", color = "End State") +
+    labs(x = "Displacement State", y = "energy (million lb*mi/hr)", color = "spacing_type") +
     theme_minimal(base_size = 12) +
     theme(legend.position = "right")
 
@@ -146,7 +159,7 @@ lineplot_transition_data <-function(transition_data) {
 }
 
 # Deprecated: plot is no longer used in report
-barplot_transition_data <-function(transition_data) {
+bar_plot_transition_data <-function(transition_data) {
 
 plot_data <- transition_data %>%
   #create a unique label for each transition period
