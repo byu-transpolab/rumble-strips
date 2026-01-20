@@ -68,7 +68,7 @@ displacement_data <- cb %>%
 
 #' Estimate the state transition probabilities based on the compiled displacement data
 #' 
-#' @param displacement a data frame containing the compiled displacement data
+#' @param displacement_data a data frame containing the compiled displacement data
 #'
 #' @return a data frame containing the state transition probabilities and associated 
 #'         traffic characteristics for each site and time bin
@@ -102,8 +102,8 @@ estimate_state_transition <- function(displacement_data) {
     # Ensure chronological order within day
     arrange(date, start_time) %>%
     group_by(date) %>%
-    # Calculate duration of each period in minutes
-    mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) %>%,
+    # Calculate duration of each period in minutes (need for later filtering)
+    mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) %>%
     # The "state the period turned into" is the next period's state that day
     mutate(next_state = lead(state)) %>%
     ungroup() %>%
@@ -132,7 +132,21 @@ estimate_state_transition <- function(displacement_data) {
   return(transition_data)
 }
 
-plot_transition_data <-function(transition_data) {
+lineplot_transition_data <-function(transition_data) {
+  p <- ggplot(transition_data, aes(x = energy, y = mean_speed, color = end_state)) +
+    geom_point(alpha = 0.6) +
+    geom_smooth(method = "loess", se = FALSE) +
+    labs(x = "Energy (speed * weight)", y = "Mean Speed (mph)", color = "End State") +
+    theme_minimal(base_size = 12) +
+    theme(legend.position = "right")
+
+  # Save and return
+  ggsave("output/energy-per-transition.svg", plot = p, width = 10, height = 6)
+  p
+}
+
+# Deprecated: plot is no longer used in report
+barplot_transition_data <-function(transition_data) {
 
 plot_data <- transition_data %>%
   #create a unique label for each transition period
