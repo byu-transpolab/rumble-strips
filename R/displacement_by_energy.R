@@ -106,7 +106,7 @@ summarize_displacement_data <- function(displacement_data) {
   return (displacement_summary)
 }
 
-filter_displacement_summary <- function(displacement_data) {
+filter_displacement_summary <- function(displacement_summary) {
   # Focus on just energy per transition (exclude volumes and mean speeds)
   # I know we put a lot of effort into summarizing that data, but it's not used.
   # I keep the summary there in case we want to use it later.
@@ -179,7 +179,7 @@ prep_transition_data <- function(transition_data) {
     )
 
   # Step 3: Bind the reset_rows and base_rows together...
-  plot_data <- bind_rows(reset_rows, base_rows) %>%
+  disp_plot_data <- bind_rows(reset_rows, base_rows) %>%
     arrange(start_time) %>%
     mutate(
         # ...Ensure state factors are properly ordered...
@@ -203,7 +203,7 @@ prep_transition_data <- function(transition_data) {
       mutate(cum_energy = cumsum(energy)) %>%
       ungroup()
 
-  return(plot_data)
+  return(disp_plot_data)
 }
 
 plot_energy_spacing <- function(plot_data) {
