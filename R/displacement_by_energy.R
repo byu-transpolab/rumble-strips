@@ -145,7 +145,7 @@ filter_displacement_summary <- function(displacement_data) {
     )[-1] # remove the initial TRUE used to start accumulate
     ) %>% 
     filter(valid) %>%
-    select(-valid, -start_time) %>%
+    select(-valid) %>%
     ungroup()
   
   return(transition_data)
@@ -160,6 +160,7 @@ prep_transition_data <- function(transition_data) {
     transmute(
       site,
       date,
+      start_time,
       spacing_type,
       state = next_state,
       energy
@@ -170,15 +171,16 @@ prep_transition_data <- function(transition_data) {
     filter(start_state == "Reset") %>%
     transmute(
       site,
-      date, 
+      date,
+      start_time,
       spacing_type,
       state = start_state, # "Reset"
-      energy = 0.0
+      energy = 0.0 # All Reset states haven't had any vehicles hit them yet
     )
 
   # Step 3: Bind the reset_rows and base_rows together...
   plot_data <- bind_rows(reset_rows, base_rows) %>%
-    arrange(spacing_type, site) %>%
+    arrange(start_time) %>%
     mutate(
         # ...Ensure state factors are properly ordered...
         state = factor(
