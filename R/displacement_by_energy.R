@@ -88,7 +88,8 @@ summarize_displacement_data <- function(displacement_data) {
       start_time        = min(time, na.rm = TRUE),
       end_time          = max(time, na.rm = TRUE),
       start_state       = first(state),
-      energy            = sum(energy, na.rm = TRUE) / 1000000, # convert to million lb*mi/hr,
+      # convert to million lb*mi/hr for easier plotting
+      energy            = sum(energy, na.rm = TRUE) / 1000000, 
       motorcycle_volume = sum(class == "motorcycle", na.rm = TRUE),
       passenger_volume  = sum(class == "passenger",  na.rm = TRUE),
       truck_volume      = sum(class == "truck",      na.rm = TRUE),
@@ -102,7 +103,7 @@ summarize_displacement_data <- function(displacement_data) {
            !is.na(next_state) & 
            start_state != "Out of Specification")
 
-  return (displacement_data)
+  return (displacement_summary)
 }
 
 filter_displacement_summary <- function(displacement_data) {
@@ -203,7 +204,7 @@ prep_transition_data <- function(transition_data) {
   return(plot_data)
 }
 
-plot_transition_data_spacing <- function(plot_data) {
+plot_energy_spacing <- function(plot_data) {
 # Plot the prepared plot_data and color by spacing type.
 
   p <- plot_data %>%
@@ -234,7 +235,7 @@ ggplot(
   p
 }
 
-plot_transition_data_site <- function(plot_data) {
+plot_energy_site <- function(plot_data) {
 # Plot the prepared plot_data and color by spacing type.
 
   p <- plot_data %>%

@@ -46,7 +46,12 @@ source("R/displacement_by_volume.R")
 source("R/displacement_by_energy.R")
 
 
+
 list(
+  ### Hourly Volumes Analysis ################################################
+  # This section created average hourly volume plots which
+  # were used to evaluate how long potential sites would
+  # need to be observed to reach minimum observations.
   # Download Google Sheets as Excel files before anything else
   tar_target(
     download_sheets,
@@ -197,8 +202,6 @@ list(
     write_csv(final_summary, "data/temp_data/station_summary")
   ),
 
-
-
   ## ===== ANALYSIS ===== ##
 
   ### Reading in CSV files and returning tibbles #############################
@@ -310,7 +313,7 @@ list(
   make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
-  ### TPRS Displacement by impact energy Analysis ############################
+  ### TPRS Displacement by energy Analysis ###################################
   # Helper Functions are found in R/displacement_by_energy.R
 
   # compile speed, class, and displacement state into one data frame
@@ -321,11 +324,30 @@ list(
                             observations)
   ),
 
-  # Total vehicle volumes for each displacement state
-  tar_target(transition_data, estimate_state_transition(displacement_data)),
+  # summarize energy and traffic volume per transition
+  tar_target(displacement_summary,
+    summarize_displacement_data(displacement_data)
+  ),
 
-  # Plot the vehicle volumes for each displacement transition
-  tar_target(transition_data_plot, plot_transition_data(transition_data))
+  # filter displacement_summary to acceptable transitions
+  tar_target(transition_data,
+    filter_displacement_summary(displacement_summary)
+  ),
+
+  # prepare the transition data for plotting
+  tar_target(disp_plot_data,
+    prep_transition_data(transition_data)
+  ),
+
+  # Plot the impact energy for each transition, colored by spacing
+  tar_target(energy_per_transition_spacing,
+    plot_energy_spacing(disp_plot_data)
+  ),
+
+  # Plot the impact energy for each transition, colored by site
+  tar_target(energy_per_transition_site,
+    plot_energy_site(disp_plot_data)
+  )
 
   ### Worker Exposure Analysis ###############################################
   # Helper functions are being developed
