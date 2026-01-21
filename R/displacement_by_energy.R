@@ -101,7 +101,8 @@ summarize_displacement_data <- function(displacement_data) {
     # Filter out transitions that meet the following criteria:
     filter(next_state != "Reset" & 
            !is.na(next_state) & 
-           start_state != "Out of Specification")
+           start_state != "Out of Specification" &
+           duration <= 480)
 
   return (displacement_summary)
 }
