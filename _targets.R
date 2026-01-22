@@ -42,6 +42,9 @@ source("R/hourly_volumes.R")
 source("R/csv2tibble.R")
 source("R/observations.R")
 source("R/speed.R")
+source("R.braking.R")
+source("R.avoidance.R")
+source("exposure.R")
 source("R/displacement_by_volume.R")
 source("R/displacement_by_energy.R")
 
@@ -284,11 +287,19 @@ list(
   plot_confidence_bounds(paired_t_test)
   ),
 
-  ### Driver Braking Analysis ################################################
-  # Helper functions are being developed
+  ### Driver Braking and TPRS Avoidance Analysis #############################
+  # Helper functions are listed in braking_and_departure.R
 
-  ### Driver TPRS Avoidance Analysis #########################################
-  # Helper functions are being developed
+  # Combine camera_back_data and observations so driver behavior and
+  # spacing_type are neatly assembled.
+  tar_targets(brake_and_departure,
+    compile_brake_and_departure(camera_back_data, observations)),
+
+  # Plot braking response in a bar chart, faceted by spacing_type and class.
+  tar_targets(braking_plot, plot_braking(brake_and_departure)),
+
+  # # Plot departure response in a bar chart, faceted by spacing_type and class.
+  tar_targets(departure_plot, plot_departure(brake_and_departure)),
 
   ### TPRS displacement by volume Analysis ###################################
   # Helper functions are found in R/displacement_by_volume.R
