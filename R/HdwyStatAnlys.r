@@ -243,7 +243,23 @@ raff_by_site_date <- gaps %>%
   ungroup()
 
 # Output Previews (open in tabs) ----
-utils::View(headways_all,      title = "Headways: ALL Vehicle Passing rows")
+# Safe View function that doesn't require X11
+safe_view <- function(data, title = NULL) {
+  tryCatch({
+    if (interactive() && capabilities("X11")) {
+      utils::View(data, title = title)
+    } else {
+      cat("\n=== Preview:", title, "===\n")
+      print(head(data, 10))
+    }
+  }, error = function(e) {
+    cat("\n=== Preview:", title, "(View not available) ===\n")
+    print(head(data, 10))
+  })
+}
+
+safe_view(headways_all, title = "Headways: ALL Vehicle Passing rows")
+
 raff_overall_col <- raff_overall %>%
   tidyr::pivot_longer(everything(), names_to = "metric", values_to = "value") %>%
   mutate(
@@ -253,10 +269,10 @@ raff_overall_col <- raff_overall %>%
   ) %>%
   select(metric, value)
 
-utils::View(raff_overall_col, title = "Critical headway (Raff): OVERALL")
+safe_view(raff_overall_col, title = "Critical headway (Raff): OVERALL")
 
 #export raff_overall_col to CSV titled Critical headway (Raff): OVERALL to box drive
-readr::write_csv(raff_overall_col, "/Users/benjaminhailstone/Library/CloudStorage/Box-Box/2024-tprs/output/Critical_headway_Raff_OVERALL.csv")
+readr::write_csv(raff_overall_col, "/Library/CloudStorage/Box-Box/2024-tprs/output/Critical_headway_Raff_OVERALL.csv")
 
 #Note: We have a critical time! Now, we will compare that t_c value against each site/day distribution.
 # We're taking a value representing the overall behavior of worker headway acceptance/rejection, 
