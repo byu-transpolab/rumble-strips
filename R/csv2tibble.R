@@ -209,31 +209,44 @@ read_camera_back <- function(path) {
                         tz = "America/Denver"),
 
       # interpret j, k, l as passenger, truck, motorcycle
-      class = case_when(
-        class == "j" ~ "passenger",
-        class == "k" ~ "truck",
-        class == "l" ~ "motorcycle",
-        TRUE ~ as.character(class)
+      class = factor(
+          case_when(
+            class == "j" ~ "passenger",
+            class == "k" ~ "truck",
+            class == "l" ~ "motorcycle",
+            TRUE ~ as.character(class)
+          ),
+          levels = c("motorcycle", "passenger", "truck")
       ),
+
       # interpret d, f, NA as before, after, no brake
-      brake = case_when(
-        brake == "d" ~ "before",
-        brake == "f" ~ "after",
-        is.na(brake) ~ "no brake",
-        TRUE ~ as.character(brake)
+      brake = factor(
+          case_when(
+            brake == "d" ~ "before",
+            brake == "f" ~ "after",
+            is.na(brake) ~ "no brake",
+            TRUE ~ as.character(brake)
+          ),
+          levels = c("before", "no brake", "after")
       ),
+
       # interpret b , NA as avoided, not avoided
-      departure = case_when(
-        avoidance == "b" ~ "avoided",
-        is.na(avoidance) ~ "not avoided",
-        TRUE ~ as.character(avoidance)
+      departure = factor(
+          case_when(
+            avoidance == "b" ~ "avoided",
+            is.na(avoidance) ~ "not avoided",
+            TRUE ~ as.character(avoidance)
+          ),
+          levels = c("avoided", "not avoided")
       ),
+
       # interpret y as yes, NA as no
       flagged = case_when(
         displacement == "y" ~ "yes",
         is.na(displacement) ~ "no",
         TRUE ~ as.character(displacement)
       ),
+      
       # interpret '9' as lane 2, NA as lane 1
       lane = case_when(
         state == "9" ~ "lane 2",
