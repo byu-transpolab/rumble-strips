@@ -1,10 +1,6 @@
 # Helper functions related to Driver braking and TPRS avoidance rates.
 
 library(tidyverse)
-library(svglite)
-library(scales)
-library(gridExtra)
-library(grid)
 
 # ==== Combine camera_back_data with observations ======= #
 compile_brake_and_departure <- function(camera_back_data, observations) {
@@ -49,7 +45,7 @@ plot_braking <- function(brake_and_departure) {
 # ==== Plot Departure data ==== #
 plot_departure <- function(brake_and_departure) {
 
-    departure_plot <- brake_and_departure %>%
+    p <- brake_and_departure %>%
         # Remove the "NO TPRS" data as vehicles cannot avoid what is not there.
         filter(spacing_type != "NO TPRS") %>%
         ggplot(aes(x = departure)) +
