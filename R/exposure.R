@@ -8,7 +8,9 @@ library(ggplot2)
 library(svglite)   # for ggsave(..., device = svglite)
 library(readr)     # for reading observation_data.csv
 library(patchwork) # for combining plots
-
+library(targets)
+library(stringr)
+library(lubridate)
 
 # ==============================================================================
 # HEADWAY STATISTICAL ANALYSIS FUNCTIONS
@@ -177,52 +179,9 @@ safe_view <- function(data, print_output = FALSE) {
   invisible(data)
 }
 
-## Export raff_overall metrics to CSV
-##
-## @param raff_results Tibble containing raff metrics
-## @param output_dir Directory path for saving CSV
-## @return NULL (called for side effect)
-export_raff_overall_csv <- function(raff_results, output_dir = "output") {
-  raff_overall_export <- raff_results %>%
-    filter(grouping == "overall") %>%
-    select(raff_lower, raff_upper, raff_midpoint)
-  
-  write_csv(raff_overall_export, file.path(output_dir, "raff_overall.csv"))
-  message("Exported raff_overall.csv to ", output_dir)
-}
-
 # ==============================================================================
 # CDF CURVE GENERATION FUNCTIONS
 # ==============================================================================
-
-## Setup output directory for CDF plots
-##
-## @param output_dir Directory path to create
-## @return NULL (called for side effect)
-setup_output_directory <- function(output_dir = "output") {
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir, recursive = TRUE)
-  }
-}
-
-## Load camera back data from targets
-##
-## @return Tibble containing camera_back data
-load_camera_back_data <- function() {
-  tar_read(camera_back)
-}
-
-## Validate that critical headway data exists
-##
-## @param output_dir Directory containing raff_overall.csv
-## @return Tibble with raff_overall metrics
-validate_critical_headway <- function(output_dir = "output") {
-  raff_path <- file.path(output_dir, "raff_overall.csv")
-  if (!file.exists(raff_path)) {
-    stop("raff_overall.csv not found. Run headway analysis first.")
-  }
-  read_csv(raff_path, show_col_types = FALSE)
-}
 
 ## Load observation data from CSV
 ##
@@ -251,12 +210,12 @@ compute_headways_with_spacing <- function(cb, obs_data) {
 ##
 ## @param data Tibble with headway_sec column
 ## @param title Plot title
-## @param raff_overall Tibble with raff critical headway metrics
+## @param raff_midpoint Numeric value for critical headway
 ## @return ggplot object
-create_cdf_plot <- function(data, title, raff_overall) {
+create_cdf_plot <- function(data, title, raff_midpoint) {
   ggplot(data, aes(x = headway_sec)) +
     stat_ecdf(geom = "step", color = "blue") +
-    geom_vline(xintercept = raff_overall$raff_midpoint, 
+    geom_vline(xintercept = raff_midpoint, 
                linetype = "dashed", color = "red", linewidth = 1) +
     labs(
       title = title,
@@ -264,48 +223,6 @@ create_cdf_plot <- function(data, title, raff_overall) {
       y = "Cumulative Probability"
     ) +
     theme_minimal()
-}
-
-## Generate CDF plots for each site
-##
-## @param hdwy_data Tibble with headway data
-## @param raff_overall Tibble with raff metrics
-## @param output_dir Directory for saving plots
-## @return List of ggplot objects
-generate_site_cdfs <- function(hdwy_data, raff_overall, output_dir = "output") {
-  sites <- unique(hdwy_data$site)
-  
-  plots <- lapply(sites, function(s) {
-    site_data <- hdwy_data %>% filter(site == s)
-    p <- create_cdf_plot(site_data, paste("CDF of Headways -", s), raff_overall)
-    ggsave(file.path(output_dir, paste0("cdf_", s, ".svg")), 
-           plot = p, device = svglite, width = 8, height = 6)
-    p
-  })
-  
-  names(plots) <- sites
-  plots
-}
-
-## Generate CDF plots for each spacing category
-##
-## @param hdwy_data Tibble with headway and spacing data
-## @param raff_overall Tibble with raff metrics
-## @param output_dir Directory for saving plots
-## @return List of ggplot objects
-generate_spacing_cdfs <- function(hdwy_data, raff_overall, output_dir = "output") {
-  spacings <- unique(hdwy_data$spacing_ft)
-  
-  plots <- lapply(spacings, function(sp) {
-    spacing_data <- hdwy_data %>% filter(spacing_ft == sp)
-    p <- create_cdf_plot(spacing_data, paste("CDF of Headways - Spacing:", sp, "ft"), raff_overall)
-    ggsave(file.path(output_dir, paste0("cdf_spacing_", sp, "ft.svg")), 
-           plot = p, device = svglite, width = 8, height = 6)
-    p
-  })
-  
-  names(plots) <- paste0(spacings, "ft")
-  plots
 }
 
 ## Generate summary statistics for headways
@@ -327,28 +244,6 @@ generate_summary_stats <- function(hdwy_data) {
 # ==============================================================================
 # HISTOGRAM GENERATION FUNCTIONS
 # ==============================================================================
-
-## Setup output directory for histogram plots
-##
-## @param output_dir Directory path to create
-## @return NULL (called for side effect)
-setup_histogram_output_dir <- function(output_dir = "output") {
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir, recursive = TRUE)
-  }
-}
-
-## Validate critical headway data for histogram generation
-##
-## @param output_dir Directory containing raff_overall.csv
-## @return Tibble with raff_overall metrics
-validate_critical_headway_histogram <- function(output_dir = "output") {
-  raff_path <- file.path(output_dir, "raff_overall.csv")
-  if (!file.exists(raff_path)) {
-    stop("raff_overall.csv not found. Run headway analysis first.")
-  }
-  read_csv(raff_path, show_col_types = FALSE)
-}
 
 ## Process camera back data with combined grouping
 ##
@@ -396,19 +291,96 @@ nest_data_with_stats <- function(data, stats_table) {
     left_join(stats_table, by = c("combined_site", "combined_spacing"))
 }
 
-## Create and save histogram plots
+# ==============================================================================
+# TARGETS PIPELINE FUNCTIONS
+# ==============================================================================
+
+## Perform headway statistical analysis for targets pipeline
 ##
-## @param nested_data Nested tibble with data and stats
-## @param raff_overall Tibble with raff metrics
-## @param output_dir Directory for saving plots
+## @param worker_exposure Worker exposure data from targets
+## @return List containing classified data and raff metrics
+make_headway_analysis <- function(worker_exposure) {
+  we <- worker_exposure %>%
+    mutate(across(where(is.character), trimws)) %>%
+    mutate(Time = parse_timestamps(Time))
+  
+  we <- compute_vehicle_headways(we)
+  
+  wfg_lookup <- prepare_wfg_events(we)
+  er_lookup <- prepare_er_events(we)
+  we_classified <- classify_headways(we, wfg_lookup, er_lookup)
+  
+  event_combos <- compute_event_combinations(we_classified)
+  hdwy_summary <- generate_headway_summary(we_classified)
+  raff_results <- compute_all_raff_metrics(we_classified)
+  
+  list(
+    worker_exposure_classified = we_classified,
+    event_combinations = event_combos,
+    headway_summary = hdwy_summary,
+    raff_metrics = raff_results
+  )
+}
+
+## Generate CDF plots for targets pipeline
+##
+## @param camera_back Camera back data from targets
+## @param raff_metrics Raff metrics from headway analysis
 ## @return List of ggplot objects
-create_save_histograms <- function(nested_data, raff_overall, output_dir = "output") {
+make_cdf_plots <- function(camera_back, raff_metrics) {
+  obs_data <- load_observation_data()
+  hdwy_data <- compute_headways_with_spacing(camera_back, obs_data)
+  
+  raff_midpoint <- raff_metrics %>%
+    filter(grouping == "overall") %>%
+    pull(raff_midpoint)
+  
+  sites <- unique(hdwy_data$site)
+  site_plots <- lapply(sites, function(s) {
+    site_data <- hdwy_data %>% filter(site == s)
+    create_cdf_plot(site_data, paste("CDF of Headways -", s), raff_midpoint)
+  })
+  names(site_plots) <- sites
+  
+  spacings <- unique(hdwy_data$spacing_ft)
+  spacing_plots <- lapply(spacings, function(sp) {
+    spacing_data <- hdwy_data %>% filter(spacing_ft == sp)
+    create_cdf_plot(spacing_data, paste("CDF of Headways - Spacing:", sp, "ft"), raff_midpoint)
+  })
+  names(spacing_plots) <- paste0(spacings, "ft")
+  
+  summary_stats <- generate_summary_stats(hdwy_data)
+  
+  list(
+    site_plots = site_plots,
+    spacing_plots = spacing_plots,
+    summary_stats = summary_stats,
+    headway_data = hdwy_data
+  )
+}
+
+## Generate histogram plots for targets pipeline
+##
+## @param camera_back Camera back data from targets
+## @param raff_metrics Raff metrics from headway analysis
+## @return List of ggplot objects
+make_histogram_plots <- function(camera_back, raff_metrics) {
+  obs_data <- load_observation_data()
+  cb_combined <- process_cb_with_combined_groups(camera_back, obs_data)
+  
+  stats_table <- build_histogram_stats_table(cb_combined)
+  nested_data <- nest_data_with_stats(cb_combined, stats_table)
+  
+  raff_midpoint <- raff_metrics %>%
+    filter(grouping == "overall") %>%
+    pull(raff_midpoint)
+  
   plots <- nested_data %>%
     mutate(
       plot = pmap(list(data, combined_site, n, mean_hdwy, sd_hdwy), function(d, title, count, m, s) {
         ggplot(d, aes(x = headway_sec)) +
           geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
-          geom_vline(xintercept = raff_overall$raff_midpoint, 
+          geom_vline(xintercept = raff_midpoint, 
                      linetype = "dashed", color = "red", linewidth = 1) +
           labs(
             title = paste("Histogram -", title),
@@ -420,166 +392,66 @@ create_save_histograms <- function(nested_data, raff_overall, output_dir = "outp
       })
     )
   
-  # Save plots
-  walk2(plots$plot, plots$combined_site, function(p, site_name) {
-    filename <- paste0("histogram_", gsub(" ", "_", site_name), ".svg")
-    ggsave(file.path(output_dir, filename), plot = p, device = svglite, width = 8, height = 6)
-  })
-  
-  plots$plot
-}
-
-# ==============================================================================
-# MAIN ORCHESTRATION FUNCTIONS
-# ==============================================================================
-
-## Run complete headway statistical analysis
-##
-## @param output_dir Directory for saving results
-## @param print_results Logical, whether to print intermediate results
-## @return List containing all analysis results
-run_headway_analysis <- function(output_dir = "output", print_results = FALSE) {
-  setup_output_directory(output_dir)
-  
-  message("Loading worker exposure data...")
-  we <- load_worker_exposure_data()
-  
-  message("Parsing timestamps...")
-  we <- we %>%
-    mutate(Time = parse_timestamps(Time))
-  
-  message("Computing headways...")
-  we <- compute_vehicle_headways(we)
-  
-  message("Classifying headways...")
-  wfg_lookup <- prepare_wfg_events(we)
-  er_lookup <- prepare_er_events(we)
-  we_classified <- classify_headways(we, wfg_lookup, er_lookup)
-  
-  message("Computing event combinations...")
-  event_combos <- compute_event_combinations(we_classified)
-  safe_view(event_combos, print_results)
-  
-  message("Generating headway summary...")
-  hdwy_summary <- generate_headway_summary(we_classified)
-  safe_view(hdwy_summary, print_results)
-  
-  message("Computing Raff metrics...")
-  raff_results <- compute_all_raff_metrics(we_classified)
-  safe_view(raff_results, print_results)
-  
-  message("Exporting raff_overall.csv...")
-  export_raff_overall_csv(raff_results, output_dir)
-  
   list(
-    worker_exposure = we_classified,
-    event_combinations = event_combos,
-    headway_summary = hdwy_summary,
-    raff_metrics = raff_results
-  )
-}
-
-## Run CDF curve generation
-##
-## @param output_dir Directory for saving plots
-## @return List containing CDF plots and summary stats
-run_cdf_analysis <- function(output_dir = "output") {
-  setup_output_directory(output_dir)
-  
-  message("Loading raff_overall metrics...")
-  raff_overall <- validate_critical_headway(output_dir)
-  
-  message("Loading camera back data...")
-  cb <- load_camera_back_data()
-  
-  message("Loading observation data...")
-  obs_data <- load_observation_data()
-  
-  message("Computing headways with spacing...")
-  hdwy_data <- compute_headways_with_spacing(cb, obs_data)
-  
-  message("Generating site CDFs...")
-  site_plots <- generate_site_cdfs(hdwy_data, raff_overall, output_dir)
-  
-  message("Generating spacing CDFs...")
-  spacing_plots <- generate_spacing_cdfs(hdwy_data, raff_overall, output_dir)
-  
-  message("Computing summary statistics...")
-  summary_stats <- generate_summary_stats(hdwy_data)
-  
-  list(
-    site_plots = site_plots,
-    spacing_plots = spacing_plots,
-    summary_stats = summary_stats,
-    headway_data = hdwy_data
-  )
-}
-
-## Run histogram generation
-##
-## @param output_dir Directory for saving plots
-## @return List containing histogram plots
-run_histogram_analysis <- function(output_dir = "output") {
-  setup_histogram_output_dir(output_dir)
-  
-  message("Loading raff_overall metrics...")
-  raff_overall <- validate_critical_headway_histogram(output_dir)
-  
-  message("Loading camera back data...")
-  cb <- load_camera_back_data()
-  
-  message("Loading observation data...")
-  obs_data <- load_observation_data()
-  
-  message("Processing data with combined groups...")
-  cb_combined <- process_cb_with_combined_groups(cb, obs_data)
-  
-  message("Building statistics table...")
-  stats_table <- build_histogram_stats_table(cb_combined)
-  
-  message("Nesting data for plotting...")
-  nested_data <- nest_data_with_stats(cb_combined, stats_table)
-  
-  message("Creating and saving histograms...")
-  plots <- create_save_histograms(nested_data, raff_overall, output_dir)
-  
-  list(
-    histogram_plots = plots,
+    histogram_plots = plots$plot,
     stats_table = stats_table
   )
 }
 
-## Run complete exposure analysis workflow
+## Save CDF plots to files
 ##
-## @param output_dir Directory for saving all results
-## @param print_results Logical, whether to print intermediate results
-## @return List containing all analysis results
-run_exposure_analysis <- function(output_dir = "output", print_results = FALSE) {
-  message("========================================")
-  message("Starting Complete Exposure Analysis")
-  message("========================================\n")
+## @param cdf_results List containing CDF plots
+## @param output_dir Directory for saving plots
+## @return Character vector of file paths
+save_cdf_plots <- function(cdf_results, output_dir = "output") {
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
   
-  message("Step 1: Headway Statistical Analysis")
-  headway_results <- run_headway_analysis(output_dir, print_results)
+  files <- c()
   
-  message("\nStep 2: CDF Curve Generation")
-  cdf_results <- run_cdf_analysis(output_dir)
+  # Save site plots
+  for (site_name in names(cdf_results$site_plots)) {
+    filename <- file.path(output_dir, paste0("cdf_", site_name, ".svg"))
+    ggsave(filename, plot = cdf_results$site_plots[[site_name]], 
+           device = svglite, width = 8, height = 6)
+    files <- c(files, filename)
+  }
   
-  message("\nStep 3: Histogram Generation")
-  histogram_results <- run_histogram_analysis(output_dir)
+  # Save spacing plots
+  for (spacing_name in names(cdf_results$spacing_plots)) {
+    filename <- file.path(output_dir, paste0("cdf_spacing_", spacing_name, ".svg"))
+    ggsave(filename, plot = cdf_results$spacing_plots[[spacing_name]], 
+           device = svglite, width = 8, height = 6)
+    files <- c(files, filename)
+  }
   
-  message("\n========================================")
-  message("Exposure Analysis Complete!")
-  message("========================================")
-  
-  list(
-    headway_analysis = headway_results,
-    cdf_analysis = cdf_results,
-    histogram_analysis = histogram_results
-  )
+  files
 }
 
-# ==============================================================================
-# UNCOMMENT TO RUN THE COMPLETE ANALYSIS
-# ==============================================================================
-# results <- run_exposure_analysis(output_dir = "output", print_results = TRUE)
+## Save histogram plots to files
+##
+## @param histogram_results List containing histogram plots
+## @param camera_back Camera back data (for site names)
+## @param output_dir Directory for saving plots
+## @return Character vector of file paths
+save_histogram_plots <- function(histogram_results, camera_back, output_dir = "output") {
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
+  
+  obs_data <- load_observation_data()
+  cb_combined <- process_cb_with_combined_groups(camera_back, obs_data)
+  combined_sites <- unique(cb_combined$combined_site)
+  
+  files <- c()
+  for (i in seq_along(histogram_results$histogram_plots)) {
+    site_name <- combined_sites[i]
+    filename <- file.path(output_dir, paste0("histogram_", gsub(" ", "_", site_name), ".svg"))
+    ggsave(filename, plot = histogram_results$histogram_plots[[i]], 
+           device = svglite, width = 8, height = 6)
+    files <- c(files, filename)
+  }
+  
+  files
+}
