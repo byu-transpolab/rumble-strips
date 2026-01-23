@@ -34,34 +34,34 @@ parse_timestamps <- function(timestamp_str) {
 
 ## Compute vehicle headways from timestamp data
 ##
-## @param data Tibble with Site, Date, and Time columns
+## @param data Tibble with site, date, and time columns
 ## @return Tibble with headway_sec column added
 compute_vehicle_headways <- function(data) {
   data %>%
-    arrange(Site, Date, Time) %>%
-    group_by(Site, Date) %>%
-    mutate(headway_sec = as.numeric(difftime(Time, lag(Time), units = "secs"))) %>%
+    arrange(site, date, time) %>%
+    group_by(site, date) %>%
+    mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))) %>%
     ungroup()
 }
 
 ## Prepare Waiting for Gap (WFG) events for lookup
 ##
 ## @param data Tibble containing worker exposure data
-## @return Tibble with WFG events keyed by Site, Date, Worker
+## @return Tibble with WFG events keyed by site, date
 prepare_wfg_events <- function(data) {
   data %>%
-    filter(Event == "WFG") %>%
-    select(Site, Date, Worker, wfg_time = Time)
+    filter(event == "Waiting for Gap") %>%
+    select(site, date, wfg_time = time)
 }
 
 ## Prepare Entering Roadway (ER) events for lookup
 ##
 ## @param data Tibble containing worker exposure data
-## @return Tibble with ER events keyed by Site, Date, Worker
+## @return Tibble with ER events keyed by site, date
 prepare_er_events <- function(data) {
   data %>%
-    filter(Event == "ER") %>%
-    select(Site, Date, Worker, er_time = Time)
+    filter(event == "Entering Roadway") %>%
+    select(site, date, er_time = time)
 }
 
 ## Classify headways as Accepted, Rejected, or NotTracked
@@ -72,13 +72,13 @@ prepare_er_events <- function(data) {
 ## @return Tibble with Classification column added
 classify_headways <- function(data, wfg_lookup, er_lookup) {
   data %>%
-    left_join(wfg_lookup, by = c("Site", "Date", "Worker")) %>%
-    left_join(er_lookup, by = c("Site", "Date", "Worker")) %>%
+    left_join(wfg_lookup, by = c("site", "date")) %>%
+    left_join(er_lookup, by = c("site", "date")) %>%
     mutate(
       Classification = case_when(
         is.na(wfg_time) & is.na(er_time) ~ "NotTracked",
-        !is.na(wfg_time) & Time >= wfg_time & Time < er_time ~ "Rejected",
-        !is.na(er_time) & Time >= er_time & Time < lead(wfg_time) ~ "Accepted",
+        !is.na(wfg_time) & time >= wfg_time & time < er_time ~ "Rejected",
+        !is.na(er_time) & time >= er_time & time < lead(wfg_time) ~ "Accepted",
         TRUE ~ "NotTracked"
       )
     ) %>%
@@ -92,7 +92,7 @@ classify_headways <- function(data, wfg_lookup, er_lookup) {
 compute_event_combinations <- function(data) {
   data %>%
     filter(!is.na(headway_sec), headway_sec > 0) %>%
-    group_by(Site, Date, Worker) %>%
+    group_by(site, date) %>%
     summarise(
       Total = n(),
       Accepted = sum(Classification == "Accepted"),
@@ -123,7 +123,7 @@ generate_headway_summary <- function(data) {
 ## Compute Raff critical headway metrics
 ##
 ## @param data Tibble with headway_sec and Classification columns
-## @return List with raff_lower, raff_upper, raff_midpoint
+## @return List with t_c_critical_s
 compute_raff_metrics <- function(data) {
   accepted <- data %>%
     filter(Classification == "Accepted", !is.na(headway_sec), headway_sec > 0) %>%
@@ -134,36 +134,50 @@ compute_raff_metrics <- function(data) {
     pull(headway_sec)
   
   if (length(accepted) == 0 || length(rejected) == 0) {
-    return(list(raff_lower = NA_real_, raff_upper = NA_real_, raff_midpoint = NA_real_))
+    return(list(t_c_critical_s = NA_real_))
   }
   
-  raff_lower <- max(accepted)
-  raff_upper <- min(rejected)
-  raff_midpoint <- (raff_lower + raff_upper) / 2
+  # t1 = largest rejected; t2 = smallest accepted
+  t1 <- max(rejected)
+  t2 <- min(accepted)
   
-  list(raff_lower = raff_lower, raff_upper = raff_upper, raff_midpoint = raff_midpoint)
+  # A(t) and R(t) as proportions
+  A_t1 <- mean(accepted <= t1)
+  R_t1 <- mean(rejected >= t1)
+  A_t2 <- mean(accepted <= t2)
+  R_t2 <- mean(rejected >= t2)
+  
+  # Raff formula: t_c = ((t2 - t1) * [R(t1) - A(t1)]) / ([A(t2) - R(t2)] + [R(t1) - A(t1)]) + t1
+  denom <- (A_t2 - R_t2) + (R_t1 - A_t1)
+  t_c <- if (is.na(t1) || is.na(t2) || is.na(denom) || denom == 0) {
+    NA_real_
+  } else {
+    ((t2 - t1) * (R_t1 - A_t1)) / denom + t1
+  }
+  
+  list(t_c_critical_s = t_c)
 }
 
 ## Compute all Raff metrics (overall, by site, by site-date)
 ##
 ## @param data Tibble with classified headways
-## @return Tibble with raff_overall, raff_by_site, raff_by_site_date
+## @return Tibble with t_c_critical_s for overall, by_site, and by_site_date
 compute_all_raff_metrics <- function(data) {
   raff_overall <- compute_raff_metrics(data) %>%
     as_tibble() %>%
     mutate(grouping = "overall")
   
   raff_by_site <- data %>%
-    group_by(Site) %>%
+    group_by(site) %>%
     group_map(~ compute_raff_metrics(.x) %>% as_tibble()) %>%
-    bind_rows(.id = "Site") %>%
+    bind_rows(.id = "site") %>%
     mutate(grouping = "by_site")
   
   raff_by_site_date <- data %>%
-    group_by(Site, Date) %>%
+    group_by(site, date) %>%
     group_map(~ compute_raff_metrics(.x) %>% as_tibble()) %>%
     bind_rows(.id = "id") %>%
-    separate(id, into = c("Site", "Date"), sep = "\\.") %>%
+    separate(id, into = c("site", "date"), sep = "\\.") %>%
     mutate(grouping = "by_site_date")
   
   bind_rows(raff_overall, raff_by_site, raff_by_site_date)
@@ -188,7 +202,7 @@ safe_view <- function(data, print_output = FALSE) {
 ## @return Tibble with site and spacing information
 load_observation_data <- function() {
   read_csv("data/observation_data.csv", show_col_types = FALSE) %>%
-    select(site, spacing_ft)
+    select(site, strip_spacing, spacing_type)
 }
 
 ## Compute headways and join with spacing data
@@ -210,19 +224,81 @@ compute_headways_with_spacing <- function(cb, obs_data) {
 ##
 ## @param data Tibble with headway_sec column
 ## @param title Plot title
-## @param raff_midpoint Numeric value for critical headway
+## @param t_c_critical_s Numeric value for critical headway
 ## @return ggplot object
-create_cdf_plot <- function(data, title, raff_midpoint) {
-  ggplot(data, aes(x = headway_sec)) +
-    stat_ecdf(geom = "step", color = "blue") +
-    geom_vline(xintercept = raff_midpoint, 
-               linetype = "dashed", color = "red", linewidth = 1) +
+create_cdf_plot <- function(data, title, t_c_critical_s) {
+  # X-axis limit rule
+  x_limit <- if (grepl("us191", title, ignore.case = TRUE)) 500 else 200
+  
+  # Calculate stats
+  n <- nrow(data)
+  mean_headway <- mean(data$headway_sec, na.rm = TRUE)
+  sd_headway <- sd(data$headway_sec, na.rm = TRUE)
+  
+  # Filter data within x_limit for plotting
+  plot_data <- data %>% filter(headway_sec <= x_limit)
+  
+  # Calculate CDF value at t_c using all data (not just filtered)
+  cdf_at_tc <- if (!is.na(t_c_critical_s)) {
+    sum(data$headway_sec <= t_c_critical_s, na.rm = TRUE) / nrow(data)
+  } else {
+    NA_real_
+  }
+  
+  # Create CDF plot
+  p <- ggplot(plot_data, aes(x = headway_sec)) +
+    stat_ecdf(geom = "ribbon", aes(ymin = 0, ymax = after_stat(y)), fill = "steelblue", alpha = 0.5) +
+    stat_ecdf(geom = "step", color = "steelblue", linewidth = 1) +
+    scale_x_continuous(limits = c(0, x_limit)) +
+    scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
     labs(
-      title = title,
-      x = "Headway (seconds)",
-      y = "Cumulative Probability"
+      title = paste0("Cumulative Distribution Function - ", title),
+      x = "Headway (seconds between cars)",
+      y = "Cumulative Proportion"
     ) +
-    theme_minimal()
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5, size = 14))
+  
+  # Stats annotation (bottom-right)
+  fmt_val <- function(x) ifelse(is.na(x), "NA", sprintf("%.1f s", x))
+  stats_text <- paste0(
+    "n = ", n, "\n",
+    "mean = ", fmt_val(mean_headway), "\n",
+    "sd = ", fmt_val(sd_headway)
+  )
+  
+  p <- p +
+    annotate(
+      "label",
+      x = x_limit * 0.95, y = 0.05,
+      label = stats_text,
+      vjust = 0, hjust = 1, size = 3.5,
+      fill = "white", color = "black"
+    )
+  
+  # Add critical headway horizontal line (shows % of headways below t_c)
+  if (!is.na(t_c_critical_s) && !is.na(cdf_at_tc)) {
+    p <- p +
+      geom_hline(
+        yintercept = cdf_at_tc,
+        color = "red",
+        linetype = "dashed",
+        linewidth = 1
+      ) +
+      annotate(
+        "text",
+        x = x_limit * 0.95,
+        y = cdf_at_tc,
+        label = sprintf("CDF at t_c = %.1f s\n(%.1f%%)", t_c_critical_s, cdf_at_tc * 100),
+        vjust = -0.5,
+        hjust = 1,
+        color = "red",
+        size = 3.5,
+        fontface = "bold"
+      )
+  }
+  
+  return(p)
 }
 
 ## Generate summary statistics for headways
@@ -231,7 +307,7 @@ create_cdf_plot <- function(data, title, raff_midpoint) {
 ## @return Tibble with summary stats by site and spacing
 generate_summary_stats <- function(hdwy_data) {
   hdwy_data %>%
-    group_by(site, spacing_ft) %>%
+    group_by(site, strip_spacing) %>%
     summarise(
       count = n(),
       mean_hdwy = mean(headway_sec),
@@ -258,10 +334,7 @@ process_cb_with_combined_groups <- function(cb, obs_data) {
     ungroup() %>%
     filter(!is.na(headway_sec), headway_sec > 0) %>%
     left_join(obs_data, by = "site") %>%
-    mutate(
-      combined_site = paste0(site, " (", spacing_ft, " ft)"),
-      combined_spacing = paste0(spacing_ft, " ft")
-    )
+    mutate(spacing_type = trimws(spacing_type))
 }
 
 ## Build histogram statistics table
@@ -270,7 +343,7 @@ process_cb_with_combined_groups <- function(cb, obs_data) {
 ## @return Tibble with summary statistics
 build_histogram_stats_table <- function(data) {
   data %>%
-    group_by(combined_site, combined_spacing) %>%
+    group_by(spacing_type) %>%
     summarise(
       n = n(),
       mean_hdwy = mean(headway_sec),
@@ -286,9 +359,9 @@ build_histogram_stats_table <- function(data) {
 ## @return Nested tibble ready for plotting
 nest_data_with_stats <- function(data, stats_table) {
   data %>%
-    group_by(combined_site, combined_spacing) %>%
+    group_by(spacing_type) %>%
     nest() %>%
-    left_join(stats_table, by = c("combined_site", "combined_spacing"))
+    left_join(stats_table, by = "spacing_type")
 }
 
 # ==============================================================================
@@ -302,7 +375,7 @@ nest_data_with_stats <- function(data, stats_table) {
 make_headway_analysis <- function(worker_exposure) {
   we <- worker_exposure %>%
     mutate(across(where(is.character), trimws)) %>%
-    mutate(Time = parse_timestamps(Time))
+    mutate(time = parse_timestamps(time))
   
   we <- compute_vehicle_headways(we)
   
@@ -331,23 +404,35 @@ make_cdf_plots <- function(camera_back, raff_metrics) {
   obs_data <- load_observation_data()
   hdwy_data <- compute_headways_with_spacing(camera_back, obs_data)
   
-  raff_midpoint <- raff_metrics %>%
+  t_c_critical_s <- raff_metrics %>%
     filter(grouping == "overall") %>%
-    pull(raff_midpoint)
+    pull(t_c_critical_s)
   
-  sites <- unique(hdwy_data$site)
+  # Site plots
+  sites <- c("sr12", "us6", "i70", "us191")
   site_plots <- lapply(sites, function(s) {
     site_data <- hdwy_data %>% filter(site == s)
-    create_cdf_plot(site_data, paste("CDF of Headways -", s), raff_midpoint)
+    if (nrow(site_data) > 0) {
+      create_cdf_plot(site_data, s, t_c_critical_s)
+    } else {
+      NULL
+    }
   })
   names(site_plots) <- sites
+  site_plots <- site_plots[!sapply(site_plots, is.null)]
   
-  spacings <- unique(hdwy_data$spacing_ft)
-  spacing_plots <- lapply(spacings, function(sp) {
-    spacing_data <- hdwy_data %>% filter(spacing_ft == sp)
-    create_cdf_plot(spacing_data, paste("CDF of Headways - Spacing:", sp, "ft"), raff_midpoint)
+  # Spacing type plots
+  spacing_types <- c("NO TPRS", "UDOT", "PSS", "LONG")
+  spacing_plots <- lapply(spacing_types, function(sp) {
+    spacing_data <- hdwy_data %>% filter(spacing_type == sp)
+    if (nrow(spacing_data) > 0) {
+      create_cdf_plot(spacing_data, sp, t_c_critical_s)
+    } else {
+      NULL
+    }
   })
-  names(spacing_plots) <- paste0(spacings, "ft")
+  names(spacing_plots) <- spacing_types
+  spacing_plots <- spacing_plots[!sapply(spacing_plots, is.null)]
   
   summary_stats <- generate_summary_stats(hdwy_data)
   
@@ -368,33 +453,147 @@ make_histogram_plots <- function(camera_back, raff_metrics) {
   obs_data <- load_observation_data()
   cb_combined <- process_cb_with_combined_groups(camera_back, obs_data)
   
-  stats_table <- build_histogram_stats_table(cb_combined)
-  nested_data <- nest_data_with_stats(cb_combined, stats_table)
-  
-  raff_midpoint <- raff_metrics %>%
+  t_c_critical_s <- raff_metrics %>%
     filter(grouping == "overall") %>%
-    pull(raff_midpoint)
+    pull(t_c_critical_s)
   
-  plots <- nested_data %>%
-    mutate(
-      plot = pmap(list(data, combined_site, n, mean_hdwy, sd_hdwy), function(d, title, count, m, s) {
-        ggplot(d, aes(x = headway_sec)) +
-          geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
-          geom_vline(xintercept = raff_midpoint, 
-                     linetype = "dashed", color = "red", linewidth = 1) +
-          labs(
-            title = paste("Histogram -", title),
-            subtitle = sprintf("n = %d, mean = %.2f, sd = %.2f", count, m, s),
-            x = "Headway (seconds)",
-            y = "Count"
-          ) +
-          theme_minimal()
-      })
+  # Helper function to create histogram
+  create_histogram <- function(data, title) {
+    # Determine x-axis limit to keep outliers under 7
+    # Start with base limit
+    has_us191 <- any(data$site == "us191")
+    base_limit <- if (has_us191) 500 else 200
+    
+    # Adjust limit to nearest hundred to keep outliers <= 7
+    sorted_headways <- sort(data$headway_sec, decreasing = TRUE)
+    if (length(sorted_headways) > 7) {
+      # Find the 8th largest value (to keep 7 outliers)
+      eighth_largest <- sorted_headways[8]
+      # Round up to nearest hundred
+      x_limit <- ceiling(eighth_largest / 100) * 100
+      # Ensure it's at least the base_limit
+      x_limit <- max(x_limit, base_limit)
+    } else {
+      x_limit <- base_limit
+    }
+    
+    # Calculate stats
+    n <- nrow(data)
+    mean_headway <- mean(data$headway_sec, na.rm = TRUE)
+    sd_headway <- sd(data$headway_sec, na.rm = TRUE)
+    
+    # Identify outliers
+    outliers <- data %>%
+      filter(headway_sec > x_limit) %>%
+      pull(headway_sec) %>%
+      round(1) %>%
+      sort(decreasing = TRUE)
+    
+    # Create base plot
+    p <- ggplot(data %>% filter(headway_sec <= x_limit), aes(x = headway_sec)) +
+      geom_histogram(
+        binwidth = 2,
+        fill = "steelblue",
+        alpha = 0.7,
+        aes(y = after_stat(density)),
+        na.rm = TRUE
+      ) +
+      geom_density(color = "steelblue", linewidth = 1, na.rm = TRUE) +
+      scale_x_continuous(limits = c(0, x_limit)) +
+      labs(
+        title = paste0("Headway Distribution - ", title),
+        x = "Headway (seconds between cars)",
+        y = "Density"
+      ) +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5, size = 14))
+    
+    # Stats annotation (top-right)
+    fmt_val <- function(x) ifelse(is.na(x), "NA", sprintf("%.1f s", x))
+    stats_text <- paste0(
+      "n = ", n, "\n",
+      "mean = ", fmt_val(mean_headway), "\n",
+      "sd = ", fmt_val(sd_headway)
     )
+    
+    p <- p +
+      annotate(
+        "label",
+        x = x_limit * 0.95, y = Inf,
+        label = stats_text,
+        vjust = 1.1, hjust = 1, size = 3.5,
+        fill = "white", color = "black", label.size = 0.2
+      )
+    
+    # Outlier annotation if any exist
+    if (length(outliers) > 0) {
+      outlier_text <- paste(paste0(outliers, " s"), collapse = "\n")
+      full_text <- paste0("Outliers (>", x_limit, " s):\n", outlier_text)
+      
+      p <- p +
+        annotate(
+          "label",
+          x = x_limit * 0.70, y = Inf,
+          label = full_text,
+          vjust = 1.1, hjust = 0.5, size = 3.5,
+          fill = "white", color = "black", label.size = 0.2
+        )
+    }
+    
+    # Add critical headway vertical line
+    if (!is.na(t_c_critical_s) && t_c_critical_s <= x_limit) {
+      p <- p +
+        geom_vline(
+          xintercept = t_c_critical_s,
+          color = "red",
+          linetype = "dashed",
+          linewidth = 1
+        ) +
+        annotate(
+          "text",
+          x = t_c_critical_s,
+          y = Inf,
+          label = sprintf("Critical headway\nt_c = %.1f s", t_c_critical_s),
+          vjust = 1.5,
+          hjust = ifelse(t_c_critical_s < x_limit * 0.5, -0.1, 1.1),
+          color = "red",
+          size = 3.5,
+          fontface = "bold"
+        )
+    }
+    
+    return(p)
+  }
+  
+  # Site plots
+  sites <- c("sr12", "us6", "i70", "us191")
+  site_plots <- lapply(sites, function(s) {
+    site_data <- cb_combined %>% filter(site == s)
+    if (nrow(site_data) > 0) {
+      create_histogram(site_data, s)
+    } else {
+      NULL
+    }
+  })
+  names(site_plots) <- sites
+  site_plots <- site_plots[!sapply(site_plots, is.null)]
+  
+  # Spacing type plots
+  spacing_types <- c("NO TPRS", "UDOT", "PSS", "LONG")
+  spacing_plots <- lapply(spacing_types, function(sp) {
+    spacing_data <- cb_combined %>% filter(spacing_type == sp)
+    if (nrow(spacing_data) > 0) {
+      create_histogram(spacing_data, sp)
+    } else {
+      NULL
+    }
+  })
+  names(spacing_plots) <- spacing_types
+  spacing_plots <- spacing_plots[!sapply(spacing_plots, is.null)]
   
   list(
-    histogram_plots = plots$plot,
-    stats_table = stats_table
+    site_plots = site_plots,
+    spacing_plots = spacing_plots
   )
 }
 
@@ -412,18 +611,35 @@ save_cdf_plots <- function(cdf_results, output_dir = "output") {
   
   # Save site plots
   for (site_name in names(cdf_results$site_plots)) {
-    filename <- file.path(output_dir, paste0("cdf_", site_name, ".svg"))
+    filename <- file.path(output_dir, paste0("cdf_site_", site_name, ".svg"))
     ggsave(filename, plot = cdf_results$site_plots[[site_name]], 
-           device = svglite, width = 8, height = 6)
+           device = svglite, width = 10, height = 6)
     files <- c(files, filename)
+  }
+  
+  # Save combined site plot
+  if (length(cdf_results$site_plots) > 0) {
+    combined_site <- wrap_plots(cdf_results$site_plots, ncol = 2, nrow = 2)
+    combined_path <- file.path(output_dir, "cdf_sites_combined.svg")
+    ggsave(combined_path, plot = combined_site, device = svglite, width = 16, height = 12)
+    files <- c(files, combined_path)
   }
   
   # Save spacing plots
   for (spacing_name in names(cdf_results$spacing_plots)) {
-    filename <- file.path(output_dir, paste0("cdf_spacing_", spacing_name, ".svg"))
+    safe_name <- gsub(" ", "_", spacing_name)
+    filename <- file.path(output_dir, paste0("cdf_spacing_", safe_name, ".svg"))
     ggsave(filename, plot = cdf_results$spacing_plots[[spacing_name]], 
-           device = svglite, width = 8, height = 6)
+           device = svglite, width = 10, height = 6)
     files <- c(files, filename)
+  }
+  
+  # Save combined spacing plot
+  if (length(cdf_results$spacing_plots) > 0) {
+    combined_spacing <- wrap_plots(cdf_results$spacing_plots, ncol = 2, nrow = 2)
+    combined_path <- file.path(output_dir, "cdf_spacing_combined.svg")
+    ggsave(combined_path, plot = combined_spacing, device = svglite, width = 16, height = 12)
+    files <- c(files, combined_path)
   }
   
   files
@@ -440,17 +656,39 @@ save_histogram_plots <- function(histogram_results, camera_back, output_dir = "o
     dir.create(output_dir, recursive = TRUE)
   }
   
-  obs_data <- load_observation_data()
-  cb_combined <- process_cb_with_combined_groups(camera_back, obs_data)
-  combined_sites <- unique(cb_combined$combined_site)
-  
   files <- c()
-  for (i in seq_along(histogram_results$histogram_plots)) {
-    site_name <- combined_sites[i]
-    filename <- file.path(output_dir, paste0("histogram_", gsub(" ", "_", site_name), ".svg"))
-    ggsave(filename, plot = histogram_results$histogram_plots[[i]], 
-           device = svglite, width = 8, height = 6)
+  
+  # Save site plots
+  for (site_name in names(histogram_results$site_plots)) {
+    filename <- file.path(output_dir, paste0("histogram_site_", site_name, ".svg"))
+    ggsave(filename, plot = histogram_results$site_plots[[site_name]], 
+           device = svglite, width = 10, height = 6)
     files <- c(files, filename)
+  }
+  
+  # Save combined site plot
+  if (length(histogram_results$site_plots) > 0) {
+    combined_site <- wrap_plots(histogram_results$site_plots, ncol = 2, nrow = 2)
+    combined_path <- file.path(output_dir, "histogram_sites_combined.svg")
+    ggsave(combined_path, plot = combined_site, device = svglite, width = 16, height = 12)
+    files <- c(files, combined_path)
+  }
+  
+  # Save spacing plots
+  for (spacing_name in names(histogram_results$spacing_plots)) {
+    safe_name <- gsub(" ", "_", spacing_name)
+    filename <- file.path(output_dir, paste0("histogram_spacing_", safe_name, ".svg"))
+    ggsave(filename, plot = histogram_results$spacing_plots[[spacing_name]], 
+           device = svglite, width = 10, height = 6)
+    files <- c(files, filename)
+  }
+  
+  # Save combined spacing plot
+  if (length(histogram_results$spacing_plots) > 0) {
+    combined_spacing <- wrap_plots(histogram_results$spacing_plots, ncol = 2, nrow = 2)
+    combined_path <- file.path(output_dir, "histogram_spacing_combined.svg")
+    ggsave(combined_path, plot = combined_spacing, device = svglite, width = 16, height = 12)
+    files <- c(files, combined_path)
   }
   
   files

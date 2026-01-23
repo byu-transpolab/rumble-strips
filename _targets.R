@@ -371,35 +371,21 @@ list(
   tar_target(
     save_summary,
     write_csv(final_summary, "data/temp_data/station_summary")
-  )
+  ),
 
   ### Targets Ben Added Begin Here ###########################################
-  
-  # Displacement by energy
-  tar_target(
-    name = displacement_by_energy,
-    command = make_displacement_by_energy(
-      camera_back = camera_back,
-      deflection_table = deflection_table
-    )
-  ),
-  tar_target(
-    name = displacement_by_energy_plot,
-    command = plot_displacement_by_energy(displacement_by_energy),
-    format = "file"
-  ),
   
   # Exposure analysis - Headway statistics
   tar_target(
     name = headway_analysis,
-    command = make_headway_analysis(worker_exposure = worker_exposure)
+    command = make_headway_analysis(worker_exposure = worker_exposure_data)
   ),
   
   # Exposure analysis - CDF plots
   tar_target(
     name = cdf_plots,
     command = make_cdf_plots(
-      camera_back = camera_back,
+      camera_back = camera_back_data,
       raff_metrics = headway_analysis$raff_metrics
     )
   ),
@@ -413,7 +399,7 @@ list(
   tar_target(
     name = histogram_plots,
     command = make_histogram_plots(
-      camera_back = camera_back,
+      camera_back = camera_back_data,
       raff_metrics = headway_analysis$raff_metrics
     )
   ),
@@ -421,7 +407,7 @@ list(
     name = histogram_plot_files,
     command = save_histogram_plots(
       histogram_plots, 
-      camera_back = camera_back,
+      camera_back = camera_back_data,
       output_dir = "output"
     ),
     format = "file"
