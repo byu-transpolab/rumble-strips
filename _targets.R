@@ -210,14 +210,8 @@ list(
   ),
 
   ### Worker Exposure Analysis ###############################################
-  # Helper functions are being developed
+  # Helper functions are located in R/exposure.R
 
-
-
-
-
-  ### Targets Ben Added Begin Here ###########################################
-  
   # Displacement by energy
   tar_target(
     name = displacement_by_energy,
