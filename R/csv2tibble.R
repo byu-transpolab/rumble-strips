@@ -323,7 +323,7 @@ dnld_bts_truck_counts <- function() {
     return(output_file)
   } else {
     # provide instructions to download manually
-    url = "https://www.bts.gov/sites/bts.dot.gov/files/2024-08/table_01_22a_082624.xlsx"
+    url = "https://www.bts.gov/sites/bts.dot.gov/files/2024-08/table_01_22a_082624.xlsx" # nolint
     print("You must download the BTS truck counts data manually due to\n",
           "website restrictions. Please visit the following URL to download:\n",
           url, "\n",
@@ -346,14 +346,13 @@ process_bts_truck_counts <- function(
     transmute(
       weight = weight, # weight class
       count = count  # count of 1000's of trucks in this weight class
+      # Note: keep in 1000's to avoid integer overflow
     ) %>%
     # Remove rows with any NA values
     filter(!is.na(weight) & !is.na(count)) %>%
     # Remove the "All TRUCKS" row
     filter(weight != "ALL TRUCKS") %>%
       mutate(
-        # Convert count from thousands to actual count
-        count = as.integer(count * 1000),
         # Add a class column based on text found in weight
         class = case_when(
           grepl("Class 1", weight) ~ "1",

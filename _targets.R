@@ -1,7 +1,7 @@
 # Created by use_targets().
 # Follow the comments below to fill in this target script.
 # Then follow the manual to check and run the pipeline:
-#   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline # nolint
+#   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline
 
 # Load packages required to define the pipeline:
 library(targets)
@@ -12,16 +12,17 @@ library(readxl)
 library(mlogit)
 library(modelsummary)
 library(svglite)
-# library(tarchetypes) # Load other packages as needed. # nolint
-#setwd("~/Documents/GitHub/rumble-strips")
+# library(tarchetypes)
+# Load other packages as needed.
+# setwd("~/Documents/GitHub/rumble-strips")
 
 # Set target options:
 tar_option_set(
-  packages = c("tidyverse", 
-               "mlogit", 
-               "modelsummary", 
-               "readxl", 
-               "googledrive"), # updated: removed googlesheets4, added readxl and googledrive
+  packages = c("tidyverse",
+               "mlogit",
+               "modelsummary",
+               "readxl",
+               "googledrive"),
   format = "rds" # default storage format
   # Set other options as needed.
 )
@@ -32,7 +33,8 @@ tar_option_set(
 # options(clustermq.scheduler = "multicore")
 
 # tar_make_future() configuration (okay to leave alone):
-# Install packages {{future}}, {{future.callr}}, and {{future.batchtools}} to allow use_targets() to configure tar_make_future() options.
+# Install packages {{future}}, {{future.callr}}, and {{future.batchtools}}
+# to allow use_targets() to configure tar_make_future() options.
 
 # Load the R scripts stored in R/ with your custom functions:
 #for (file in list.files("R", full.names = TRUE)) source(file)
@@ -189,8 +191,8 @@ list(
 
   # define vehicle weights
   tar_target(motorcycle_weight, 800), # lbs, initial Google search result
-  tar_target(passenger_weight, 4419), # lbs, initial Google search result
-  tar_target(truck_weight,            # lbs, calculated from BTS truck counts
+  tar_target(passenger_weight, 4419), # lbs, Based on EPA data for 2024.
+  tar_target(truck_weight,            # lbs, calculated from BTS data from 2021
     calc_truck_weight(bts_truck_counts)    # using a weighted average
   ),
 

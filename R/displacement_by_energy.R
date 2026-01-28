@@ -6,11 +6,11 @@ library(readxl)
 library(lubridate)
 library(ggplot2)
 
+# Function to calculate weighted average truck weight from BTS truck counts.
+#' @param bts_truck_counts a df with columns: class, count, weight 
 calc_truck_weight <- function(bts_truck_counts) {
 
-  # Calculate weighted average truck weight from BTS truck counts data frame
-  # Assumes bts_truck_counts has columns: class, count, weight
-  # Only includes class 4 trucks and above (busses, dualies, semi's, etc.)
+  # Only include class 4 trucks and above (busses, dualies, semi's, etc.)
   bts_truck_counts <- bts_truck_counts %>%
     filter(class >= 4)
   
