@@ -2,7 +2,7 @@
 # defines several functions used to analyze traffic counting
 # data from UDOT. only analyzes 2023 data. 
 
-##required pacakges######################################
+##required packages######################################
 
 #tidyverse
 #readxl
@@ -13,8 +13,8 @@
 dnld_google_sheet <- function() {
   drive_deauth()
 
-  local_path_1 <- file.path("data", "temp_data", "2023_data_301-431.xlsx")
-  local_path_2 <- file.path("data", "temp_data", "2023_data_501-733.xlsx")
+  local_path_1 <- file.path("data", "temp_data", "2023_hourly_volumes_1.xlsx")
+  local_path_2 <- file.path("data", "temp_data", "2023_hourly_volumes_2.xlsx")
 
   # Download the files if they don't exist
   if (!file.exists(local_path_1)) {
@@ -40,12 +40,26 @@ dnld_google_sheet <- function() {
 #' returns a char list of stations available in Sheets
 get_available_stations <- function() {
   # Get sheet names from local Excel files
-  sheet_names1 <- readxl::excel_sheets("data/temp_data/2023_data_301-431.xlsx")
-  sheet_names2 <- readxl::excel_sheets("data/temp_data/2023_data_501-733.xlsx")
+  sheet_names1 <- readxl::excel_sheets(
+    "data/temp_data/2023_hourly_volumes_1.xlsx")
+  sheet_names2 <- readxl::excel_sheets(
+    "data/temp_data/2023_hourly_volumes_2.xlsx")
 
-  available_stations <- c(sheet_names1, sheet_names2)
+  # Combine and deduplicate
+  sheets <- unique(c(sheet_names1, sheet_names2))
 
-  write(available_stations, file = "data/available_stations")
+  
+  # Keep only sheets that look like station numbers:
+  #   - entirely digits
+  #   - length 3 or 4 (your examples are 4-digit)
+  valid_station_pattern <- "^[0-9]{3,4}$"
+
+  available_stations <- sheets[grepl(valid_station_pattern, sheets)]
+
+  # Deduplicate and sort
+  available_stations <- sort(unique(available_stations))
+
+  return(available_stations)
 }
 
 
@@ -54,7 +68,7 @@ get_available_stations <- function() {
 #' @param station_list a tibble with the a column of station #s
 #' returns a column with available stations.
 
-clean_stations <- function(station_list){
+clean_stations <- function(station_list, approved_stations){
 if (file.exists("data/available_stations")) {
   approved_stations <- read.csv("data/available_stations")
 } else {
