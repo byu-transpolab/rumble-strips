@@ -6,12 +6,43 @@ library(readxl)
 library(lubridate)
 library(ggplot2)
 
+calc_truck_weight <- function(bts_truck_counts) {
+
+  # Calculate weighted average truck weight from BTS truck counts data frame
+  # Assumes bts_truck_counts has columns: class, count, weight
+  # Only includes class 4 trucks and above (busses, dualies, semi's, etc.)
+  bts_truck_counts <- bts_truck_counts %>%
+    filter(class >= 4)
+  
+  # Get the total count of trucks
+  total_count <- sum(bts_truck_counts$count)
+
+  # Calculate weighted average of truck weights
+  weighted_sum <- sum(bts_truck_counts$count * bts_truck_counts$weight)
+  weighted_avg_weight <- weighted_sum / total_count
+
+  return(weighted_avg_weight)
+}
+
 #' compile the wavetronix speed data, camera_back_data, and camera_top_data into a single data frame
 #' @param wavetronix a data frame containing the wavetronix data
 #' @param camera_back_data a data frame containing the camera back data
 #' @param camera_top_data a data frame containing the camera top data
+#' @param observations a data frame containing the observation data
+#' @param motorcycle_weight weight of motorcycle in lbs (default 800 lbs)
+#' @param passenger_weight weight of passenger vehicle in lbs (default 4419 lbs)
+#' @param truck_weight weight of truck in lbs (default 40000 lbs)
 #' 
-compile_displacement_data <- function(wavetronix, camera_back_data, camera_top_data, observations) {
+compile_displacement_data <- function(
+  wavetronix,       # Provides mean speed data
+  camera_back_data, # Provides vehicles class, counts, and time data
+  camera_top_data,  # Provides displacement event data
+  observations,     # Provides spacing type data
+  # Default vehicle weights were set by casual Google search results
+  motorcycle_weight = 800,    # in lbs
+  passenger_weight  = 4419,   # in lbs
+  truck_weight      = 40000   # in lbs
+  ) {
   # Process wavetronix data
   # only keep site, unit=w1, lane=01, volume, speed, sensor_time
   wav <- wavetronix %>%
@@ -56,9 +87,9 @@ displacement_data <- cb %>%
         # Energy is a made up metric: speed * weight (lbs)
         # Weight assumptions came from top Google search results in lbs
         energy = case_when(
-          class == "motorcycle" ~ speed * 800,
-          class == "passenger"  ~ speed * 4419,
-          class == "truck"      ~ speed * 40000)
+          class == "motorcycle" ~ speed * motorcycle_weight,
+          class == "passenger"  ~ speed * passenger_weight,
+          class == "truck"      ~ speed * truck_weight)
         ) %>%
   select(site, time, class, speed, energy, spacing_type, state)
 

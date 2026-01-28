@@ -187,12 +187,23 @@ list(
   ### TPRS Displacement by energy Analysis ###################################
   # Helper Functions are found in R/displacement_by_energy.R
 
+  # define vehicle weights
+  tar_target(motorcycle_weight, 800), # lbs, initial Google search result
+  tar_target(passenger_weight, 4419), # lbs, initial Google search result
+  tar_target(truck_weight,            # lbs, calculated from BTS truck counts
+    calc_truck_weight(bts_truck_counts)    # using a weighted average
+  ),
+
   # compile speed, class, and displacement state into one data frame
   tar_target(displacement_data,
-    compile_displacement_data(wavetronix,
-                            camera_back_data,
-                            camera_top_data,
-                            observations)
+    compile_displacement_data(
+      wavetronix,
+      camera_back_data,
+      camera_top_data,
+      observations,
+      motorcycle_weight,
+      passenger_weight,
+      truck_weight)
   ),
 
   # summarize energy and traffic volume per transition
