@@ -102,7 +102,12 @@ list(
   # Download truck counts from BTS.gov and process into tibble
   tar_target(
     truck_counts_file,
-    dnld_bts_truck_counts(camera_back_data, observations)
+    dnld_bts_truck_counts(),
+    format = "file"
+  ),
+  tar_target(
+    bts_truck_counts,
+    process_bts_truck_counts(truck_counts_file)
   ),
 
   # puts all worker exposure data into one dataframe with columns:
