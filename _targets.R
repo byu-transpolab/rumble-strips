@@ -99,6 +99,12 @@ list(
     get_camera_back_data(camera_back_files)
   ),
 
+  # Download truck counts from BTS.gov and process into tibble
+  tar_target(
+    truck_counts_file,
+    dnld_bts_truck_counts(camera_back_data, observations)
+  ),
+
   # puts all worker exposure data into one dataframe with columns:
   # site, date, time, event
   # events are one of the following:
@@ -214,8 +220,8 @@ list(
   
   # Exposure analysis - Headway statistics
   tar_target(
-    name = headway_analysis,
-    command = make_headway_analysis(worker_exposure = worker_exposure)
+    headway_analysis,
+    make_headway_analysis(worker_exposure_data)
   ),
   
   # Exposure analysis - CDF plots

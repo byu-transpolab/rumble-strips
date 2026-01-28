@@ -313,6 +313,42 @@ add_offsets_to_cb <- function(cb_data,
 
 }
 
+### BTS Truck Counts ######################################################
+
+dnld_bts_truck_counts <- function() {
+  # check if the file already exists
+  output_file <- "data/bts_truck_counts.xlsx"
+  if (file.exists(output_file)) {
+    message("BTS truck counts file already exists. Skipping download.")
+    return(output_file)
+  } else {
+    # provide instructions to download manually
+    url = "https://www.bts.gov/sites/bts.dot.gov/files/2024-08/table_01_22a_082624.xlsx"
+    print("You must download the BTS truck counts data manually due to\n",
+          "website restrictions. Please visit the following URL to download:\n",
+          url, "\n",
+          "and save the file as 'data/bts_truck_counts.xlsx'.")
+    return()
+  }
+}
+
+interpret_bts_truck_counts <- function(
+  file_path = "data/bts_truck_counts.xlsx") {
+  # Read the Excel file
+  bts_truck_counts <- read_excel(
+    path = file_path,
+    sheet = "1-22",
+    range = "A2:E16",
+    col_names = FALSE) %>%
+    transmute(
+      weight = ...1, # weight class
+      count = ...5,  # count of 1000's of trucks in this weight class
+    )
+
+  return(bts_truck_counts)
+}
+
+
 ### Worker exposure data ##################################################
 
 get_worker_exposure_data <- function(folder_path, observations) {
