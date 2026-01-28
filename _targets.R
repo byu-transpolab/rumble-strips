@@ -211,20 +211,6 @@ list(
 
   ### Worker Exposure Analysis ###############################################
   # Helper functions are located in R/exposure.R
-
-  # Displacement by energy
-  tar_target(
-    name = displacement_by_energy,
-    command = make_displacement_by_energy(
-      camera_back = camera_back,
-      deflection_table = deflection_table
-    )
-  ),
-  tar_target(
-    name = displacement_by_energy_plot,
-    command = plot_displacement_by_energy(displacement_by_energy),
-    format = "file"
-  ),
   
   # Exposure analysis - Headway statistics
   tar_target(
