@@ -245,11 +245,23 @@ prep_transition_data <- function(transition_data) {
       cum_energy = cum_energy * conversion_factor
     )
 
+  # Add a small jitter to the x position based on segment_id to separate lines
+  jitter_width <- 0.01
+
+  disp_plot_data <- disp_plot_data %>%
+    dplyr::group_by(state) %>%
+    dplyr::mutate(
+      seg_idx = as.numeric(factor(segment_id)),
+      seg_center = mean(unique(seg_idx)),
+      state_jitter = as.numeric(state) + (seg_idx - seg_center) * jitter_width
+    ) %>%
+    dplyr::ungroup()
+
   return(disp_plot_data)
 }
 
-plot_energy_spacing <- function(plot_data) {
 # Plot the prepared plot_data and color by spacing type.
+plot_energy_spacing <- function(plot_data) {
 
   p <- plot_data %>%
 ggplot(
@@ -260,7 +272,10 @@ ggplot(
       group = interaction(spacing_type, segment_id)
     )
   ) +
-  geom_line(linewidth = 1) +
+  geom_line(
+    linewidth = 0.7,
+    alpha = 0.5
+  ) +
   geom_point(size = 2) +
   labs(
     x = "Displacement",
@@ -279,30 +294,35 @@ ggplot(
   p
 }
 
+# Plot the prepared plot_data and color by site.
 plot_energy_site <- function(plot_data) {
-# Plot the prepared plot_data and color by spacing type.
-
   p <- plot_data %>%
-ggplot(
+  ggplot(
     aes(
-      x = state,
+      x = state_jitter,
       y = cum_energy, # <----- Can change between cum_energy and energy.
       color = site,
       group = interaction(spacing_type, segment_id)
     )
   ) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 2) +
+  geom_line(
+    linewidth = 0.7,
+    alpha = 0.5
+  ) +
+  geom_point(size = 1) +
+  scale_x_continuous(
+    breaks = unique(as.numeric(plot_data$state)),
+    labels = unique(plot_data$state)
+  ) +
   labs(
     x = "Displacement",
     y = " Cumulative Energy (million kg*m/s)",
-    color = "Spacing Type"
+    color = "Site"
   ) +
   theme_minimal() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
-
 
   # Save and return
   ggsave("output/energy-per-transition-by-site.svg", 
