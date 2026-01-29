@@ -65,7 +65,7 @@ read_wavetronix <- function(file_path) {
       headway = HEADWAY,
       gap = GAP,
       sensor_time = lubridate::as_datetime(`SENSOR TIME (MM/dd/yy  HH:mm:ss)`,
-                    format = "%m/%d/%y %H:%M:%S",
+                    format = "%m/%d/%y %H:%M:%OS",
                     tz = "America/Denver"),
       date = lubridate::date(sensor_time),
       interval = `INTERVAL (sec)`
