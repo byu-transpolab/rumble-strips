@@ -8,6 +8,9 @@ suppressPackageStartupMessages({
   library(stringr)
 })
 
+# Set option to display timestamps with millisecond precision (3 decimal places)
+options(digits.secs = 3)
+
 ## Load and validate worker exposure data -- load_worker_exposure_data() ##
 # Loads worker_exposure_data from targets pipeline and validates required columns
 # @return Tibble containing validated worker exposure data
@@ -30,28 +33,14 @@ load_worker_exposure_data <- function() {
 }
 
 ## Parse timestamps with milliseconds -- parse_timestamps() ##
-# Converts time strings to POSIXct with millisecond precision and orders by timestamp
-# @param exposure_data Tibble with site, date, time, and event columns
-# @return Tibble with parsed timestamps (ts) and formatted display timestamps (ts_display)
+# Ensures timestamps are POSIXct and orders by timestamp
+# @param exposure_data Tibble with site, date, time (POSIXct), and event columns
+# @return Tibble with validated timestamps (ts) and formatted display timestamps (ts_display)
 parse_timestamps <- function(exposure_data) {
   events <- exposure_data %>%
     mutate(
-      # Extract the HH:MM:SS part and the millisecond part
-      sec_part = str_extract(time, "^\\d{2}:\\d{2}:\\d{2}"),
-      ms_part  = str_extract(time, ":(\\d{1,3})$") %>% str_remove("^:"),
-      
-      # Normalize to "HH:MM:SS.mmm" and pad ms to 3 digits if needed
-      time_norm = paste0(sec_part, ".", str_pad(ms_part, width = 3, side = "left", pad = "0")),
-      
-      # Combine date + normalized time; parse milliseconds via %OS
-      ts = as.POSIXct(
-        paste(date, time_norm),
-        tz = "UTC",
-        format = "%Y-%m-%d %H:%M:%OS"
-      ),
-      
-      # Create a formatted display column with millisecond precision
-      ts_display = paste(date, time_norm)
+      ts = time, # Just copy the column
+      ts_display = format(ts, "%Y-%m-%d %H:%M:%OS3") # Format with milliseconds
     ) %>%
     arrange(site, date, ts)
   
@@ -334,6 +323,25 @@ export_raff_overall_csv <- function(raff_overall,
   cat("\n✓ Exported Raff overall metrics to:", output_path, "\n")
   
   invisible(NULL)
+}
+
+## Generate headway summary by site and status -- generate_headway_summary() ##
+# Summarizes headway counts and statistics by site and headway_status
+# @param headways_couplets Tibble with classified headways
+# @return Tibble with summary statistics by site and status
+generate_headway_summary <- function(headways_couplets) {
+  headway_summary <- headways_couplets %>%
+    group_by(site, headway_status) %>%
+    summarise(
+      n = n(),
+      mean_headway_s = mean(headway_s, na.rm = TRUE),
+      median_headway_s = median(headway_s, na.rm = TRUE),
+      min_headway_s = min(headway_s, na.rm = TRUE),
+      max_headway_s = max(headway_s, na.rm = TRUE),
+      .groups = "drop"
+    )
+  
+  return(headway_summary)
 }
 
 ## Main function to run complete headway analysis -- run_headway_analysis() ##
