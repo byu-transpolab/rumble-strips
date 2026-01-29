@@ -236,7 +236,7 @@ list(
   ### Worker Exposure Analysis ###############################################
 
   # Targets Ben Added Begin Here
-  #helper functions located in R/exposure.R
+  # Helper functions located in R/exposure.R
 
   # Exposure analysis - Headway statistics
   tar_target(
