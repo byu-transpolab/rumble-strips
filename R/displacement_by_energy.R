@@ -233,7 +233,17 @@ prep_transition_data <- function(transition_data) {
       group_by(site, date, spacing_type, segment_id) %>%
       arrange(state, .by_group = TRUE) %>%
       mutate(cum_energy = cumsum(energy)) %>%
-      ungroup()
+      ungroup() 
+
+  # Calculate the conversion factor from million lbs*mi/hr to kg*m/s
+  conversion_factor <- 0.4535924 * 1609.344 / 3600 # = 0.2027739
+
+  # Apply conversion factor to energy and cum_energy columns
+  disp_plot_data <- disp_plot_data %>%
+    mutate(
+      energy = energy * conversion_factor,
+      cum_energy = cum_energy * conversion_factor
+    )
 
   return(disp_plot_data)
 }
@@ -254,7 +264,7 @@ ggplot(
   geom_point(size = 2) +
   labs(
     x = "Displacement",
-    y = " Cumulative Energy (millions of lbs * mi / hr)",
+    y = " Cumulative Energy (million kg*m/s)",
     color = "Spacing Type"
   ) +
   theme_minimal() +
@@ -285,7 +295,7 @@ ggplot(
   geom_point(size = 2) +
   labs(
     x = "Displacement",
-    y = " Cumulative Energy (millions of lbs * mi / hr)",
+    y = " Cumulative Energy (million kg*m/s)",
     color = "Spacing Type"
   ) +
   theme_minimal() +
