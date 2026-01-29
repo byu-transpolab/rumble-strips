@@ -274,8 +274,7 @@ list(
       output_dir = "output"
     ),
     format = "file"
-  ),
-
+  )
   # Targets Ben Added End Here
 
 ) # closes list of targets
