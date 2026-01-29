@@ -353,82 +353,130 @@ compute_headways_with_spacing <- function(cb, obs_data) {
     left_join(obs_data, by = "site")
 }
 
-## Create a CDF plot for a given data subset
+## Create a CDF plot for multiple data subsets (combined comparison)
 ##
-## @param data Tibble with headway_sec column
+## @param data_list Named list of tibbles with headway_sec column
 ## @param title Plot title
 ## @param t_c_critical_s Numeric value for critical headway
+## @param colors Named vector of colors for each group
 ## @return ggplot object
-create_cdf_plot <- function(data, title, t_c_critical_s) {
-  # X-axis limit rule
-  x_limit <- if (grepl("us191", title, ignore.case = TRUE)) 500 else 200
+create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = NULL) {
+  # Default colors if not provided
+  if (is.null(colors)) {
+    colors <- setNames(
+      c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"),
+      names(data_list)[1:min(4, length(data_list))]
+    )
+  }
   
-  # Calculate stats
-  n <- nrow(data)
-  mean_headway <- mean(data$headway_sec, na.rm = TRUE)
-  sd_headway <- sd(data$headway_sec, na.rm = TRUE)
+  # Set x-axis limit to 100 seconds
+  x_limit <- 100
   
-  # Filter data within x_limit for plotting
-  plot_data <- data %>% filter(headway_sec <= x_limit)
+  # Filter data first for consistency
+  filtered_data_list <- lapply(names(data_list), function(name) {
+    data_list[[name]] %>%
+      filter(headway_sec <= x_limit)
+  })
+  names(filtered_data_list) <- names(data_list)
   
-  # Calculate CDF value at t_c using all data (not just filtered)
-  cdf_at_tc <- if (!is.na(t_c_critical_s)) {
-    sum(data$headway_sec <= t_c_critical_s, na.rm = TRUE) / nrow(data)
-  } else {
-    NA_real_
+  # Combine all data with group labels
+  combined_data <- bind_rows(
+    lapply(names(filtered_data_list), function(name) {
+      filtered_data_list[[name]] %>%
+        mutate(group = name)
+    })
+  )
+  
+  # Calculate CDF values at t_c for each group using FILTERED data
+  cdf_at_tc_list <- lapply(names(filtered_data_list), function(name) {
+    d <- filtered_data_list[[name]]
+    if (!is.na(t_c_critical_s) && nrow(d) > 0) {
+      cdf_val <- sum(d$headway_sec <= t_c_critical_s, na.rm = TRUE) / nrow(d)
+      tibble(group = name, cdf_at_tc = cdf_val)
+    } else {
+      tibble(group = name, cdf_at_tc = NA_real_)
+    }
+  })
+  cdf_at_tc_df <- bind_rows(cdf_at_tc_list)
+  
+  # Sort by cdf_at_tc to position labels with spacing
+  cdf_at_tc_df <- cdf_at_tc_df %>%
+    arrange(cdf_at_tc) %>%
+    filter(!is.na(cdf_at_tc))
+  
+  # Create vertical spacing for labels to prevent overlap
+  # Minimum spacing of 0.05 (5%) between labels
+  min_spacing <- 0.05
+  if (nrow(cdf_at_tc_df) > 0) {
+    cdf_at_tc_df$label_y <- cdf_at_tc_df$cdf_at_tc
+    
+    for (i in 2:nrow(cdf_at_tc_df)) {
+      if (cdf_at_tc_df$label_y[i] - cdf_at_tc_df$label_y[i-1] < min_spacing) {
+        cdf_at_tc_df$label_y[i] <- cdf_at_tc_df$label_y[i-1] + min_spacing
+      }
+    }
   }
   
   # Create CDF plot
-  p <- ggplot(plot_data, aes(x = headway_sec)) +
-    stat_ecdf(geom = "ribbon", aes(ymin = 0, ymax = after_stat(y)), fill = "steelblue", alpha = 0.5) +
-    stat_ecdf(geom = "step", color = "steelblue", linewidth = 1) +
+  p <- ggplot(combined_data, aes(x = headway_sec, color = group)) +
+    stat_ecdf(geom = "step", linewidth = 1.2) +
+    scale_color_manual(values = colors, name = "") +
     scale_x_continuous(limits = c(0, x_limit)) +
     scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
     labs(
-      title = paste0("Cumulative Distribution Function - ", title),
-      x = "Headway (seconds between cars)",
-      y = "Cumulative Proportion"
+      title = title,
+      x = "Headway (s)",
+      y = "Cumulative %"
     ) +
     theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5, size = 14))
-  
-  # Stats annotation (bottom-right)
-  fmt_val <- function(x) ifelse(is.na(x), "NA", sprintf("%.1f s", x))
-  stats_text <- paste0(
-    "n = ", n, "\n",
-    "mean = ", fmt_val(mean_headway), "\n",
-    "sd = ", fmt_val(sd_headway)
-  )
-  
-  p <- p +
-    annotate(
-      "label",
-      x = x_limit * 0.95, y = 0.05,
-      label = stats_text,
-      vjust = 0, hjust = 1, size = 3.5,
-      fill = "white", color = "black"
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+      legend.position = "bottom",
+      legend.text = element_text(size = 10),
+      panel.grid.minor = element_blank()
     )
   
-  # Add critical headway horizontal line (shows % of headways below t_c)
-  if (!is.na(t_c_critical_s) && !is.na(cdf_at_tc)) {
+  # Add critical headway vertical line
+  if (!is.na(t_c_critical_s) && t_c_critical_s <= x_limit) {
     p <- p +
-      geom_hline(
-        yintercept = cdf_at_tc,
+      geom_vline(
+        xintercept = t_c_critical_s,
         color = "red",
         linetype = "dashed",
         linewidth = 1
       ) +
       annotate(
         "text",
-        x = x_limit * 0.95,
-        y = cdf_at_tc,
-        label = sprintf("CDF at t_c = %.1f s\n(%.1f%%)", t_c_critical_s, cdf_at_tc * 100),
-        vjust = -0.5,
-        hjust = 1,
+        x = t_c_critical_s,
+        y = 0.98,
+        label = sprintf("t_c = %.1f s", t_c_critical_s),
         color = "red",
         size = 3.5,
-        fontface = "bold"
+        fontface = "bold",
+        hjust = ifelse(t_c_critical_s < x_limit * 0.5, -0.1, 1.1)
       )
+    
+    # Add percentage labels with spacing (no horizontal lines)
+    for (i in seq_len(nrow(cdf_at_tc_df))) {
+      group_name <- cdf_at_tc_df$group[i]
+      cdf_val <- cdf_at_tc_df$cdf_at_tc[i]
+      label_y <- cdf_at_tc_df$label_y[i]
+      
+      if (!is.na(cdf_val)) {
+        p <- p +
+          annotate(
+            "text",
+            x = 2,
+            y = label_y,
+            label = sprintf("%.1f%%", cdf_val * 100),  # Changed to one decimal place
+            color = colors[group_name],
+            size = 3,
+            fontface = "bold",
+            hjust = 0,
+            vjust = 0.5
+          )
+      }
+    }
   }
   
   return(p)
@@ -539,45 +587,76 @@ make_headway_analysis <- function(worker_exposure_data) {
 ## @param camera_back Camera back data from targets
 ## @param raff_metrics Raff metrics from headway analysis
 ## @return List of ggplot objects
+## Generate CDF plots for targets pipeline
+##
+## @param camera_back Camera back data from targets
+## @param raff_metrics Raff metrics from headway analysis
+## @return List of ggplot objects
 make_cdf_plots <- function(camera_back, raff_metrics) {
   obs_data <- load_observation_data()
   hdwy_data <- compute_headways_with_spacing(camera_back, obs_data)
   
-  t_c_critical_s <- raff_metrics %>%
-    filter(grouping == "overall") %>%
-    pull(t_c_critical_s)
+  t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
   
-  # Site plots
+  # Define colors
+  site_colors <- c(
+    "sr12" = "#1f77b4",
+    "us6" = "#ff7f0e",
+    "i70" = "#2ca02c",
+    "us191" = "#d62728"
+  )
+  
+  spacing_colors <- c(
+    "NO TPRS" = "#1f77b4",
+    "UDOT" = "#ff7f0e",
+    "PSS" = "#2ca02c",
+    "LONG" = "#d62728"
+  )
+  
+  # Prepare site data list
   sites <- c("sr12", "us6", "i70", "us191")
-  site_plots <- lapply(sites, function(s) {
-    site_data <- hdwy_data %>% filter(site == s)
-    if (nrow(site_data) > 0) {
-      create_cdf_plot(site_data, s, t_c_critical_s)
-    } else {
-      NULL
-    }
+  site_data_list <- lapply(sites, function(s) {
+    hdwy_data %>% filter(site == s)
   })
-  names(site_plots) <- sites
-  site_plots <- site_plots[!sapply(site_plots, is.null)]
+  names(site_data_list) <- sites
+  site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
   
-  # Spacing type plots
+  # Prepare spacing data list
   spacing_types <- c("NO TPRS", "UDOT", "PSS", "LONG")
-  spacing_plots <- lapply(spacing_types, function(sp) {
-    spacing_data <- hdwy_data %>% filter(spacing_type == sp)
-    if (nrow(spacing_data) > 0) {
-      create_cdf_plot(spacing_data, sp, t_c_critical_s)
-    } else {
-      NULL
-    }
+  spacing_data_list <- lapply(spacing_types, function(sp) {
+    hdwy_data %>% filter(spacing_type == sp)
   })
-  names(spacing_plots) <- spacing_types
-  spacing_plots <- spacing_plots[!sapply(spacing_plots, is.null)]
+  names(spacing_data_list) <- spacing_types
+  spacing_data_list <- spacing_data_list[sapply(spacing_data_list, nrow) > 0]
+  
+  # Create combined plots
+  site_plot <- if (length(site_data_list) > 0) {
+    create_combined_cdf_plot(
+      site_data_list,
+      "CDF by Site",
+      t_c_critical_s,
+      site_colors
+    )
+  } else {
+    NULL
+  }
+  
+  spacing_plot <- if (length(spacing_data_list) > 0) {
+    create_combined_cdf_plot(
+      spacing_data_list,
+      "CDF by Spacing Type",
+      t_c_critical_s,
+      spacing_colors
+    )
+  } else {
+    NULL
+  }
   
   summary_stats <- generate_summary_stats(hdwy_data)
   
   list(
-    site_plots = site_plots,
-    spacing_plots = spacing_plots,
+    site_plot = site_plot,
+    spacing_plot = spacing_plot,
     summary_stats = summary_stats,
     headway_data = hdwy_data
   )
@@ -592,9 +671,7 @@ make_histogram_plots <- function(camera_back, raff_metrics) {
   obs_data <- load_observation_data()
   cb_combined <- process_cb_with_combined_groups(camera_back, obs_data)
   
-  t_c_critical_s <- raff_metrics %>%
-    filter(grouping == "overall") %>%
-    pull(t_c_critical_s)
+  t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
   
   # Helper function to create histogram
   create_histogram <- function(data, title) {
@@ -748,37 +825,20 @@ save_cdf_plots <- function(cdf_results, output_dir = "output") {
   
   files <- c()
   
-  # Save site plots
-  for (site_name in names(cdf_results$site_plots)) {
-    filename <- file.path(output_dir, paste0("cdf_site_", site_name, ".svg"))
-    ggsave(filename, plot = cdf_results$site_plots[[site_name]], 
-           device = svglite, width = 10, height = 6)
-    files <- c(files, filename)
-  }
-  
   # Save combined site plot
-  if (length(cdf_results$site_plots) > 0) {
-    combined_site <- wrap_plots(cdf_results$site_plots, ncol = 2, nrow = 2)
-    combined_path <- file.path(output_dir, "cdf_sites_combined.svg")
-    ggsave(combined_path, plot = combined_site, device = svglite, width = 16, height = 12)
-    files <- c(files, combined_path)
-  }
-  
-  # Save spacing plots
-  for (spacing_name in names(cdf_results$spacing_plots)) {
-    safe_name <- gsub(" ", "_", spacing_name)
-    filename <- file.path(output_dir, paste0("cdf_spacing_", safe_name, ".svg"))
-    ggsave(filename, plot = cdf_results$spacing_plots[[spacing_name]], 
-           device = svglite, width = 10, height = 6)
-    files <- c(files, filename)
+  if (!is.null(cdf_results$site_plot)) {
+    site_path <- file.path(output_dir, "cdf_sites.svg")
+    ggsave(site_path, plot = cdf_results$site_plot, 
+           device = svglite, width = 10, height = 7)
+    files <- c(files, site_path)
   }
   
   # Save combined spacing plot
-  if (length(cdf_results$spacing_plots) > 0) {
-    combined_spacing <- wrap_plots(cdf_results$spacing_plots, ncol = 2, nrow = 2)
-    combined_path <- file.path(output_dir, "cdf_spacing_combined.svg")
-    ggsave(combined_path, plot = combined_spacing, device = svglite, width = 16, height = 12)
-    files <- c(files, combined_path)
+  if (!is.null(cdf_results$spacing_plot)) {
+    spacing_path <- file.path(output_dir, "cdf_spacing.svg")
+    ggsave(spacing_path, plot = cdf_results$spacing_plot, 
+           device = svglite, width = 10, height = 7)
+    files <- c(files, spacing_path)
   }
   
   files
