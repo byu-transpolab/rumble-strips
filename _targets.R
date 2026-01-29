@@ -241,7 +241,7 @@ list(
   # Exposure analysis - Headway statistics
   tar_target(
     name = headway_analysis,
-    command = make_headway_analysis(worker_exposure = worker_exposure_data)
+    command = make_headway_analysis(worker_exposure_data = worker_exposure_data)
   ),
   
   # Exposure analysis - CDF plots
