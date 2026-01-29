@@ -234,171 +234,10 @@ list(
   ),
 
   ### Worker Exposure Analysis ###############################################
-  # Helper functions are being developed
 
-  ### Hourly Volumes Analysis ################################################
-  # Helper functions are found in R/hourly_volumes.R
+  # Targets Ben Added Begin Here
+  #helper functions located in R/exposure.R
 
-  # This section created average hourly volume plots which
-  # were used to evaluate how long potential sites would
-  # need to be observed to reach minimum observations.
-
-  # Download Google Sheets as Excel files. They're large enough it's better
-  # to download than to read and store a tibble.
-  tar_target(
-    download_sheets,
-    tryCatch(
-      {
-        dnld_google_sheet()
-      },
-      error = function(e) {
-        message(
-          "\n*** ERROR: Failed to download UDOT's hourly volume data.***\n",
-          "Either skip hourly volume estimates, or manually download the files.\n",
-          "To skip, enter 'skip_hourly <- TRUE' and rerun targets.\n",
-          "The required files can be downloaded at:\n",
-          "https://docs.google.com/spreadsheets/d/1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw/edit?gid=2031380538#gid=2031380538\n",
-          "https://docs.google.com/spreadsheets/d/1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI/edit?gid=1035130660#gid=1035130660\n",
-          "The spreadsheets are called '2023 Station 501-733' and\n",
-          "'2023 Station 301-431' respectively.\n",
-          "Save these files in data/temp_data/2023_hourly_volumes_1.xlsx and\n",
-          "data/temp_data/2023_hourly_volumes_2.xlsx.\n",
-          "Original error: ", e$message, "\n"
-          )
-        stop(e) # re-throw to stop the pipeline
-      }
-    )
-  ),
-
-  # Get a list of which stations are available in the spreadsheets
-  tar_target(available_stations, get_available_stations()),
-
-  # Load list of counting stations we want to examine.
-  tar_target(
-    station_list,
-    read.csv("data/stations_list", colClasses =  c("character"))
-  ),
-
-  # Check remove unavailable stations from station list
-  tar_target(
-    cleaned_station_list,
-    clean_stations(station_list, available_stations)
-  ),
-
-  # Statistical parameters
-  tar_target(o, 3),
-  tar_target(z, 1.959964),
-  tar_target(U, 1.04),
-  tar_target(E, 1),
-
-  # Date and time parameters
-  tar_target(sd, "2023-05-01"), # Start Date
-  tar_target(ed, "2023-08-31"), # End Date
-  tar_target(st, 8), # start time
-  tar_target(et, 17), # end time
-  # Calculate minimum observations
-  tar_target(
-    n,
-    get_min_obs(o, z, U, E)
-  ),
-
-  # Pull station data from local Excel files
-  tar_target(
-    all_station_data,
-    tryCatch(
-      map(cleaned_station_list$station_number, get_station_data),
-      error = function(e) {
-        message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
-                "Try running the program again, or manually check the Excel files in data/temp_data.\n",
-                "See the README file in data/temp_data.\n",
-                "Original error: ", e$message, "\n")
-        stop(e)
-      }
-    )
-  ),
-
-  # Summarize each station to their hourly volumes and save the result
-  tar_target(
-    hourly_volumes,
-    {
-      hv <- tibble(cleaned_station_list,
-                   vector = I(map(all_station_data, 
-                                 ~ get_hourly_volume(.x, sd, ed)
-                                 )
-                             )
-                  )
-      save(hv, file = "data/temp_data/hourly_station_data")
-      hv
-    }
-  ),
-
-  # Plot each station
-  tar_target(
-    plots,
-      map2(
-      hourly_volumes$vector, 
-      hourly_volumes$station_number, 
-      ~ ggsave(
-        filename = paste0("output/", "plot_", .y,"_", sd, "_to_", ed,".svg"), 
-        plot = plot_station(.x, st, et), 
-        width = 7, 
-        height = 5)
-        )
-  ),
-
-  # Create station summary with initial values
-  tar_target(
-    station_summary,
-    cleaned_station_list %>%
-      mutate(
-        AADT = 0,
-        daytime_perc = 0,
-        min_hours = 0
-      )
-  ),
-
-  # Add AADT to station summary
-  tar_target(
-    AADT_summary,
-    station_summary %>%
-      mutate(AADT = map_int(hourly_volumes$vector, 
-                            ~ {result <- sum(.x, na.rm = TRUE)
-                                if (is.nan(result)) 0 
-                                else as.integer(result)  # Replace NaN with 0
-                              }
-                            ))
-  ),
-
-  # Add daytime percentage to station summary
-  tar_target(
-    daytime_summary,
-    AADT_summary %>%
-      mutate(daytime_perc = map_dbl(hourly_volumes$vector, 
-                              ~ get_aadt_perc(.x, st, et)))
-  ),
-
-  # Add minimum hours of observation to station summary
-  tar_target(
-    final_summary,
-    daytime_summary %>%
-      mutate(min_hours = map_dbl(hourly_volumes$vector, 
-                           ~ get_obs_time(st, et, n, .x)))
-  ),
-
-  # Plot the station summary
-  tar_target(
-    plot_summary,
-    plot_station_summary(final_summary)
-  ),
-
-  # Save the station summary
-  tar_target(
-    save_summary,
-    write_csv(final_summary, "data/temp_data/station_summary")
-  ),
-
-  ### Targets Ben Added Begin Here ###########################################
-  
   # Exposure analysis - Headway statistics
   tar_target(
     name = headway_analysis,
@@ -435,6 +274,8 @@ list(
       output_dir = "output"
     ),
     format = "file"
-  )
+  ),
+
+  # Targets Ben Added End Here
 
 ) # closes list of targets
