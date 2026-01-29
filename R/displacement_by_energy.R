@@ -6,12 +6,43 @@ library(readxl)
 library(lubridate)
 library(ggplot2)
 
+# Function to calculate weighted average truck weight from BTS truck counts.
+#' @param bts_truck_counts a df with columns: class, count, weight 
+calc_truck_weight <- function(bts_truck_counts) {
+
+  # Only include class 4 trucks and above (busses, dualies, semi's, etc.)
+  bts_truck_counts <- bts_truck_counts %>%
+    filter(class >= 4)
+  
+  # Get the total count of trucks
+  total_count <- sum(bts_truck_counts$count)
+
+  # Calculate weighted average of truck weights
+  weighted_sum <- sum(bts_truck_counts$count * bts_truck_counts$weight)
+  weighted_avg_weight <- weighted_sum / total_count
+
+  return(weighted_avg_weight)
+}
+
 #' compile the wavetronix speed data, camera_back_data, and camera_top_data into a single data frame
 #' @param wavetronix a data frame containing the wavetronix data
 #' @param camera_back_data a data frame containing the camera back data
 #' @param camera_top_data a data frame containing the camera top data
+#' @param observations a data frame containing the observation data
+#' @param motorcycle_weight weight of motorcycle in lbs (default 800 lbs)
+#' @param passenger_weight weight of passenger vehicle in lbs (default 4419 lbs)
+#' @param truck_weight weight of truck in lbs (default 40000 lbs)
 #' 
-compile_displacement_data <- function(wavetronix, camera_back_data, camera_top_data, observations) {
+compile_displacement_data <- function(
+  wavetronix,       # Provides mean speed data
+  camera_back_data, # Provides vehicles class, counts, and time data
+  camera_top_data,  # Provides displacement event data
+  observations,     # Provides spacing type data
+  # Default vehicle weights were set by casual Google search results
+  motorcycle_weight = 800,    # in lbs
+  passenger_weight  = 4419,   # in lbs
+  truck_weight      = 40000   # in lbs
+  ) {
   # Process wavetronix data
   # only keep site, unit=w1, lane=01, volume, speed, sensor_time
   wav <- wavetronix %>%
@@ -56,9 +87,9 @@ displacement_data <- cb %>%
         # Energy is a made up metric: speed * weight (lbs)
         # Weight assumptions came from top Google search results in lbs
         energy = case_when(
-          class == "motorcycle" ~ speed * 800,
-          class == "passenger"  ~ speed * 4419,
-          class == "truck"      ~ speed * 40000)
+          class == "motorcycle" ~ speed * motorcycle_weight,
+          class == "passenger"  ~ speed * passenger_weight,
+          class == "truck"      ~ speed * truck_weight)
         ) %>%
   select(site, time, class, speed, energy, spacing_type, state)
 
@@ -202,13 +233,35 @@ prep_transition_data <- function(transition_data) {
       group_by(site, date, spacing_type, segment_id) %>%
       arrange(state, .by_group = TRUE) %>%
       mutate(cum_energy = cumsum(energy)) %>%
-      ungroup()
+      ungroup() 
+
+  # Calculate the conversion factor from million lbs*mi/hr to kg*m/s
+  conversion_factor <- 0.4535924 * 1609.344 / 3600 # = 0.2027739
+
+  # Apply conversion factor to energy and cum_energy columns
+  disp_plot_data <- disp_plot_data %>%
+    mutate(
+      energy = energy * conversion_factor,
+      cum_energy = cum_energy * conversion_factor
+    )
+
+  # Add a small jitter to the x position based on segment_id to separate lines
+  jitter_width <- 0.01
+
+  disp_plot_data <- disp_plot_data %>%
+    dplyr::group_by(state) %>%
+    dplyr::mutate(
+      seg_idx = as.numeric(factor(segment_id)),
+      seg_center = mean(unique(seg_idx)),
+      state_jitter = as.numeric(state) + (seg_idx - seg_center) * jitter_width
+    ) %>%
+    dplyr::ungroup()
 
   return(disp_plot_data)
 }
 
-plot_energy_spacing <- function(plot_data) {
 # Plot the prepared plot_data and color by spacing type.
+plot_energy_spacing <- function(plot_data) {
 
   p <- plot_data %>%
 ggplot(
@@ -219,11 +272,14 @@ ggplot(
       group = interaction(spacing_type, segment_id)
     )
   ) +
-  geom_line(linewidth = 1) +
+  geom_line(
+    linewidth = 0.7,
+    alpha = 0.5
+  ) +
   geom_point(size = 2) +
   labs(
     x = "Displacement",
-    y = " Cumulative Energy (millions of lbs * mi / hr)",
+    y = " Cumulative Energy (million kg*m/s)",
     color = "Spacing Type"
   ) +
   theme_minimal() +
@@ -238,30 +294,35 @@ ggplot(
   p
 }
 
+# Plot the prepared plot_data and color by site.
 plot_energy_site <- function(plot_data) {
-# Plot the prepared plot_data and color by spacing type.
-
   p <- plot_data %>%
-ggplot(
+  ggplot(
     aes(
-      x = state,
+      x = state_jitter,
       y = cum_energy, # <----- Can change between cum_energy and energy.
       color = site,
       group = interaction(spacing_type, segment_id)
     )
   ) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 2) +
+  geom_line(
+    linewidth = 0.7,
+    alpha = 0.5
+  ) +
+  geom_point(size = 1) +
+  scale_x_continuous(
+    breaks = unique(as.numeric(plot_data$state)),
+    labels = unique(plot_data$state)
+  ) +
   labs(
     x = "Displacement",
-    y = " Cumulative Energy (millions of lbs * mi / hr)",
-    color = "Spacing Type"
+    y = " Cumulative Energy (million kg*m/s)",
+    color = "Site"
   ) +
   theme_minimal() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
-
 
   # Save and return
   ggsave("output/energy-per-transition-by-site.svg", 

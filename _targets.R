@@ -1,7 +1,7 @@
 # Created by use_targets().
 # Follow the comments below to fill in this target script.
 # Then follow the manual to check and run the pipeline:
-#   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline # nolint
+#   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline
 
 # Load packages required to define the pipeline:
 library(targets)
@@ -12,16 +12,17 @@ library(readxl)
 library(mlogit)
 library(modelsummary)
 library(svglite)
-# library(tarchetypes) # Load other packages as needed. # nolint
-#setwd("~/Documents/GitHub/rumble-strips")
+# library(tarchetypes)
+# Load other packages as needed.
+# setwd("~/Documents/GitHub/rumble-strips")
 
 # Set target options:
 tar_option_set(
-  packages = c("tidyverse", 
-               "mlogit", 
-               "modelsummary", 
-               "readxl", 
-               "googledrive"), # updated: removed googlesheets4, added readxl and googledrive
+  packages = c("tidyverse",
+               "mlogit",
+               "modelsummary",
+               "readxl",
+               "googledrive"),
   format = "rds" # default storage format
   # Set other options as needed.
 )
@@ -32,7 +33,8 @@ tar_option_set(
 # options(clustermq.scheduler = "multicore")
 
 # tar_make_future() configuration (okay to leave alone):
-# Install packages {{future}}, {{future.callr}}, and {{future.batchtools}} to allow use_targets() to configure tar_make_future() options.
+# Install packages {{future}}, {{future.callr}}, and {{future.batchtools}}
+# to allow use_targets() to configure tar_make_future() options.
 
 # Load the R scripts stored in R/ with your custom functions:
 #for (file in list.files("R", full.names = TRUE)) source(file)
@@ -97,6 +99,17 @@ list(
   tar_target(
     camera_back_data,
     get_camera_back_data(camera_back_files)
+  ),
+
+  # Download truck counts from BTS.gov and process into tibble
+  tar_target(
+    truck_counts_file,
+    dnld_bts_truck_counts(),
+    format = "file"
+  ),
+  tar_target(
+    bts_truck_counts,
+    process_bts_truck_counts(truck_counts_file)
   ),
 
   # puts all worker exposure data into one dataframe with columns:
@@ -176,12 +189,23 @@ list(
   ### TPRS Displacement by energy Analysis ###################################
   # Helper Functions are found in R/displacement_by_energy.R
 
+  # define vehicle weights
+  tar_target(motorcycle_weight, 800), # lbs, initial Google search result
+  tar_target(passenger_weight, 4419), # lbs, Based on EPA data for 2024.
+  tar_target(truck_weight,            # lbs, calculated from BTS data from 2021
+    calc_truck_weight(bts_truck_counts)    # using a weighted average
+  ),
+
   # compile speed, class, and displacement state into one data frame
   tar_target(displacement_data,
-    compile_displacement_data(wavetronix,
-                            camera_back_data,
-                            camera_top_data,
-                            observations)
+    compile_displacement_data(
+      wavetronix,
+      camera_back_data,
+      camera_top_data,
+      observations,
+      motorcycle_weight,
+      passenger_weight,
+      truck_weight)
   ),
 
   # summarize energy and traffic volume per transition
@@ -371,14 +395,28 @@ list(
   tar_target(
     save_summary,
     write_csv(final_summary, "data/temp_data/station_summary")
-  ),
+  )
 
   ### Targets Ben Added Begin Here ###########################################
+  
+  # Displacement by energy
+  tar_target(
+    name = displacement_by_energy,
+    command = make_displacement_by_energy(
+      camera_back = camera_back,
+      deflection_table = deflection_table
+    )
+  ),
+  tar_target(
+    name = displacement_by_energy_plot,
+    command = plot_displacement_by_energy(displacement_by_energy),
+    format = "file"
+  ),
   
   # Exposure analysis - Headway statistics
   tar_target(
     name = headway_analysis,
-    command = make_headway_analysis(worker_exposure = worker_exposure_data)
+    command = make_headway_analysis(worker_exposure = worker_exposure)
   ),
   
   # Exposure analysis - CDF plots

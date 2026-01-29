@@ -313,6 +313,81 @@ add_offsets_to_cb <- function(cb_data,
 
 }
 
+### BTS Truck Counts ######################################################
+
+dnld_bts_truck_counts <- function() {
+  # check if the file already exists
+  output_file <- "data/bts_truck_counts.xlsx"
+  if (file.exists(output_file)) {
+    message("BTS truck counts file already exists. Skipping download.")
+    return(output_file)
+  } else {
+    # provide instructions to download manually
+    url = "https://www.bts.gov/sites/bts.dot.gov/files/2024-08/table_01_22a_082624.xlsx" # nolint
+    print("You must download the BTS truck counts data manually due to\n",
+          "website restrictions. Please visit the following URL to download:\n",
+          url, "\n",
+          "and save the file as 'data/bts_truck_counts.xlsx'.")
+    return()
+  }
+}
+
+process_bts_truck_counts <- function(
+  file_path = "data/bts_truck_counts.xlsx") {
+
+  # Read the Excel file
+  bts_truck_counts <- read_excel(
+    path = file_path,
+    sheet = "1-22",
+    range = "A2:E16",
+    col_names = c("weight",  "col2", "col3", "col4", "count")
+    ) %>%
+    # Select only relevant columns and rename them
+    transmute(
+      weight = weight, # weight class
+      count = count  # count of 1000's of trucks in this weight class
+      # Note: keep in 1000's to avoid integer overflow
+    ) %>%
+    # Remove rows with any NA values
+    filter(!is.na(weight) & !is.na(count)) %>%
+    # Remove the "All TRUCKS" row
+    filter(weight != "ALL TRUCKS") %>%
+      mutate(
+        # Add a class column based on text found in weight
+        class = case_when(
+          grepl("Class 1", weight) ~ "1",
+          grepl("Class 2", weight) ~ "2",
+          grepl("Class 3", weight) ~ "3",
+          grepl("Class 4", weight) ~ "4",
+          grepl("Class 5", weight) ~ "5",
+          grepl("Class 6", weight) ~ "6",
+          grepl("Class 7", weight) ~ "7",
+          grepl("Class 8", weight) ~ "8",
+          TRUE ~ as.character(weight)
+        ),
+        # Change weight to mean of weights listed
+        weight = case_when(
+          grepl("Less than 6,001 ", weight) ~  "6000",
+          grepl("6,001 to 10,000 ", weight) ~  "8000",
+          grepl("10,001 to 14,000", weight) ~ "12000",
+          grepl("14,001 to 16,000", weight) ~ "15000",
+          grepl("16,001 to 19,500", weight) ~ "17750",
+          grepl("19,501 to 26,000", weight) ~ "22750",
+          grepl("26,001 to 33,000", weight) ~ "29500",
+          # 50,000 lbs is an arbitrary choice to account for trucks with cargo
+          grepl("More than 33,000", weight) ~ "50000",
+          TRUE ~ as.character(weight)
+        )
+      ) %>%
+      # Convert weight and class to integer
+      mutate(
+        weight = as.integer(weight),
+        class = as.integer(class)
+      )
+
+  return(bts_truck_counts)
+}
+
 ### Worker exposure data ##################################################
 
 get_worker_exposure_data <- function(folder_path, observations) {
