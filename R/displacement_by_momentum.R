@@ -51,7 +51,7 @@ compile_displacement_data <- function(
     mutate(bin = floor_date(sensor_time, unit = "15 minutes")) %>%
     select(speed, bin)
   
-  # Process camera back data
+  # Process camera back data, only keep lane 1 to match wavetronix data
   cb <- camera_back_data %>%
     filter(lane == "lane 1") %>%
     select(site, time, class) %>%
@@ -211,16 +211,14 @@ prep_transition_data <- function(transition_data) {
 
   # Step 3: Bind the reset_rows and base_rows together...
   disp_plot_data <- bind_rows(reset_rows, base_rows) %>%
-    arrange(start_time) %>%
-    mutate(
-        # Group lines so they start at Reset. Used in later plotting.
-        segment_id = cumsum(state == "Reset")
-      ) %>%
-      # Add cumulative momentum column and keeping previous momentum column.
-      group_by(site, date, spacing_type, segment_id) %>%
-      arrange(state, .by_group = TRUE) %>%
-      mutate(cum_momentum = cumsum(momentum)) %>%
-      ungroup() 
+    arrange(site, date, start_time) %>%
+    # create unique segment_id so they start at Reset. Used in later plotting.
+    mutate(segment_id = cumsum(state == "Reset")) %>%
+    # Add cumulative momentum column and keeping previous momentum column.
+    group_by(site, date, spacing_type, segment_id) %>%
+    arrange(start_time, .by_group = TRUE) %>%
+    mutate(cum_momentum = cumsum(momentum)) %>%
+    ungroup() 
 
   # Calculate the conversion factor from million lbs*mi/hr to kg*m/s
   conversion_factor <- 0.4535924 * 1609.344 / 3600 # = 0.2027739
@@ -235,14 +233,16 @@ prep_transition_data <- function(transition_data) {
   # Add a small jitter to the x position based on segment_id to separate lines
   jitter_width <- 0.01
 
+  # Apply jitter calculation to shift the whole segment left/right such that
+  # segments stay continuous lines.
   disp_plot_data <- disp_plot_data %>%
-    dplyr::group_by(state) %>%
-    dplyr::mutate(
+    group_by(state) %>%
+    mutate(
       seg_idx = as.numeric(factor(segment_id)),
       seg_center = mean(unique(seg_idx)),
       state_jitter = as.numeric(state) + (seg_idx - seg_center) * jitter_width
     ) %>%
-    dplyr::ungroup()
+    ungroup()
 
   return(disp_plot_data)
 }
@@ -253,10 +253,10 @@ plot_momentum_spacing <- function(plot_data) {
   p <- plot_data %>%
 ggplot(
     aes(
-      x = state,
+      x = state_jitter,
       y = cum_momentum, # <----- Can change between cum_momentum and momentum.
       color = spacing_type,
-      group = interaction(spacing_type, segment_id)
+      group = interaction(site, date, segment_id)
     )
   ) +
   geom_line(
@@ -289,7 +289,7 @@ plot_momentum_site <- function(plot_data) {
       x = state_jitter,
       y = cum_momentum, # <----- Can change between cum_momentum and momentum.
       color = site,
-      group = interaction(spacing_type, segment_id)
+      group = interaction(site, date, segment_id)
     )
   ) +
   geom_line(
@@ -298,7 +298,7 @@ plot_momentum_site <- function(plot_data) {
   ) +
   geom_point(size = 1) +
   scale_x_continuous(
-    breaks = unique(as.numeric(plot_data$state)),
+    breaks = sort(unique(as.numeric(plot_data$state))),
     labels = unique(plot_data$state)
   ) +
   labs(
