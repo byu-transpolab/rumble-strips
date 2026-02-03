@@ -78,20 +78,15 @@ displacement_data <- cb %>%
   mutate(date = as.Date(time)) %>%
   left_join(obs, by = "date") %>%
   # Add levels to state factor
-  mutate(state = factor(state, 
-    levels = c("Reset",
-              "Some Movement", 
-              "Moderate Movement", 
-              "Significant Movement", 
-              "Out of Specification")),
-        # Energy is a made up metric: speed * weight (lbs)
+  mutate(
+        # Calculate momentum per vehicle as energy proxy
         # Weight assumptions came from top Google search results in lbs
-        energy = case_when(
+        momentum = case_when(
           class == "motorcycle" ~ speed * motorcycle_weight,
           class == "passenger"  ~ speed * passenger_weight,
           class == "truck"      ~ speed * truck_weight)
         ) %>%
-  select(site, time, class, speed, energy, spacing_type, state)
+  select(site, time, class, speed, momentum, spacing_type, state)
 
   
   return(displacement_data)
@@ -119,19 +114,23 @@ summarize_displacement_data <- function(displacement_data) {
       start_time        = min(time, na.rm = TRUE),
       end_time          = max(time, na.rm = TRUE),
       start_state       = first(state),
-      # convert to million lb*mi/hr for easier plotting
-      energy            = sum(energy, na.rm = TRUE) / 1000000, 
+      # Convert to millions lbs*mi/hr for easier plotting
+      # Converts to metric in prep_transition_data() function.
+      momentum            = sum(momentum, na.rm = TRUE) / 1000000, 
       motorcycle_volume = sum(class == "motorcycle", na.rm = TRUE),
       passenger_volume  = sum(class == "passenger",  na.rm = TRUE),
       truck_volume      = sum(class == "truck",      na.rm = TRUE),
       mean_speed        = mean(speed, na.rm = TRUE),
-      .groups = "drop") %>%
+      .groups = "drop"
+    ) %>%
     # Calculate duration and next state for each summary row
-    mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins")),
-           next_state = lead(start_state)) %>%
+    mutate(
+      duration = as.numeric(difftime(end_time, start_time, units = "mins")),
+      next_state = lead(start_state)
+    ) %>%
     # Filter out transitions that meet the following criteria:
-    filter(next_state != "Reset" & 
-           !is.na(next_state) & 
+    filter(next_state != "Reset" &
+           !is.na(next_state) &
            start_state != "Out of Specification" &
            duration <= 480)
 
@@ -144,7 +143,7 @@ filter_displacement_summary <- function(displacement_summary) {
   # I keep the summary there in case we want to use it later.
   transition_data <- displacement_summary %>%
     select(site, date, start_time, spacing_type, start_state, next_state, 
-          energy) %>%
+      momentum) %>%
     arrange(date, start_time) %>%
     group_by(date) %>%
     # Only keep series of transitions that start with "Reset"
@@ -195,10 +194,10 @@ prep_transition_data <- function(transition_data) {
       start_time,
       spacing_type,
       state = next_state,
-      energy
+      momentum
     )
 
-  # Step 2: Add rows where state = "Reset" and energy = 0.0
+  # Step 2: Add rows where state = "Reset" and momentum = 0.0
   reset_rows <- transition_data %>%
     filter(start_state == "Reset") %>%
     transmute(
@@ -207,42 +206,30 @@ prep_transition_data <- function(transition_data) {
       start_time,
       spacing_type,
       state = start_state, # "Reset"
-      energy = 0.0 # All Reset states haven't had any vehicles hit them yet
+      momentum = 0.0 # All Reset states haven't had any vehicles hit them yet
     )
 
   # Step 3: Bind the reset_rows and base_rows together...
   disp_plot_data <- bind_rows(reset_rows, base_rows) %>%
     arrange(start_time) %>%
     mutate(
-        # ...Ensure state factors are properly ordered...
-        state = factor(
-          state,
-          levels = c(
-            "Reset",
-            "Some Movement",
-            "Moderate Movement",
-            "Significant Movement",
-            "Out of Specification"
-          ),
-          ordered = TRUE
-        ),
-        # ...Group lines so they start at Reset. Used in later plotting.
+        # Group lines so they start at Reset. Used in later plotting.
         segment_id = cumsum(state == "Reset")
       ) %>%
-      # Add cumulative energy column and keeping previous energy column.
+      # Add cumulative momentum column and keeping previous momentum column.
       group_by(site, date, spacing_type, segment_id) %>%
       arrange(state, .by_group = TRUE) %>%
-      mutate(cum_energy = cumsum(energy)) %>%
+      mutate(cum_momentum = cumsum(momentum)) %>%
       ungroup() 
 
   # Calculate the conversion factor from million lbs*mi/hr to kg*m/s
   conversion_factor <- 0.4535924 * 1609.344 / 3600 # = 0.2027739
 
-  # Apply conversion factor to energy and cum_energy columns
+  # Apply conversion factor to momentum and cum_momentum columns
   disp_plot_data <- disp_plot_data %>%
     mutate(
-      energy = energy * conversion_factor,
-      cum_energy = cum_energy * conversion_factor
+      momentum = momentum * conversion_factor,
+      cum_momentum = cum_momentum * conversion_factor
     )
 
   # Add a small jitter to the x position based on segment_id to separate lines
@@ -267,7 +254,7 @@ plot_energy_spacing <- function(plot_data) {
 ggplot(
     aes(
       x = state,
-      y = cum_energy, # <----- Can change between cum_energy and energy.
+      y = cum_momentum, # <----- Can change between cum_momentum and momentum.
       color = spacing_type,
       group = interaction(spacing_type, segment_id)
     )
@@ -279,7 +266,7 @@ ggplot(
   geom_point(size = 2) +
   labs(
     x = "Displacement",
-    y = " Cumulative Energy (million kg*m/s)",
+    y = " Cumulative Momentum (million kg*m/s)",
     color = "Spacing Type"
   ) +
   theme_minimal() +
@@ -289,7 +276,7 @@ ggplot(
 
 
   # Save and return
-  ggsave("output/energy-per-transition-by-spacing.svg", 
+  ggsave("output/momentum-per-transition-by-spacing.svg", 
     plot = p, width = 10, height = 6)
   p
 }
@@ -300,7 +287,7 @@ plot_energy_site <- function(plot_data) {
   ggplot(
     aes(
       x = state_jitter,
-      y = cum_energy, # <----- Can change between cum_energy and energy.
+      y = cum_momentum, # <----- Can change between cum_momentum and momentum.
       color = site,
       group = interaction(spacing_type, segment_id)
     )
@@ -316,7 +303,7 @@ plot_energy_site <- function(plot_data) {
   ) +
   labs(
     x = "Displacement",
-    y = " Cumulative Energy (million kg*m/s)",
+    y = " Cumulative Momentum (million kg*m/s)",
     color = "Site"
   ) +
   theme_minimal() +
@@ -325,7 +312,7 @@ plot_energy_site <- function(plot_data) {
   )
 
   # Save and return
-  ggsave("output/energy-per-transition-by-site.svg", 
+  ggsave("output/momentum-per-transition-by-site.svg", 
     plot = p, width = 10, height = 6)
   p
 }
