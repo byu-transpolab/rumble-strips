@@ -49,7 +49,7 @@ source("R/speed.R")
 source("R/braking_and_departure.R")
 source("R/exposure.R")
 source("R/displacement_by_volume.R")
-source("R/displacement_by_energy.R")
+source("R/displacement_by_momentum.R")
 
 
 
@@ -181,8 +181,8 @@ list(
   make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
-  ### TPRS Displacement by energy Analysis ###################################
-  # Helper Functions are found in R/displacement_by_energy.R
+  ### TPRS Displacement by momentum Analysis ###################################
+  # Helper Functions are found in R/displacement_by_momentum.R
 
   # define vehicle weights
   tar_target(motorcycle_weight, 800), # lbs, initial Google search result
@@ -218,14 +218,14 @@ list(
     prep_transition_data(transition_data)
   ),
 
-  # Plot the impact energy for each transition, colored by spacing
-  tar_target(energy_per_transition_spacing,
-    plot_energy_spacing(disp_plot_data)
+  # Plot the impact momentum for each transition, colored by spacing
+  tar_target(momentum_per_transition_spacing,
+    plot_momentum_spacing(disp_plot_data)
   ),
 
-  # Plot the impact energy for each transition, colored by site
-  tar_target(energy_per_transition_site,
-    plot_energy_site(disp_plot_data)
+  # Plot the impact momentum for each transition, colored by site
+  tar_target(momentum_per_transition_site,
+    plot_momentum_site(disp_plot_data)
   ),
 
   ### Worker Exposure Analysis ###############################################

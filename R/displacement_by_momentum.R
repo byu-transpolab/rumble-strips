@@ -92,7 +92,7 @@ displacement_data <- cb %>%
   return(displacement_data)
 }
 
-# Summarize the energy and other values per state transition
+# Summarize the momentum and other values per state transition
 summarize_displacement_data <- function(displacement_data) {
   # Identify state transitions and number each period of continuous state for each site
   state_change <- displacement_data %>%
@@ -138,7 +138,7 @@ summarize_displacement_data <- function(displacement_data) {
 }
 
 filter_displacement_summary <- function(displacement_summary) {
-  # Focus on just energy per transition (exclude volumes and mean speeds)
+  # Focus on just momentum per transition (exclude volumes and mean speeds)
   # I know we put a lot of effort into summarizing that data, but it's not used.
   # I keep the summary there in case we want to use it later.
   transition_data <- displacement_summary %>%
@@ -248,7 +248,7 @@ prep_transition_data <- function(transition_data) {
 }
 
 # Plot the prepared plot_data and color by spacing type.
-plot_energy_spacing <- function(plot_data) {
+plot_momentum_spacing <- function(plot_data) {
 
   p <- plot_data %>%
 ggplot(
@@ -282,7 +282,7 @@ ggplot(
 }
 
 # Plot the prepared plot_data and color by site.
-plot_energy_site <- function(plot_data) {
+plot_momentum_site <- function(plot_data) {
   p <- plot_data %>%
   ggplot(
     aes(
