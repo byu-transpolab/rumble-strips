@@ -21,6 +21,14 @@ read_observations <- function(file_path) {
         "UDOT",
         "1:2",
         "LONG"),
+      # Add capitalization and hyphens to site names
+      site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+      ),
       date = lubridate::mdy(date)
     )
 
@@ -137,19 +145,19 @@ read_camera_top <- function(path) {
                         tz = "America/Denver"),
       event = case_when(
         state == "0" ~ "Reset",
-        state == "1" ~ "Some Movement",
-        state == "2" ~ "Moderate Movement",
-        state == "3" ~ "Significant Movement",
-        state == "4" ~ "Out of Specification",
+        state == "1" ~ "Some",
+        state == "2" ~ "Moderate",
+        state == "3" ~ "Significant",
+        state == "4" ~ "Out of Spec.",
         TRUE ~ as.character(state)
       ),
       event = factor(event,
         levels = c(
           "Reset",
-          "Some Movement",
-          "Moderate Movement",
-          "Significant Movement",
-          "Out of Specification"))
+          "Some",
+          "Moderate",
+          "Significant",
+          "Out of Spec."))
     ) %>%
     select(site, time, event)
 }
