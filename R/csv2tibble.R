@@ -139,7 +139,13 @@ read_camera_top <- function(path) {
   
   df %>%
     mutate(
-      site = site,
+      site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+      ),
       time = as.POSIXct(paste0(date_code, " ", timestamp),
                         format = "%Y%m%d %H:%M:%OS",
                         tz = "America/Denver"),
@@ -212,8 +218,14 @@ read_camera_back <- function(path) {
 
   # Parse timestamp with date_code and convert to POSIXct
   df %>%
-    dplyr::mutate(
-      site = site,
+    mutate(
+      site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+      ),
       session = session,
       date = as.Date(date_code, format = "%Y%m%d"),
       # normalize milliseconds separator (HH:MM:SS:MMM -> HH:MM:SS.MMM)
@@ -428,8 +440,14 @@ get_worker_exposure_data <- function(folder_path, observations) {
     df <- readr::read_csv(path, show_col_types = FALSE)
 
     df %>%
-      dplyr::mutate(
-        site = site,
+      mutate(
+        site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+        ),
         date = as.Date(date_code, format = "%Y%m%d"),
         event = case_when(  
           brake == "d" ~ "Arrival",
