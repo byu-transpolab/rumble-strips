@@ -1,18 +1,17 @@
 # Methodology
 
-```{r setup, file = "R/chapter_start.R", include = FALSE}
+```{r setup, file = "R/chapter_start.R", include=FALSE, cache = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
 # includes loading libraries that I always use, as well as options for 
 # displaying numbers and text.
+library(targets)
+library(tidyverse)
 library(ggspatial)
 library(sf)
+library(prettymapr)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
-```{r setup2, include = FALSE}
-# Other packages ------
-# These are packages that get used in this chapter but aren't part of the default set.
-library(mlogit)
-```
 
 This chapter describes the methodology designed by the research team to evaluate the effectiveness, durability, and stability of TPRS systems on high-speed roadways in Utah. The experiment will observe driver behavior and TPRS displacement under traffic load. Cameras and Wavetronix units will be used to collect the desired data. The designed experiment will observe the results that occur in the absence of TPRS and in layouts that vary the spacing between the individual strips in arrays. The experiment will be designed to maximize observation time and minimize how often contractors will need to adjust the TPRS. Work sites were selected for observation based on traffic volume, availability, and location.
 
@@ -38,50 +37,15 @@ The team selected work sites available during the summer of 2025 based on their 
 
 The research team used histograms of AADT on Utah roads to determine which ones would make reliable sites to study to ensure statistical significance.
 
-Discuss where you got your data, how you cleaned it, and any assumptions you made. In this example, we get the `Car` dataset from the `mlogit` [@mlogit] package[^03_methods-1] and massage it to be in the format needed for `mlogit`.
-
-[^03_methods-1]: You can often get a well-formatted citation for an R package by typing `citation(package = "packagename")` in the console.
-
-```{r load_data}
-tar_load(car_mlogit)
-```
-
-Often there will be a table describing summary statistics of your dataset. @tbl-summary shows a nice table using the [`datasummary`](https://vincentarelbundock.github.io/modelsummary/articles/datasummary.html) functions in the `modelsummary` package [@modelsummary].
-
-```{r datasummary}
-#| label: tbl-summary
-#| tbl-cap: Descriptive Statistics of Dataset
-datasummary_balance(
-  ~type, 
-  data = car_mlogit %>% 
-    select(type, fuel, price, range, size), 
-  dinm = FALSE
-) %>%
-  kableExtra::kable_styling(latex_options="scale_down")
-```
-
-## Models
-
-If your work is mostly a new model, you probably will have introduced some details in the literature review. But this is where you describe the mathematical construction of your model, the variables it uses, and other things. Some methods are so common (linear regression) that it is unnecessary to explore them in detail. But others will need to be described, often with mathematics. For example, the probability of an alternative $i$ in the a multinomial logit model is
-
-$$
-P_i(X_{in}) = \frac{e^{X_{in}\beta_i}}{\sum_{j \in J}e^{X_{jn}\beta_j}}
-$$ {#eq-mnl}
-
-Use [LaTeX mathematics](https://www.overleaf.com/learn/latex/mathematical_expressions). You'll want to number display equations so that you can refer to them later in the manuscript. Other simpler math can be described inline, like saying that $i, j \in J$. Details on using equations in Quarto are available [here](https://quarto.org/docs/visual-editor/technical.html#equations).
-
-You can also refer back to numbered equations, like the probability of an MNL presented in @eq-mnl.
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-map
 #| fig-cap: Map of sites
-library(ggspatial)
-library(sf)
-utah <- tigris::states() |> filter(STUSPS == "UT")
-sites <- read_sf("data/sites.geojson")
+utah <- tigris::states(progress_bar = FALSE) |> dplyr::filter(STUSPS == "UT")
+sites <- sf::read_sf("data/sites.geojson")
 ggplot() + 
-  annotation_map_tile("osm", zoom = 8) + 
+  ggspatial::annotation_map_tile("osm", zoom = 8) + 
   ggspatial::annotation_north_arrow(style = ggspatial::north_arrow_minimal, 
   location = "tr") + ggspatial::annotation_scale(location = "br") +
   geom_sf(data = utah, fill = NA, color = "black") +
