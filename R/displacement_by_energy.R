@@ -335,7 +335,6 @@ bar_plot_transition_data <-function(transition_data) {
 
 plot_data <- transition_data %>%
   #create a unique label for each transition period
-  mutate(transition_id = paste(site, "-", spacing_type, "-", transition_id)) %>%
   #put the periods in order of end_state, then transition_id, then site...
   arrange(end_state, transition_id, site) %>%
   #...and THEN make transition_id a factor with levels in that order
