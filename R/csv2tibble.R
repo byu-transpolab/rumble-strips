@@ -12,10 +12,17 @@ read_observations <- function(file_path) {
 
   read_csv(file_path) |>
     mutate(
-      spacing_type = ifelse(is.na(spacing_type), 0, spacing_type),
-      spacing_type = factor(spacing_type,
-      levels = c("NO TPRS", "UDOT", "PSS", "LONG")),
-      date = lubridate::mdy(date))
+      # Rename PSS to 1:2 spacing since it's not the official recommendation
+      spacing_type = fct_recode(spacing_type, "1:2" = "PSS"),
+      # Assign factor levels to spacing_type
+      spacing_type = fct_relevel(
+        spacing_type,
+        "NO TPRS",
+        "UDOT",
+        "1:2",
+        "LONG"),
+      date = lubridate::mdy(date)
+    )
 
 }
 
