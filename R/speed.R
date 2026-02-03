@@ -9,13 +9,12 @@ library(ggplot2)
 # prepare tibble for statistical tests
 prepare_speed_data <- function(wavetronix, observations) {
   wavetronix %>%
-    dplyr::filter(lane == "01") %>%
+    filter(lane == "01") %>%
     select(site, unit, date, time = sensor_time, speed_85) %>%
     mutate(unit = as.factor(as.character(unit)),
            speed_85 = as.numeric(speed_85)) %>%
     left_join(observations %>% select(site, date, spacing_type), by = c("site", "date")) %>%
-    filter(!is.na(speed_85), !is.na(spacing_type)) %>%
-    mutate(spacing_type = fct_relevel(spacing_type, "NO TPRS", "UDOT", "PSS", "LONG"))
+    filter(!is.na(speed_85), !is.na(spacing_type))
 }
 
 
@@ -66,14 +65,6 @@ paired_test <- function(speed_data) {
 plot_confidence_bounds <- function(paired_t_test) {
   # Prepare data
   plot_data <- paired_t_test %>%
-    mutate(spacing_type = as.factor(spacing_type),
-    site = case_when(
-      site == "sr12" ~ "SR-12",
-      site == "us6" ~ "US-6",
-      site == "i70" ~ "I-70",
-      site == "us191" ~ "US-191",
-      TRUE ~ site)
-    ) %>%
     filter(!is.na(conf_low), !is.na(conf_high))
 
   # Build plot
@@ -91,9 +82,9 @@ plot_confidence_bounds <- function(paired_t_test) {
     scale_color_manual(values = c(
       "NO TPRS" = "#2E4756",
       "UDOT" = "#3C7A89",
-      "PSS" = "#F49D37",
+      "1:2" = "#F49D37",
       "LONG" = "#D81159" ),
-      breaks = c("LONG", "PSS", "UDOT", "NO TPRS")) +
+      breaks = c("LONG", "1:2", "UDOT", "NO TPRS")) +
     labs(
       x = "Speed Difference",
       y = "Site",

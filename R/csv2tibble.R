@@ -70,7 +70,13 @@ read_wavetronix <- function(file_path) {
 
   df |>
     dplyr::transmute(
-      site = road,
+      site = case_when(
+        road == "sr12" ~ "SR-12",
+        road == "i70" ~ "I-70",
+        road == "us191" ~ "US-191",
+        road == "us6" ~ "US-6",
+        TRUE ~ as.character(road)
+      ),
       unit = unit,
       lane = stringr::str_remove(`LANE/APPROACH NAME`, "LANE_"),
       volume = VOLUME,
