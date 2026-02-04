@@ -86,7 +86,8 @@ displacement_data <- cb %>%
           class == "passenger"  ~ speed * passenger_weight,
           class == "truck"      ~ speed * truck_weight)
         ) %>%
-  select(site, time, class, speed, momentum, spacing_type, state)
+  select(site, time, class, speed, momentum, spacing_type, state) %>%
+  filter(momentum > 0)
 
   
   return(displacement_data)
@@ -94,19 +95,21 @@ displacement_data <- cb %>%
 
 # Summarize the momentum and other values per state transition
 summarize_displacement_data <- function(displacement_data) {
-  # Identify state transitions and number each period of continuous state for each site
+  # Identify state transitions and number each period of constant state uniquely
   state_change <- displacement_data %>%
     arrange(time) %>%
     mutate(date = as.Date(time),
            prev_state = lag(state),
            state_change = state != prev_state & !is.na(prev_state),
            period_id = cumsum(state_change) +1)
+    # The period_id increments each time a state change occurs, so summarizing
+    # by period_id will only include one state. No off-by-one errors here.
   
     # Summarize traffic per state transition
   displacement_summary <- state_change %>%
-    # For each period, create one row that ...
+    # For each period... 
     group_by(period_id) %>%
-    # ... summarizes the following data.
+    # ...create one row that summarizes the following:
     summarise(
       site              = first(site),
       date              = first(date),
@@ -115,7 +118,7 @@ summarize_displacement_data <- function(displacement_data) {
       end_time          = max(time, na.rm = TRUE),
       start_state       = first(state),
       # Convert to millions lbs*mi/hr for easier plotting
-      # Converts to metric in prep_transition_data() function.
+      # Converts to metric late in function prep_transition_data()
       momentum            = sum(momentum, na.rm = TRUE) / 1000000, 
       motorcycle_volume = sum(class == "motorcycle", na.rm = TRUE),
       passenger_volume  = sum(class == "passenger",  na.rm = TRUE),
@@ -123,16 +126,23 @@ summarize_displacement_data <- function(displacement_data) {
       mean_speed        = mean(speed, na.rm = TRUE),
       .groups = "drop"
     ) %>%
-    # Calculate duration and next state for each summary row
+    # Calculate duration and next state for each summary row.
+    # duration and next_state cannot be found in the previous summarise step.
     mutate(
       duration = as.numeric(difftime(end_time, start_time, units = "mins")),
       next_state = lead(start_state)
     ) %>%
-    # Filter out transitions that meet the following criteria:
-    filter(next_state != "Reset" &
-           !is.na(next_state) &
-           start_state != "Out of Specification" &
-           duration <= 480)
+    # Only keep transitions that meet the following criteria:
+    filter(
+      # a) don't transition to Reset state
+      next_state != "Reset" &
+      # b) transition to a known state
+      !is.na(next_state) &
+      # c) don't start from Out of Spec. state
+      start_state != "Out of Spec." &
+      # d) have durations of less than 8 hours. (480 minutes)
+      # This removes long gaps most likely due to overnight periods.
+      duration <= 480)
 
   return (displacement_summary)
 }
@@ -141,43 +151,60 @@ filter_displacement_summary <- function(displacement_summary) {
   # Focus on just momentum per transition (exclude volumes and mean speeds)
   # I know we put a lot of effort into summarizing that data, but it's not used.
   # I keep the summary there in case we want to use it later.
+
   transition_data <- displacement_summary %>%
-    select(site, date, start_time, spacing_type, start_state, next_state, 
-      momentum) %>%
+    # Only keep relevant columns
+    select(
+      site, date, start_time, spacing_type, start_state, next_state, momentum
+    ) %>%
+    # Make sure everything is in chronological order
     arrange(date, start_time) %>%
+    # For each day...
     group_by(date) %>%
-    # Only keep series of transitions that start with "Reset"
-    # OR where start_state == lag(next_state)
+    # ...Only keep series of transitions that start with "Reset",
+    # OR where start_state is the same as the previous row's next_state.
+    # We want unbroken chains of transitions that start from Reset.
     mutate(
-    # Apply row-by-row validation using accumulate
-    valid = accumulate(
-      .x = row_number(),
-      .f = function(prev_valid, i) {
-        # First row rule of the day must start with Reset
-        if (i == 1) {
-          return(start_state[i] == "Reset")
-        }
+      # Create a helper column 'valid' which is a true/false flag.
+      valid = accumulate( # Gotta be honest, not sure how it works, but it does.
+        .x = row_number(),# Iterate over each row in the day, and check validity
+        .f = function(prev_valid, i) {
+          # Are we looking at the first row?
+          if (i == 1) {
+            # Yes? Then it's only valid if it starts with Reset.
+            # Set valid value accordingly and skip the remaining checks.
+            return(start_state[i] == "Reset")
+          } # No? Go to the next check.
 
-        # If previous row invalid, current row is invalid
-        if (!prev_valid) {
-          # Only valid if this row resets
-          return(start_state[i] == "Reset")
-        }
+          # Is the previous row valid?
+          if (!prev_valid) {
+            # No? Is it a Reset row? No? Then it's invalid.
+            return(start_state[i] == "Reset")
+          } # Yes? Go to the next check.
 
-        # If this row is a Reset → always valid
-        if (start_state[i] == "Reset") {
-          return(TRUE)
-        }
 
-        # Otherwise normal rule: must match previous next_state
-        return(start_state[i] == next_state[i - 1])
-      },
-      .init = TRUE
+          # Is this row a Reset row?
+          if (start_state[i] == "Reset") {
+            # Yes? Always valid. Skip remaining check.
+            return(TRUE)
+          } # no? Go to the next check.
+
+          # Is this row's start_state the same as the previous row's next_state?
+          # Yes? Then it's valid. No? Then it's invalid.
+          return(start_state[i] == next_state[i - 1])
+        },
+        # This initializes the accumulate with a TRUE value for the first call.
+        # Not sure why it's needed, but it is.
+        .init = TRUE
     )[-1] # remove the initial TRUE used to start accumulate
-    ) %>% 
+    ) %>%
+     # Only keep rows we marked as valid
     filter(valid) %>%
-    select(-valid) %>%
+    # Remove helper 'valid' column
+    select(-chain_id_in_day, -valid) %>%
     ungroup()
+
+    # A unique identifier gets added later in prep_transition_data()
   
   return(transition_data)
 }
@@ -187,6 +214,8 @@ prep_transition_data <- function(transition_data) {
   # and prepare it for plotting
 
   # Step 1: make the basis for the final tibble, plot_data
+  # This is just the transition_data with some columns renamed.
+  # next_state becomes state, and we only keep relevant columns.
   base_rows <- transition_data %>%
     transmute(
       site,
@@ -197,7 +226,8 @@ prep_transition_data <- function(transition_data) {
       momentum
     )
 
-  # Step 2: Add rows where state = "Reset" and momentum = 0.0
+  # Step 2: Create rows where state = "Reset" and momentum = 0.0.
+  # These will get added to base_rows to create the full plot data.
   reset_rows <- transition_data %>%
     filter(start_state == "Reset") %>%
     transmute(
