@@ -149,6 +149,22 @@ list(
   plot_confidence_bounds(paired_t_test)
   ),
 
+  # t-test of 85th percentile speed by each unit alone
+  tar_target(single_unit_t_test_w1, 
+  run_single_unit_t_test(speed_data, unit = "w1")
+  ),
+  tar_target(single_unit_t_test_w2, 
+  run_single_unit_t_test(speed_data, unit = "w2")
+  ),
+
+  # plot confidence bounds for the single unit t-test results
+  tar_target(single_unit_confidence_bounds_w1,
+    plot_single_unit_confidence_bounds(single_unit_t_test_w1, unit = "w1")
+  ),
+  tar_target(single_unit_confidence_bounds_w2,
+    plot_single_unit_confidence_bounds(single_unit_t_test_w2, unit = "w2")
+  ),
+
   ### Driver Braking and TPRS Avoidance Analysis #############################
   # Helper functions are listed in braking_and_departure.R
 
