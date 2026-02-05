@@ -201,7 +201,7 @@ filter_displacement_summary <- function(displacement_summary) {
      # Only keep rows we marked as valid
     filter(valid) %>%
     # Remove helper 'valid' column
-    select(-chain_id_in_day, -valid) %>%
+    select(-valid) %>%
     ungroup()
 
     # A unique identifier gets added later in prep_transition_data()
