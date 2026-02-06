@@ -45,7 +45,10 @@ cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "
   daily_speed <- df %>%
     dplyr::group_by(site, date) %>%
     dplyr::summarise(
-      speed = if (all(is.na(speed_85))) NA_real_ else as.numeric(stats::quantile(speed_85, probs = 0.85, na.rm = TRUE)),
+      speed = if(all(is.na(speed_85)))
+          NA_real_
+        else
+          as.numeric(stats::quantile(speed_85, probs = 0.85, na.rm = TRUE)),
       .groups = "drop"
     )
 
@@ -128,11 +131,6 @@ make_displacement_plot_data <- function(cumulated_volume,
     # Get unique spacing_type-date pairs for this site
     spacing_dates <- wv_site %>%
       arrange(date) %>%
-      mutate(spacing_type = fct_relevel(spacing_type,
-                                        "NO TPRS",
-                                        "UDOT",
-                                        "PSS",
-                                        "LONG")) %>%
       group_by(site, spacing_type) %>%
       slice(1) %>%  # keep only the first date per spacing
       ungroup() %>%
@@ -162,13 +160,13 @@ make_displacement_plot_data <- function(cumulated_volume,
              linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
       scale_color_manual(values = c(
         "Reset"                = "#1E822F",
-        "Some Movement"        = "#879D35",
-        "Moderate Movement"    = "#F0B73B",
-        "Significant Movement" = "#E96123",
-        "Out of Specification" = "#E10A0A"),
+        "Some"        = "#879D35",
+        "Moderate"    = "#F0B73B",
+        "Significant" = "#E96123",
+        "Out of Spec." = "#E10A0A"),
       breaks = c("Passenger", "Truck",
-                 "Reset", "Some Movement", "Moderate Movement",
-                 "Significant Movement", "Out of Specification")) +
+                 "Reset", "Some", "Moderate",
+                 "Significant", "Out of Spec.")) +
       facet_wrap(~strip_label, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
       theme_minimal()
@@ -203,8 +201,6 @@ make_displacement_plot_class_data <- function(class_volume, camera_top_data, out
     spacing_dates <- cv_site %>%
       mutate(date = as.Date(time)) %>%
       arrange(date) %>%
-      mutate(spacing_type = fct_relevel(spacing_type,
-                            "NO TPRS", "UDOT", "PSS", "LONG")) %>%
       group_by(site, spacing_type) %>%
       slice(1) %>%  # keep only the first date per spacing
       ungroup() %>%
@@ -225,16 +221,16 @@ make_displacement_plot_class_data <- function(class_volume, camera_top_data, out
                 aes(xintercept = time, color = event),
                 linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
       scale_color_manual(values = c(
-        "Passenger"            = "blue",
-        "Truck"                = "brown",
-        "Reset"                = "#1E822F",
-        "Some Movement"        = "#879D35",
-        "Moderate Movement"    = "#F0B73B",
-        "Significant Movement" = "#E96123",
-        "Out of Specification" = "#E10A0A"),
+        "Passenger"    = "blue",
+        "Truck"        = "brown",
+        "Reset"        = "#1E822F",
+        "Some"         = "#879D35",
+        "Moderate"     = "#F0B73B",
+        "Significant"  = "#E96123",
+        "Out of Spec." = "#E10A0A"),
       breaks = c("Passenger", "Truck",
-                 "Reset", "Some Movement", "Moderate Movement",
-                 "Significant Movement", "Out of Specification")) +
+                 "Reset", "Some", "Moderate",
+                 "Significant", "Out of Spec.")) +
       facet_wrap(~spacing_type, scales = "free_x") +
       labs(x = "Time", y = "Cumulative Volume", color = "Legend") +
       theme_minimal()

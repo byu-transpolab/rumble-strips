@@ -130,7 +130,7 @@
 <line x1='623.22' y1='307.34' x2='637.04' y2='307.34' style='stroke-width: 2.56; stroke: #2E4756; stroke-linecap: butt;' />
 <circle cx='630.13' cy='307.34' r='2.58' style='stroke-width: 0.90; stroke: #2E4756; fill: #2E4756;' />
 <text x='645.74' y='259.51' style='font-size: 11.20px; font-family: "Arial";' textLength='31.70px' lengthAdjust='spacingAndGlyphs'>LONG</text>
-<text x='645.74' y='276.79' style='font-size: 11.20px; font-family: "Arial";' textLength='22.41px' lengthAdjust='spacingAndGlyphs'>PSS</text>
+<text x='645.74' y='276.79' style='font-size: 11.20px; font-family: "Arial";' textLength='15.55px' lengthAdjust='spacingAndGlyphs'>1:2</text>
 <text x='645.74' y='294.07' style='font-size: 11.20px; font-family: "Arial";' textLength='31.69px' lengthAdjust='spacingAndGlyphs'>UDOT</text>
 <text x='645.74' y='311.35' style='font-size: 11.20px; font-family: "Arial";' textLength='49.53px' lengthAdjust='spacingAndGlyphs'>NO TPRS</text>
 </g>

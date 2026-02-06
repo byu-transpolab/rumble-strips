@@ -116,7 +116,7 @@
 <line x1='644.27' y1='199.58' x2='658.09' y2='199.58' style='stroke-width: 1.49; stroke: #619CFF; stroke-opacity: 0.50; stroke-linecap: butt;' />
 <circle cx='651.18' cy='199.58' r='2.49' style='stroke-width: 0.71; stroke: #619CFF; fill: #619CFF;' />
 <text x='665.30' y='168.17' style='font-size: 8.80px; font-family: "Arial";' textLength='24.94px' lengthAdjust='spacingAndGlyphs'>UDOT</text>
-<text x='665.30' y='185.45' style='font-size: 8.80px; font-family: "Arial";' textLength='17.62px' lengthAdjust='spacingAndGlyphs'>PSS</text>
+<text x='665.30' y='185.45' style='font-size: 8.80px; font-family: "Arial";' textLength='12.22px' lengthAdjust='spacingAndGlyphs'>1:2</text>
 <text x='665.30' y='202.73' style='font-size: 8.80px; font-family: "Arial";' textLength='24.94px' lengthAdjust='spacingAndGlyphs'>LONG</text>
 </g>
 </g>
