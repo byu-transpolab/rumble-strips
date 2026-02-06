@@ -62,27 +62,20 @@ modelsummary(list,  stars = TRUE)
 ## Braking and Avoidance
 
 ```{r}
-tar_load(brake_and_departure)
-brake_and_departure <- brake_and_departure |>
-  mutate(
-    departure = ifelse(departure == "Avoided", 1, 0),
-    class = factor(class, levels = c("Motorcycle", "Passenger", "Truck")),
-    class = fct_relevel(class, "Motorcycle", after = Inf) # move motorcycle to the end
-  )
-avoidance_model <- glm(departure ~ class + spacing_type + site, 
-  data = brake_and_departure, family = binomial)
-
-avoidance_sites <- brake_and_departure |>
-  group_by(site) |>
-  nest(data = -site) |>
-  mutate(
-    model = map(data, ~glm(departure ~ class + spacing_type, data = .x, family = binomial))
-  )
-
-# append all model 
-list(avoidance_model, avoidance_sites$model) |>
-  setNames(c("Pooled", avoidance_sites$site))
+#| label: tbl-avoidglm
+#| tbl-cap: Binomial Models of TPRS Avoidance
+tar_load(avoid_models)
+modelsummary(avoid_models,  stars = TRUE)
 ```
+
+```{r}
+#| label: tbl-brakeglm
+#| tbl-cap: Multinomial Models of TPRS Braking
+tar_load(brake_models)
+modelsummary(brake_models, shape = term ~ response,  stars = TRUE)
+```
+
+
 
 ### Strip Displacement
 

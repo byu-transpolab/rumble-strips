@@ -66,3 +66,66 @@ plot_departure <- function(brake_and_departure) {
         plot = p, width = 10, height = 13)
     p
 }
+
+
+#' Estimate models of TPRS avoidance
+#' 
+#' @param brake_and_departure Tibble with braking and departure data
+#' @return List of models, one pooled as well as segmentations by site
+estimate_avoid_models <- function(brake_and_departure) {
+    df <- brake_and_departure |>
+        mutate(
+            departure = ifelse(departure == "Avoided", 1, 0),
+            class = factor(class, levels = c("Motorcycle", "Passenger", "Truck")),
+            class = fct_relevel(class, "Motorcycle", after = Inf) # move motorcycle to the end
+        )
+
+    # pooled model
+    avoidance_model <- glm(departure ~ class + spacing_type + site, data = df, family = binomial)
+
+    # site-specific models
+    avoidance_sites <- df |>
+        group_by(site) |>
+        nest(data = -site) |>
+        mutate(
+            model = map(data, ~glm(departure ~ class + spacing_type, data = .x, family = binomial))
+        )
+
+    models <- c(
+        list(avoidance_model),
+          avoidance_sites$model
+        ) |>
+        set_names(c("Pooled", avoidance_sites$site))
+}
+
+
+#' Estimate models of TPRS avoidance
+#' 
+#' @param brake_and_departure Tibble with braking and departure data
+#' @return List of models, one pooled as well as segmentations by site
+estimate_brake_models <- function(brake_and_departure) {
+    df <- brake_and_departure |>
+        mutate(
+            brake = factor(brake, levels = c("After", "Before", "No Brake")),
+            brake = fct_relevel(brake, c("No Brake", "Before", "After")), 
+            class = factor(class, levels = c("Motorcycle", "Passenger", "Truck")),
+            class = fct_relevel(class, "Motorcycle", after = Inf) # move motorcycle to the end
+        )
+
+    # pooled model
+    avoidance_model <- nnet::multinom(brake ~ class + spacing_type + site, data = df, family = multinomial, Hess = TRUE)
+
+    # site-specific models
+    avoidance_sites <- df |>
+        group_by(site) |>
+        nest(data = -site) |>
+        mutate(
+            model = map(data, ~nnet::multinom(brake ~ class + spacing_type, data = .x, family = multinomial, Hess = TRUE))
+        )
+
+    models <- c(
+        list(avoidance_model),
+          avoidance_sites$model
+        ) |>
+        set_names(c("Pooled", avoidance_sites$site))
+}

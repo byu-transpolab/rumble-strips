@@ -197,6 +197,10 @@ list(
   make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
+  # models of braking and avoidance
+  tar_target(brake_models, estimate_brake_models(brake_and_departure)),
+  tar_target(avoid_models, estimate_avoid_models(brake_and_departure)),
+
   ### TPRS Displacement by momentum Analysis ###################################
   # Helper Functions are found in R/displacement_by_momentum.R
 
