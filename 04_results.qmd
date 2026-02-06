@@ -1,4 +1,4 @@
-## Applications
+## Results and Analysis
 
 ```{r setup, file = "R/chapter_start.R", include = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
@@ -56,3 +56,28 @@ list <- wlms$model |> setNames(wlms$site)
 ```{r}
 modelsummary(list,  stars = TRUE)
 ```
+
+
+## Braking and Avoidance
+
+```{r}
+tar_load(brake_and_departure)
+brake_and_departure <- brake_and_departure |>
+  mutate(
+    departure = ifelse(departure == "Avoided", 1, 0),
+    class = factor(class, levels = c("Motorcycle", "Passenger", "Truck")),
+    class = fct_relevel(class, "Motorcycle", after = Inf) # move motorcycle to the end
+  )
+avoidance_model <- glm(departure ~ class + spacing_type + site, 
+  data = brake_and_departure, family = binomial)
+
+avoidance_sites <- brake_and_departure |>
+  group_by(site) |>
+  nest(data = -site) |>
+  mutate(
+    model = map(data, ~glm(departure ~ class + spacing_type, data = .x, family = binomial))
+  )
+
+# append all model 
+list(avoidance_model, avoidance_sites$model) |>
+  setNames(c("Pooled", avoidance_sites$site))
