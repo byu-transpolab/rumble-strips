@@ -260,7 +260,8 @@ list(
     name = cdf_plots,
     command = make_cdf_plots(
       camera_back = camera_back_data,
-      raff_metrics = headway_analysis$raff_metrics
+      raff_metrics = headway_analysis$raff_metrics,
+      observations = observations
     )
   ),
   tar_target(
@@ -274,7 +275,8 @@ list(
     name = histogram_plots,
     command = make_histogram_plots(
       camera_back = camera_back_data,
-      raff_metrics = headway_analysis$raff_metrics
+      raff_metrics = headway_analysis$raff_metrics,
+      observations = observations
     )
   ),
   tar_target(
