@@ -46,10 +46,10 @@ source("R/hourly_volumes.R")
 source("R/csv2tibble.R")
 source("R/observations.R")
 source("R/speed.R")
-source("R/braking_and_avoidance.R")
+source("R/braking_and_departure.R")
 source("R/exposure.R")
 source("R/displacement_by_volume.R")
-source("R/displacement_by_energy.R")
+source("R/displacement_by_momentum.R")
 
 
 
@@ -149,6 +149,22 @@ list(
   plot_confidence_bounds(paired_t_test)
   ),
 
+  # t-test of 85th percentile speed by each unit alone
+  tar_target(single_unit_t_test_w1, 
+  run_single_unit_t_test(speed_data, unit = "w1")
+  ),
+  tar_target(single_unit_t_test_w2, 
+  run_single_unit_t_test(speed_data, unit = "w2")
+  ),
+
+  # plot confidence bounds for the single unit t-test results
+  tar_target(single_unit_confidence_bounds_w1,
+    plot_single_unit_confidence_bounds(single_unit_t_test_w1, unit = "w1")
+  ),
+  tar_target(single_unit_confidence_bounds_w2,
+    plot_single_unit_confidence_bounds(single_unit_t_test_w2, unit = "w2")
+  ),
+
   ### Driver Braking and TPRS Avoidance Analysis #############################
   # Helper functions are listed in braking_and_departure.R
 
@@ -176,18 +192,13 @@ list(
     cumulate_class_volume(camera_back_data, observations)
   ),
 
-  # Plot volume and events for each site with wavetronix data
-  tar_target(displacement_plots_wave,
-    make_displacement_plot_data(cumulated_volume, camera_top_data)
-  ),
-
   # Plot class volumes and events for each site with camera back data
   tar_target(displacement_plots_cb,
   make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
-  ### TPRS Displacement by energy Analysis ###################################
-  # Helper Functions are found in R/displacement_by_energy.R
+  ### TPRS Displacement by momentum Analysis ###################################
+  # Helper Functions are found in R/displacement_by_momentum.R
 
   # define vehicle weights
   tar_target(motorcycle_weight, 800), # lbs, initial Google search result
@@ -223,14 +234,14 @@ list(
     prep_transition_data(transition_data)
   ),
 
-  # Plot the impact energy for each transition, colored by spacing
-  tar_target(energy_per_transition_spacing,
-    plot_energy_spacing(disp_plot_data)
+  # Plot the impact momentum for each transition, colored by spacing
+  tar_target(momentum_per_transition_spacing,
+    plot_momentum_spacing(disp_plot_data)
   ),
 
-  # Plot the impact energy for each transition, colored by site
-  tar_target(energy_per_transition_site,
-    plot_energy_site(disp_plot_data)
+  # Plot the impact momentum for each transition, colored by site
+  tar_target(momentum_per_transition_site,
+    plot_momentum_site(disp_plot_data)
   ),
 
   ### Worker Exposure Analysis ###############################################

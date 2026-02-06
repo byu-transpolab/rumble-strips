@@ -12,10 +12,25 @@ read_observations <- function(file_path) {
 
   read_csv(file_path) |>
     mutate(
-      spacing_type = ifelse(is.na(spacing_type), 0, spacing_type),
-      spacing_type = factor(spacing_type,
-      levels = c("NO TPRS", "UDOT", "PSS", "LONG")),
-      date = lubridate::mdy(date))
+      # Rename PSS to 1:2 spacing since it's not the official recommendation
+      spacing_type = fct_recode(spacing_type, "1:2" = "PSS"),
+      # Assign factor levels to spacing_type
+      spacing_type = fct_relevel(
+        spacing_type,
+        "NO TPRS",
+        "UDOT",
+        "1:2",
+        "LONG"),
+      # Add capitalization and hyphens to site names
+      site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+      ),
+      date = lubridate::mdy(date)
+    )
 
 }
 
@@ -55,7 +70,13 @@ read_wavetronix <- function(file_path) {
 
   df |>
     dplyr::transmute(
-      site = road,
+      site = case_when(
+        road == "sr12" ~ "SR-12",
+        road == "i70" ~ "I-70",
+        road == "us191" ~ "US-191",
+        road == "us6" ~ "US-6",
+        TRUE ~ as.character(road)
+      ),
       unit = unit,
       lane = stringr::str_remove(`LANE/APPROACH NAME`, "LANE_"),
       volume = VOLUME,
@@ -124,25 +145,31 @@ read_camera_top <- function(path) {
   
   df %>%
     mutate(
-      site = site,
+      site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+      ),
       time = as.POSIXct(paste0(date_code, " ", timestamp),
                         format = "%Y%m%d %H:%M:%OS",
                         tz = "America/Denver"),
       event = case_when(
         state == "0" ~ "Reset",
-        state == "1" ~ "Some Movement",
-        state == "2" ~ "Moderate Movement",
-        state == "3" ~ "Significant Movement",
-        state == "4" ~ "Out of Specification",
+        state == "1" ~ "Some",
+        state == "2" ~ "Moderate",
+        state == "3" ~ "Significant",
+        state == "4" ~ "Out of Spec.",
         TRUE ~ as.character(state)
       ),
       event = factor(event,
         levels = c(
           "Reset",
-          "Some Movement",
-          "Moderate Movement",
-          "Significant Movement",
-          "Out of Specification"))
+          "Some",
+          "Moderate",
+          "Significant",
+          "Out of Spec."))
     ) %>%
     select(site, time, event)
 }
@@ -197,8 +224,14 @@ read_camera_back <- function(path) {
 
   # Parse timestamp with date_code and convert to POSIXct
   df %>%
-    dplyr::mutate(
-      site = site,
+    mutate(
+      site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+      ),
       session = session,
       date = as.Date(date_code, format = "%Y%m%d"),
       # normalize milliseconds separator (HH:MM:SS:MMM -> HH:MM:SS.MMM)
@@ -413,8 +446,14 @@ get_worker_exposure_data <- function(folder_path, observations) {
     df <- readr::read_csv(path, show_col_types = FALSE)
 
     df %>%
-      dplyr::mutate(
-        site = site,
+      mutate(
+        site = case_when(
+        site == "sr12" ~ "SR-12",
+        site == "i70" ~ "I-70",
+        site == "us191" ~ "US-191",
+        site == "us6" ~ "US-6",
+        TRUE ~ as.character(site)
+        ),
         date = as.Date(date_code, format = "%Y%m%d"),
         event = case_when(  
           brake == "d" ~ "Arrival",
