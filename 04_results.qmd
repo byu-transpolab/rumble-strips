@@ -1,5 +1,6 @@
 ## Results and Analysis
 
+
 ```{r setup, file = "R/chapter_start.R", include = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
 # includes loading libraries that I always use, as well as options for 
@@ -7,7 +8,7 @@
 library(modelsummary)
 ```
 
-
+### Speeds
 Analysis question 1: does having rumble strips slow down traffic?
 
 ```{r wavetronix}
@@ -81,3 +82,14 @@ avoidance_sites <- brake_and_departure |>
 # append all model 
 list(avoidance_model, avoidance_sites$model) |>
   setNames(c("Pooled", avoidance_sites$site))
+```
+
+
+### Worker Exposure
+
+```{r cdf-sites}
+
+tar_load(cdf_plots)
+
+cdf_plots$site_plot
+```
