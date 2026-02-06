@@ -84,6 +84,17 @@ list(avoidance_model, avoidance_sites$model) |>
   setNames(c("Pooled", avoidance_sites$site))
 ```
 
+### Strip Displacement
+
+```{r}
+#| label: fig-momentum
+#| fig-cap: Impact momentum for each transition, colored by site.
+tar_load(momentum_per_transition_site)
+
+momentum_per_transition_site
+```
+
+@fig-momentum shows the impact momentum for each transition, colored by site. The impact momentum is the change in speed for a vehicle in a given transition. The change in speed is calculated by subtracting the speed at the beginning of the transition from the speed at the end of the transition. This is a useful metric for understanding the effect of rumble strips on traffic flow.
 
 ### Worker Exposure
 
