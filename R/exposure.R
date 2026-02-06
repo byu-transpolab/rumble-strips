@@ -372,14 +372,34 @@ create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = 
   # Set x-axis limit to 100 seconds
   x_limit <- 100
   
-  # Combine all data with group labels (BEFORE filtering)
-  # This ensures CDF is calculated based on all data
-  combined_data <- bind_rows(
-    lapply(names(data_list), function(name) {
-      data_list[[name]] %>%
-        mutate(group = name)
+  # Manually calculate ECDF for each group using ALL data
+  ecdf_data_list <- lapply(names(data_list), function(name) {
+    d <- data_list[[name]]
+    
+    # Sort the headways
+    sorted_hdwy <- sort(d$headway_sec)
+    n_total <- length(sorted_hdwy)
+    
+    # Create ECDF points (only up to x_limit for plotting, but calculated from all data)
+    # Include all unique values up to x_limit, plus ensure we have x_limit itself
+    x_vals <- unique(c(sorted_hdwy[sorted_hdwy <= x_limit], x_limit))
+    x_vals <- sort(x_vals)
+    
+    # Calculate cumulative proportion at each x value based on ALL data
+    y_vals <- sapply(x_vals, function(x) {
+      sum(sorted_hdwy <= x) / n_total
     })
-  )
+    
+    # Create tibble for plotting
+    tibble(
+      group = name,
+      headway_sec = x_vals,
+      cdf = y_vals
+    )
+  })
+  
+  # Combine all ECDF data
+  ecdf_data <- bind_rows(ecdf_data_list)
   
   # Calculate CDF values at t_c for each group using ALL data (unfiltered)
   cdf_at_tc_list <- lapply(names(data_list), function(name) {
@@ -411,11 +431,11 @@ create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = 
     }
   }
   
-  # Create CDF plot
-  p <- ggplot(combined_data, aes(x = headway_sec, color = group)) +
-    stat_ecdf(geom = "step", linewidth = 1.2) +
+  # Create CDF plot using manually calculated ECDF
+  p <- ggplot(ecdf_data, aes(x = headway_sec, y = cdf, color = group)) +
+    geom_step(linewidth = 1.2, direction = "hv") +
     scale_color_manual(values = colors, name = "") +
-    scale_x_continuous(limits = c(0, x_limit)) +
+    scale_x_continuous(breaks = seq(0, x_limit, by = 10), limits = c(0, x_limit)) +
     scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
     labs(
       title = title,
@@ -592,12 +612,12 @@ make_cdf_plots <- function(camera_back, raff_metrics) {
   
   t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
   
-  # Define colors
+  # Define colors - using actual site names from data
   site_colors <- c(
-    "sr12" = "#1f77b4",
-    "us6" = "#ff7f0e",
-    "i70" = "#2ca02c",
-    "us191" = "#d62728"
+    "SR-12" = "#1f77b4",
+    "US-6" = "#ff7f0e",
+    "I-70" = "#2ca02c",
+    "US-191" = "#d62728"
   )
   
   spacing_colors <- c(
@@ -607,18 +627,18 @@ make_cdf_plots <- function(camera_back, raff_metrics) {
     "LONG" = "#d62728"
   )
   
-  # Prepare site data list
-  sites <- c("sr12", "us6", "i70", "us191")
+  # Prepare site data list - using actual site names
+  sites <- c("SR-12", "US-6", "I-70", "US-191")
   site_data_list <- lapply(sites, function(s) {
     hdwy_data %>% filter(site == s)
   })
   names(site_data_list) <- sites
   site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
   
-  # Prepare spacing data list
+  # Prepare spacing data list - filter out NA values
   spacing_types <- c("NO TPRS", "UDOT", "PSS", "LONG")
   spacing_data_list <- lapply(spacing_types, function(sp) {
-    hdwy_data %>% filter(spacing_type == sp)
+    hdwy_data %>% filter(!is.na(spacing_type), spacing_type == sp)
   })
   names(spacing_data_list) <- spacing_types
   spacing_data_list <- spacing_data_list[sapply(spacing_data_list, nrow) > 0]
