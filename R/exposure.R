@@ -372,24 +372,18 @@ create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = 
   # Set x-axis limit to 100 seconds
   x_limit <- 100
   
-  # Filter data first for consistency
-  filtered_data_list <- lapply(names(data_list), function(name) {
-    data_list[[name]] %>%
-      filter(headway_sec <= x_limit)
-  })
-  names(filtered_data_list) <- names(data_list)
-  
-  # Combine all data with group labels
+  # Combine all data with group labels (BEFORE filtering)
+  # This ensures CDF is calculated based on all data
   combined_data <- bind_rows(
-    lapply(names(filtered_data_list), function(name) {
-      filtered_data_list[[name]] %>%
+    lapply(names(data_list), function(name) {
+      data_list[[name]] %>%
         mutate(group = name)
     })
   )
   
-  # Calculate CDF values at t_c for each group using FILTERED data
-  cdf_at_tc_list <- lapply(names(filtered_data_list), function(name) {
-    d <- filtered_data_list[[name]]
+  # Calculate CDF values at t_c for each group using ALL data (unfiltered)
+  cdf_at_tc_list <- lapply(names(data_list), function(name) {
+    d <- data_list[[name]]
     if (!is.na(t_c_critical_s) && nrow(d) > 0) {
       cdf_val <- sum(d$headway_sec <= t_c_critical_s, na.rm = TRUE) / nrow(d)
       tibble(group = name, cdf_at_tc = cdf_val)
