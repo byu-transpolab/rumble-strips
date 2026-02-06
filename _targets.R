@@ -267,25 +267,25 @@ list(
     name = cdf_plot_files,
     command = save_cdf_plots(cdf_plots, output_dir = "output"),
     format = "file"
-  ),
-  
-  # Exposure analysis - Histogram plots
-  tar_target(
-    name = histogram_plots,
-    command = make_histogram_plots(
-      camera_back = camera_back_data,
-      raff_metrics = headway_analysis$raff_metrics
-    )
-  ),
-  tar_target(
-    name = histogram_plot_files,
-    command = save_histogram_plots(
-      histogram_plots, 
-      camera_back = camera_back_data,
-      output_dir = "output"
-    ),
-    format = "file"
   )
+  
+  # Exposure analysis - Histogram plots (commented out - not needed in pipeline)
+  # tar_target(
+  #   name = histogram_plots,
+  #   command = make_histogram_plots(
+  #     camera_back = camera_back_data,
+  #     raff_metrics = headway_analysis$raff_metrics
+  #   )
+  # ),
+  # tar_target(
+  #   name = histogram_plot_files,
+  #   command = save_histogram_plots(
+  #     histogram_plots, 
+  #     camera_back = camera_back_data,
+  #     output_dir = "output"
+  #   ),
+  #   format = "file"
+  # )
   # Targets Ben Added End Here
 
 ) # closes list of targets
