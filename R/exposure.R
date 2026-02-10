@@ -606,9 +606,8 @@ make_headway_analysis <- function(worker_exposure_data) {
 ## @param camera_back Camera back data from targets
 ## @param raff_metrics Raff metrics from headway analysis
 ## @return List of ggplot objects
-make_cdf_plots <- function(camera_back, raff_metrics) {
-  obs_data <- load_observation_data()
-  hdwy_data <- compute_headways_with_spacing(camera_back, obs_data)
+make_cdf_plots <- function(camera_back_data, raff_metrics, observations) {
+  hdwy_data <- compute_headways_with_spacing(camera_back_data, observations)
   
   t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
   
@@ -681,9 +680,8 @@ make_cdf_plots <- function(camera_back, raff_metrics) {
 ## @param camera_back Camera back data from targets
 ## @param raff_metrics Raff metrics from headway analysis
 ## @return List of ggplot objects
-make_histogram_plots <- function(camera_back, raff_metrics) {
-  obs_data <- load_observation_data()
-  cb_combined <- process_cb_with_combined_groups(camera_back, obs_data)
+make_histogram_plots <- function(camera_back, raff_metrics, observations) {
+  cb_combined <- process_cb_with_combined_groups(camera_back, observations)
   
   t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
   

@@ -1,4 +1,5 @@
-## Applications
+## Results and Analysis
+
 
 ```{r setup, file = "R/chapter_start.R", include = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
@@ -7,7 +8,7 @@
 library(modelsummary)
 ```
 
-
+### Speeds
 Analysis question 1: does having rumble strips slow down traffic?
 
 ```{r wavetronix}
@@ -55,4 +56,44 @@ list <- wlms$model |> setNames(wlms$site)
 
 ```{r}
 modelsummary(list,  stars = TRUE)
+```
+
+
+## Braking and Avoidance
+
+```{r}
+#| label: tbl-avoidglm
+#| tbl-cap: Binomial Models of TPRS Avoidance
+tar_load(avoid_models)
+modelsummary(avoid_models,  stars = TRUE)
+```
+
+```{r}
+#| label: tbl-brakeglm
+#| tbl-cap: Multinomial Models of TPRS Braking
+tar_load(brake_models)
+modelsummary(brake_models, shape = term ~ response,  stars = TRUE)
+```
+
+
+
+### Strip Displacement
+
+```{r}
+#| label: fig-momentum
+#| fig-cap: Impact momentum for each transition, colored by site.
+tar_load(momentum_per_transition_site)
+
+momentum_per_transition_site
+```
+
+@fig-momentum shows the impact momentum for each transition, colored by site. The impact momentum is the change in speed for a vehicle in a given transition. The change in speed is calculated by subtracting the speed at the beginning of the transition from the speed at the end of the transition. This is a useful metric for understanding the effect of rumble strips on traffic flow.
+
+### Worker Exposure
+
+```{r cdf-sites}
+
+tar_load(cdf_plots)
+
+cdf_plots$site_plot
 ```

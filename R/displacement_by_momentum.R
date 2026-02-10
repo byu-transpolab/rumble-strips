@@ -341,8 +341,6 @@ plot_momentum_site <- function(plot_data) {
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
-  # Save and return
-  ggsave("output/momentum-per-transition-by-site.svg", 
-    plot = p, width = 10, height = 6)
-  p
+  # return the plot object for later use. Saved in a later target.
+  return(p)
 }
