@@ -332,16 +332,16 @@ list(
   # Exposure analysis - Headway statistics
   tar_target(
     headway_analysis,
-    make_headway_analysis(worker_exposure_data = worker_exposure_data)
+    make_headway_analysis(worker_exposure_data)
   ),
   
   # Exposure analysis - CDF plots
   tar_target(
     cdf_plots,
     make_cdf_plots(
-      camera_back = camera_back_data,
-      raff_metrics = headway_analysis$raff_metrics,
-      observations = observations
+      camera_back_data,
+      headway_analysis$raff_metrics,
+      observations
     )
   ),
   tar_target(

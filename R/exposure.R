@@ -15,12 +15,49 @@ library(lubridate)
 # Set option to display timestamps with millisecond precision (3 decimal places)
 options(digits.secs = 3)
 
-# ==============================================================================
-# HEADWAY STATISTICAL ANALYSIS FUNCTIONS
-# ==============================================================================
+## Headway Analysis ######################################################
 
 
-## Compute headways between vehicle passing events -- compute_vehicle_headways() ##
+## Perform headway statistical analysis for targets pipeline
+##
+## @param worker_exposure_data Worker exposure data from targets
+## @return List containing classified data and raff metrics
+make_headway_analysis <- function(worker_exposure_data) {
+  we <- worker_exposure_data %>%
+    mutate(
+      across(where(is.character), trimws),
+      ts = time,
+      ts_display = format(time, "%Y-%m-%d %H:%M:%OS3")
+    )
+  
+  # Compute headways (only for Vehicle Passing events)
+  we_headways <- compute_vehicle_headways(we)
+  
+   # Prepare lookups
+  wfg_lookup <- prepare_wfg_events(we)
+  er_lookup <- prepare_er_events(we)
+
+   # Classify headways
+  we_classified <- classify_headways(we_headways, wfg_lookup, er_lookup)
+  
+  # Event combinations uses ALL events (not just headways)
+  event_combos <- compute_event_combinations(we)
+  # Summary and Raff metrics use classified headways
+  hdwy_summary <- generate_headway_summary(we_classified)
+  # Summary and Raff metrics use classified headways
+  raff_results <- compute_all_raff_metrics(we_classified)
+  
+  list(
+    worker_exposure_classified = we_classified,
+    event_combinations = event_combos,
+    headway_summary = hdwy_summary,
+    raff_metrics = raff_results
+  )
+}
+
+## Helper Functions for make_headway_analysis() ##############################
+
+## Compute headways between vehicle passing events -- compute_vehicle_headways()
 # Calculates time differences between consecutive Vehicle Passing events
 # @param events Tibble with parsed timestamps and event types
 # @return Tibble with headway calculations for Vehicle Passing events
@@ -49,10 +86,6 @@ compute_vehicle_headways <- function(events) {
   return(vp)
 }
 
-## Prepare Waiting for Gap lookup data -- prepare_wfg_events() ##
-# Creates a lookup table of Waiting for Gap timestamps by site and date
-# @param events Tibble with parsed timestamps and event types
-# @return Tibble with wfg_ts_vec list column containing vectors of WFG timestamps
 prepare_wfg_events <- function(events) {
   wfg_events <- events %>%
     filter(event == "Waiting for Gap") %>%
@@ -75,8 +108,8 @@ prepare_er_events <- function(events) {
   return(er_events)
 }
 
-## Classify headways as Accepted, Rejected, or NotTracked -- classify_headways() ##
-# Applies classification rules based on Waiting for Gap and Entering Roadway events
+## Classify headways as Accepted, Rejected, or NotTracked -- classify_headways()
+# Classifies based on Waiting for Gap and Entering Roadway events
 # @param vehicle_headways Tibble with vehicle passing headways
 # @param wfg_events Tibble with Waiting for Gap timestamps
 # @param er_events Tibble with Entering Roadway timestamps
@@ -185,6 +218,57 @@ compute_event_combinations <- function(events) {
   ))
 }
 
+## Generate headway summary by site and status -- generate_headway_summary() ##
+# Summarizes headway counts and statistics by site and headway_status
+# @param headways_couplets Tibble with classified headways
+# @return Tibble with summary statistics by site and status
+generate_headway_summary <- function(headways_couplets) {
+  headway_summary <- headways_couplets %>%
+    group_by(site, headway_status) %>%
+    summarise(
+      n = n(),
+      mean_headway_s = mean(headway_s, na.rm = TRUE),
+      median_headway_s = median(headway_s, na.rm = TRUE),
+      min_headway_s = min(headway_s, na.rm = TRUE),
+      max_headway_s = max(headway_s, na.rm = TRUE),
+      .groups = "drop"
+    )
+  
+  return(headway_summary)
+}
+
+## Compute overall and grouped Raff metrics -- compute_all_raff_metrics() ##
+# Calculates critical headway metrics overall, by site, and by site+date
+# @param headways_couplets Tibble with classified headways
+# @return List containing raff_overall, raff_by_site, and raff_by_site_date tibbles
+compute_all_raff_metrics <- function(headways_couplets) {
+  # Use only couplets and only Accepted/Rejected classifications
+  gaps <- headways_couplets %>%
+    filter(headway_status %in% c("Accepted", "Rejected")) %>%
+    select(site, date, headway_s, headway_status)
+  
+  # Compute metrics overall (all sites/dates combined)
+  raff_overall <- compute_raff_metrics(gaps)
+  
+  # Compute metrics by site
+  raff_by_site <- gaps %>%
+    group_by(site) %>%
+    group_modify(~ compute_raff_metrics(.x)) %>%
+    ungroup()
+  
+  # Compute metrics by site+date
+  raff_by_site_date <- gaps %>%
+    group_by(site, date) %>%
+    group_modify(~ compute_raff_metrics(.x)) %>%
+    ungroup()
+  
+  return(list(
+    overall = raff_overall,
+    by_site = raff_by_site,
+    by_site_date = raff_by_site_date
+  ))
+}
+
 ## Compute Raff critical headway metrics -- compute_raff_metrics() ##
 # Calculates t1, t2, acceptance/rejection rates, and critical headway (t_c) using Raff method
 # @param df Tibble containing headway_s and headway_status (Accepted/Rejected only)
@@ -231,105 +315,89 @@ compute_raff_metrics <- function(df) {
   )
 }
 
-## Compute overall and grouped Raff metrics -- compute_all_raff_metrics() ##
-# Calculates critical headway metrics overall, by site, and by site+date
-# @param headways_couplets Tibble with classified headways
-# @return List containing raff_overall, raff_by_site, and raff_by_site_date tibbles
-compute_all_raff_metrics <- function(headways_couplets) {
-  # Use only couplets and only Accepted/Rejected classifications
-  gaps <- headways_couplets %>%
-    filter(headway_status %in% c("Accepted", "Rejected")) %>%
-    select(site, date, headway_s, headway_status)
-  
-  # Compute metrics overall (all sites/dates combined)
-  raff_overall <- compute_raff_metrics(gaps)
-  
-  # Compute metrics by site
-  raff_by_site <- gaps %>%
-    group_by(site) %>%
-    group_modify(~ compute_raff_metrics(.x)) %>%
-    ungroup()
-  
-  # Compute metrics by site+date
-  raff_by_site_date <- gaps %>%
-    group_by(site, date) %>%
-    group_modify(~ compute_raff_metrics(.x)) %>%
-    ungroup()
-  
-  return(list(
-    overall = raff_overall,
-    by_site = raff_by_site,
-    by_site_date = raff_by_site_date
-  ))
-}
+##Make CDF Plots #############################################################
 
-## Safe view function for data display -- safe_view() ##
-# Attempts to open data in View window, falls back to print if not available
-# @param data Tibble or data frame to display
-# @param title Optional title for the view window
-# @return Invisible NULL
-safe_view <- function(data, title = NULL) {
-  tryCatch({
-    if (interactive() && capabilities("X11")) {
-      utils::View(data, title = title)
-    } else {
-      cat("\n=== Preview:", title, "===\n")
-      print(head(data, 10))
-    }
-  }, error = function(e) {
-    cat("\n=== Preview:", title, "(View not available) ===\n")
-    print(head(data, 10))
+# Generate CDF plots for targets pipeline
+#
+# @param camera_back Camera back data from targets
+# @param raff_metrics Raff metrics from headway analysis
+# @return List of ggplot objects
+# Generate CDF plots for targets pipeline
+#
+# @param camera_back Camera back data from targets
+# @param raff_metrics Raff metrics from headway analysis
+# @return List of ggplot objects
+make_cdf_plots <- function(camera_back_data, raff_metrics, observations) {
+  hdwy_data <- compute_headways_with_spacing(camera_back_data, observations)
+  
+  t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
+  
+  # Define colors for sites and spacing types
+  # Update this to pull the names from the inputs instead of fixing them here.
+  site_colors <- c(
+    "SR-12" = "#1f77b4",
+    "US-6" = "#ff7f0e",
+    "I-70" = "#2ca02c",
+    "US-191" = "#d62728"
+  )
+  
+  spacing_colors <- c(
+    "NO TPRS" = "#1f77b4",
+    "UDOT" = "#ff7f0e",
+    "1:2" = "#2ca02c",
+    "LONG" = "#d62728"
+  )
+  
+  # Prepare site data list - using actual site names
+  sites <- c("SR-12", "US-6", "I-70", "US-191")
+  site_data_list <- lapply(sites, function(s) {
+    hdwy_data %>% filter(site == s)
   })
+  names(site_data_list) <- sites
+  site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
   
-  invisible(NULL)
-}
-
-## Export Raff overall metrics to CSV -- export_raff_overall_csv() ##
-# Formats and exports overall Raff metrics to specified path
-# @param raff_overall Tibble with overall Raff metrics
-# @param output_path Path for CSV export
-# @return Invisible NULL
-export_raff_overall_csv <- function(raff_overall, 
-                                    output_path = "/Library/CloudStorage/Box-Box/2024-tprs/output/Critical_headway_Raff_OVERALL.csv") {
-  raff_overall_col <- raff_overall %>%
-    tidyr::pivot_longer(everything(), names_to = "metric", values_to = "value") %>%
-    mutate(
-      # try to coerce to numeric and round to 3 decimals when possible
-      value_num = suppressWarnings(as.numeric(value)),
-      value = ifelse(!is.na(value_num), format(round(value_num, 3), nsmall = 3), as.character(value))
-    ) %>%
-    select(metric, value)
+  # Prepare spacing data list - filter out NA values
+  spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
+  spacing_data_list <- lapply(spacing_types, function(sp) {
+    hdwy_data %>% filter(!is.na(spacing_type), spacing_type == sp)
+  })
+  names(spacing_data_list) <- spacing_types
+  spacing_data_list <- spacing_data_list[sapply(spacing_data_list, nrow) > 0]
   
-  readr::write_csv(raff_overall_col, output_path)
-  cat("\n✓ Exported Raff overall metrics to:", output_path, "\n")
-  
-  invisible(NULL)
-}
-
-## Generate headway summary by site and status -- generate_headway_summary() ##
-# Summarizes headway counts and statistics by site and headway_status
-# @param headways_couplets Tibble with classified headways
-# @return Tibble with summary statistics by site and status
-generate_headway_summary <- function(headways_couplets) {
-  headway_summary <- headways_couplets %>%
-    group_by(site, headway_status) %>%
-    summarise(
-      n = n(),
-      mean_headway_s = mean(headway_s, na.rm = TRUE),
-      median_headway_s = median(headway_s, na.rm = TRUE),
-      min_headway_s = min(headway_s, na.rm = TRUE),
-      max_headway_s = max(headway_s, na.rm = TRUE),
-      .groups = "drop"
+  # Create combined plots
+  site_plot <- if (length(site_data_list) > 0) {
+    create_combined_cdf_plot(
+      site_data_list,
+      "CDF by Site",
+      t_c_critical_s,
+      site_colors
     )
+  } else {
+    NULL
+  }
   
-  return(headway_summary)
+  spacing_plot <- if (length(spacing_data_list) > 0) {
+    create_combined_cdf_plot(
+      spacing_data_list,
+      "CDF by Spacing Type",
+      t_c_critical_s,
+      spacing_colors
+    )
+  } else {
+    NULL
+  }
+  
+  summary_stats <- generate_summary_stats(hdwy_data)
+  
+  list(
+    site_plot = site_plot,
+    spacing_plot = spacing_plot,
+    summary_stats = summary_stats,
+    headway_data = hdwy_data
+  )
 }
 
-
-# ==============================================================================
-# CDF CURVE GENERATION FUNCTIONS
-# ==============================================================================
-
+## Helper Functions to make CDF Plots ######################################
 
 ## Compute headways and join with spacing data
 ##
@@ -340,7 +408,8 @@ compute_headways_with_spacing <- function(cb, obs_data) {
   cb %>%
     arrange(site, date, time) %>%
     group_by(site, date) %>%
-    mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))) %>%
+    mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))
+    ) %>%
     ungroup() %>%
     filter(!is.na(headway_sec), headway_sec > 0) %>%
     left_join(obs_data, by = "site")
@@ -505,324 +574,7 @@ generate_summary_stats <- function(hdwy_data) {
     )
 }
 
-# ==============================================================================
-# HISTOGRAM GENERATION FUNCTIONS
-# ==============================================================================
-
-## Process camera back data with combined grouping
-##
-## @param cb Camera back data
-## @param obs_data Observation data with spacing
-## @return Tibble with headways and combined groups
-process_cb_with_combined_groups <- function(cb, obs_data) {
-  cb %>%
-    arrange(site, date, time) %>%
-    group_by(site, date) %>%
-    mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))) %>%
-    ungroup() %>%
-    filter(!is.na(headway_sec), headway_sec > 0) %>%
-    left_join(obs_data, by = "site") %>%
-    mutate(spacing_type = trimws(spacing_type))
-}
-
-## Build histogram statistics table
-##
-## @param data Tibble with headway data and grouping columns
-## @return Tibble with summary statistics
-build_histogram_stats_table <- function(data) {
-  data %>%
-    group_by(spacing_type) %>%
-    summarise(
-      n = n(),
-      mean_hdwy = mean(headway_sec),
-      sd_hdwy = sd(headway_sec),
-      .groups = "drop"
-    )
-}
-
-## Nest data with statistics for histogram generation
-##
-## @param data Tibble with headway data
-## @param stats_table Tibble with summary statistics
-## @return Nested tibble ready for plotting
-nest_data_with_stats <- function(data, stats_table) {
-  data %>%
-    group_by(spacing_type) %>%
-    nest() %>%
-    left_join(stats_table, by = "spacing_type")
-}
-
-#######HdwyStatAnlys.R Functions Above#######
-
-# ==============================================================================
-# TARGETS PIPELINE FUNCTIONS
-# ==============================================================================
-
-## Perform headway statistical analysis for targets pipeline
-##
-## @param worker_exposure_data Worker exposure data from targets
-## @return List containing classified data and raff metrics
-make_headway_analysis <- function(worker_exposure_data) {
-  we <- worker_exposure_data %>%
-    mutate(
-      across(where(is.character), trimws),
-      ts = time,
-      ts_display = format(time, "%Y-%m-%d %H:%M:%OS3")
-    )
-  
-  # Compute headways (only for Vehicle Passing events)
-  we_headways <- compute_vehicle_headways(we)
-  
-   # Prepare lookups
-  wfg_lookup <- prepare_wfg_events(we)
-  er_lookup <- prepare_er_events(we)
-
-   # Classify headways
-  we_classified <- classify_headways(we_headways, wfg_lookup, er_lookup)
-  
-  # Event combinations uses ALL events (not just headways)
-  event_combos <- compute_event_combinations(we)
-  # Summary and Raff metrics use classified headways
-  hdwy_summary <- generate_headway_summary(we_classified)
-  # Summary and Raff metrics use classified headways
-  raff_results <- compute_all_raff_metrics(we_classified)
-  
-  list(
-    worker_exposure_classified = we_classified,
-    event_combinations = event_combos,
-    headway_summary = hdwy_summary,
-    raff_metrics = raff_results
-  )
-}
-
-## Generate CDF plots for targets pipeline
-##
-## @param camera_back Camera back data from targets
-## @param raff_metrics Raff metrics from headway analysis
-## @return List of ggplot objects
-## Generate CDF plots for targets pipeline
-##
-## @param camera_back Camera back data from targets
-## @param raff_metrics Raff metrics from headway analysis
-## @return List of ggplot objects
-make_cdf_plots <- function(camera_back_data, raff_metrics, observations) {
-  hdwy_data <- compute_headways_with_spacing(camera_back_data, observations)
-  
-  t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
-  
-  # Define colors - using actual site names from data
-  site_colors <- c(
-    "SR-12" = "#1f77b4",
-    "US-6" = "#ff7f0e",
-    "I-70" = "#2ca02c",
-    "US-191" = "#d62728"
-  )
-  
-  spacing_colors <- c(
-    "NO TPRS" = "#1f77b4",
-    "UDOT" = "#ff7f0e",
-    "1:2" = "#2ca02c",
-    "LONG" = "#d62728"
-  )
-  
-  # Prepare site data list - using actual site names
-  sites <- c("SR-12", "US-6", "I-70", "US-191")
-  site_data_list <- lapply(sites, function(s) {
-    hdwy_data %>% filter(site == s)
-  })
-  names(site_data_list) <- sites
-  site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
-  
-  # Prepare spacing data list - filter out NA values
-  spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
-  spacing_data_list <- lapply(spacing_types, function(sp) {
-    hdwy_data %>% filter(!is.na(spacing_type), spacing_type == sp)
-  })
-  names(spacing_data_list) <- spacing_types
-  spacing_data_list <- spacing_data_list[sapply(spacing_data_list, nrow) > 0]
-  
-  # Create combined plots
-  site_plot <- if (length(site_data_list) > 0) {
-    create_combined_cdf_plot(
-      site_data_list,
-      "CDF by Site",
-      t_c_critical_s,
-      site_colors
-    )
-  } else {
-    NULL
-  }
-  
-  spacing_plot <- if (length(spacing_data_list) > 0) {
-    create_combined_cdf_plot(
-      spacing_data_list,
-      "CDF by Spacing Type",
-      t_c_critical_s,
-      spacing_colors
-    )
-  } else {
-    NULL
-  }
-  
-  summary_stats <- generate_summary_stats(hdwy_data)
-  
-  list(
-    site_plot = site_plot,
-    spacing_plot = spacing_plot,
-    summary_stats = summary_stats,
-    headway_data = hdwy_data
-  )
-}
-
-## Generate histogram plots for targets pipeline
-##
-## @param camera_back Camera back data from targets
-## @param raff_metrics Raff metrics from headway analysis
-## @return List of ggplot objects
-make_histogram_plots <- function(camera_back, raff_metrics, observations) {
-  cb_combined <- process_cb_with_combined_groups(camera_back, observations)
-  
-  t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
-  
-  # Helper function to create histogram
-  create_histogram <- function(data, title) {
-    # Determine x-axis limit to keep outliers under 7
-    # Start with base limit
-    has_us191 <- any(data$site == "us191")
-    base_limit <- if (has_us191) 500 else 200
-    
-    # Adjust limit to nearest hundred to keep outliers <= 7
-    sorted_headways <- sort(data$headway_sec, decreasing = TRUE)
-    if (length(sorted_headways) > 7) {
-      # Find the 8th largest value (to keep 7 outliers)
-      eighth_largest <- sorted_headways[8]
-      # Round up to nearest hundred
-      x_limit <- ceiling(eighth_largest / 100) * 100
-      # Ensure it's at least the base_limit
-      x_limit <- max(x_limit, base_limit)
-    } else {
-      x_limit <- base_limit
-    }
-    
-    # Calculate stats
-    n <- nrow(data)
-    mean_headway <- mean(data$headway_sec, na.rm = TRUE)
-    sd_headway <- sd(data$headway_sec, na.rm = TRUE)
-    
-    # Identify outliers
-    outliers <- data %>%
-      filter(headway_sec > x_limit) %>%
-      pull(headway_sec) %>%
-      round(1) %>%
-      sort(decreasing = TRUE)
-    
-    # Create base plot
-    p <- ggplot(data %>% filter(headway_sec <= x_limit), aes(x = headway_sec)) +
-      geom_histogram(
-        binwidth = 2,
-        fill = "steelblue",
-        alpha = 0.7,
-        aes(y = after_stat(density)),
-        na.rm = TRUE
-      ) +
-      geom_density(color = "steelblue", linewidth = 1, na.rm = TRUE) +
-      scale_x_continuous(limits = c(0, x_limit)) +
-      labs(
-        title = paste0("Headway Distribution - ", title),
-        x = "Headway (seconds between cars)",
-        y = "Density"
-      ) +
-      theme_minimal() +
-      theme(plot.title = element_text(hjust = 0.5, size = 14))
-    
-    # Stats annotation (top-right)
-    fmt_val <- function(x) ifelse(is.na(x), "NA", sprintf("%.1f s", x))
-    stats_text <- paste0(
-      "n = ", n, "\n",
-      "mean = ", fmt_val(mean_headway), "\n",
-      "sd = ", fmt_val(sd_headway)
-    )
-    
-    p <- p +
-      annotate(
-        "label",
-        x = x_limit * 0.95, y = Inf,
-        label = stats_text,
-        vjust = 1.1, hjust = 1, size = 3.5,
-        fill = "white", color = "black", label.size = 0.2
-      )
-    
-    # Outlier annotation if any exist
-    if (length(outliers) > 0) {
-      outlier_text <- paste(paste0(outliers, " s"), collapse = "\n")
-      full_text <- paste0("Outliers (>", x_limit, " s):\n", outlier_text)
-      
-      p <- p +
-        annotate(
-          "label",
-          x = x_limit * 0.70, y = Inf,
-          label = full_text,
-          vjust = 1.1, hjust = 0.5, size = 3.5,
-          fill = "white", color = "black", label.size = 0.2
-        )
-    }
-    
-    # Add critical headway vertical line
-    if (!is.na(t_c_critical_s) && t_c_critical_s <= x_limit) {
-      p <- p +
-        geom_vline(
-          xintercept = t_c_critical_s,
-          color = "red",
-          linetype = "dashed",
-          linewidth = 1
-        ) +
-        annotate(
-          "text",
-          x = t_c_critical_s,
-          y = Inf,
-          label = sprintf("Critical headway\nt_c = %.1f s", t_c_critical_s),
-          vjust = 1.5,
-          hjust = ifelse(t_c_critical_s < x_limit * 0.5, -0.1, 1.1),
-          color = "red",
-          size = 3.5,
-          fontface = "bold"
-        )
-    }
-    
-    return(p)
-  }
-  
-  # Site plots
-  sites <- c("sr12", "us6", "i70", "us191")
-  site_plots <- lapply(sites, function(s) {
-    site_data <- cb_combined %>% filter(site == s)
-    if (nrow(site_data) > 0) {
-      create_histogram(site_data, s)
-    } else {
-      NULL
-    }
-  })
-  names(site_plots) <- sites
-  site_plots <- site_plots[!sapply(site_plots, is.null)]
-  
-  # Spacing type plots
-  spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
-  spacing_plots <- lapply(spacing_types, function(sp) {
-    spacing_data <- cb_combined %>% filter(spacing_type == sp)
-    if (nrow(spacing_data) > 0) {
-      create_histogram(spacing_data, sp)
-    } else {
-      NULL
-    }
-  })
-  names(spacing_plots) <- spacing_types
-  spacing_plots <- spacing_plots[!sapply(spacing_plots, is.null)]
-  
-  list(
-    site_plots = site_plots,
-    spacing_plots = spacing_plots
-  )
-}
+## functions to save the CDF plots #######################################
 
 ## Save CDF plots to files
 ##
@@ -850,55 +602,6 @@ save_cdf_plots <- function(cdf_results, output_dir = "output") {
     ggsave(spacing_path, plot = cdf_results$spacing_plot, 
            device = svglite, width = 10, height = 7)
     files <- c(files, spacing_path)
-  }
-  
-  files
-}
-
-## Save histogram plots to files
-##
-## @param histogram_results List containing histogram plots
-## @param camera_back Camera back data (for site names)
-## @param output_dir Directory for saving plots
-## @return Character vector of file paths
-save_histogram_plots <- function(histogram_results, camera_back, output_dir = "output") {
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir, recursive = TRUE)
-  }
-  
-  files <- c()
-  
-  # Save site plots
-  for (site_name in names(histogram_results$site_plots)) {
-    filename <- file.path(output_dir, paste0("histogram_site_", site_name, ".svg"))
-    ggsave(filename, plot = histogram_results$site_plots[[site_name]], 
-           device = svglite, width = 10, height = 6)
-    files <- c(files, filename)
-  }
-  
-  # Save combined site plot
-  if (length(histogram_results$site_plots) > 0) {
-    combined_site <- wrap_plots(histogram_results$site_plots, ncol = 2, nrow = 2)
-    combined_path <- file.path(output_dir, "histogram_sites_combined.svg")
-    ggsave(combined_path, plot = combined_site, device = svglite, width = 16, height = 12)
-    files <- c(files, combined_path)
-  }
-  
-  # Save spacing plots
-  for (spacing_name in names(histogram_results$spacing_plots)) {
-    safe_name <- gsub(" ", "_", spacing_name)
-    filename <- file.path(output_dir, paste0("histogram_spacing_", safe_name, ".svg"))
-    ggsave(filename, plot = histogram_results$spacing_plots[[spacing_name]], 
-           device = svglite, width = 10, height = 6)
-    files <- c(files, filename)
-  }
-  
-  # Save combined spacing plot
-  if (length(histogram_results$spacing_plots) > 0) {
-    combined_spacing <- wrap_plots(histogram_results$spacing_plots, ncol = 2, nrow = 2)
-    combined_path <- file.path(output_dir, "histogram_spacing_combined.svg")
-    ggsave(combined_path, plot = combined_spacing, device = svglite, width = 16, height = 12)
-    files <- c(files, combined_path)
   }
   
   files
