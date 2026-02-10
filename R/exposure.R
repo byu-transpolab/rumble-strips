@@ -15,14 +15,14 @@ library(lubridate)
 # Set option to display timestamps with millisecond precision (3 decimal places)
 options(digits.secs = 3)
 
-## Headway Analysis ######################################################
+## find the Critical Time ######################################################
 
 
-## Perform headway statistical analysis for targets pipeline
+## Find the critical gap time workers need to adjust TPRS
 ##
 ## @param worker_exposure_data Worker exposure data from targets
-## @return List containing classified data and raff metrics
-make_headway_analysis <- function(worker_exposure_data) {
+## @return a dbl value representing the critical gap in seconds
+find_critical_time <- function(worker_exposure_data) {
   we <- worker_exposure_data %>%
     mutate(
       across(where(is.character), trimws),
@@ -39,23 +39,14 @@ make_headway_analysis <- function(worker_exposure_data) {
 
    # Classify headways
   we_classified <- classify_headways(we_headways, wfg_lookup, er_lookup)
-  
-  # Event combinations uses ALL events (not just headways)
-  event_combos <- compute_event_combinations(we)
-  # Summary and Raff metrics use classified headways
-  hdwy_summary <- generate_headway_summary(we_classified)
+ 
   # Summary and Raff metrics use classified headways
   raff_results <- compute_all_raff_metrics(we_classified)
   
-  list(
-    worker_exposure_classified = we_classified,
-    event_combinations = event_combos,
-    headway_summary = hdwy_summary,
-    raff_metrics = raff_results
-  )
+return(raff_results$overall$t_c_critical_s)
 }
 
-## Helper Functions for make_headway_analysis() ##############################
+## Helper Functions for find_critical_time() ##############################
 
 ## Compute headways between vehicle passing events -- compute_vehicle_headways()
 # Calculates time differences between consecutive Vehicle Passing events
@@ -327,10 +318,10 @@ compute_raff_metrics <- function(df) {
 # @param camera_back Camera back data from targets
 # @param raff_metrics Raff metrics from headway analysis
 # @return List of ggplot objects
-make_cdf_plots <- function(camera_back_data, raff_metrics, observations) {
+make_cdf_plots <- function(camera_back_data, critical_time, observations) {
   hdwy_data <- compute_headways_with_spacing(camera_back_data, observations)
   
-  t_c_critical_s <- raff_metrics$overall$t_c_critical_s[[1]]
+  t_c_critical_s <- critical_time
   
   # Define colors for sites and spacing types
   # Update this to pull the names from the inputs instead of fixing them here.

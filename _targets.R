@@ -331,8 +331,8 @@ list(
 
   # Exposure analysis - Headway statistics
   tar_target(
-    headway_analysis,
-    make_headway_analysis(worker_exposure_data)
+    critical_time,
+    find_critical_time(worker_exposure_data)
   ),
   
   # Exposure analysis - CDF plots
@@ -340,7 +340,7 @@ list(
     cdf_plots,
     make_cdf_plots(
       camera_back_data,
-      headway_analysis$raff_metrics,
+      critical_time,
       observations
     )
   ),
