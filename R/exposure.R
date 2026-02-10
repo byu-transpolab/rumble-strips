@@ -330,13 +330,6 @@ generate_headway_summary <- function(headways_couplets) {
 # CDF CURVE GENERATION FUNCTIONS
 # ==============================================================================
 
-## Load observation data from CSV
-##
-## @return Tibble with site and spacing information
-load_observation_data <- function() {
-  read_csv("data/observation_data.csv", show_col_types = FALSE) %>%
-    select(site, strip_spacing, spacing_type)
-}
 
 ## Compute headways and join with spacing data
 ##
@@ -580,13 +573,19 @@ make_headway_analysis <- function(worker_exposure_data) {
   # Compute headways (only for Vehicle Passing events)
   we_headways <- compute_vehicle_headways(we)
   
-  wfg_lookup <- prepare_wfg_events(we) # Prepare lookups
-  er_lookup <- prepare_er_events(we) # Prepare lookups
-  we_classified <- classify_headways(we_headways, wfg_lookup, er_lookup) # Classify headways
+   # Prepare lookups
+  wfg_lookup <- prepare_wfg_events(we)
+  er_lookup <- prepare_er_events(we)
+
+   # Classify headways
+  we_classified <- classify_headways(we_headways, wfg_lookup, er_lookup)
   
-  event_combos <- compute_event_combinations(we) # Event combinations uses ALL events (not just headways)
-  hdwy_summary <- generate_headway_summary(we_classified) # Summary and Raff metrics use classified headways
-  raff_results <- compute_all_raff_metrics(we_classified) # Summary and Raff metrics use classified headways
+  # Event combinations uses ALL events (not just headways)
+  event_combos <- compute_event_combinations(we)
+  # Summary and Raff metrics use classified headways
+  hdwy_summary <- generate_headway_summary(we_classified)
+  # Summary and Raff metrics use classified headways
+  raff_results <- compute_all_raff_metrics(we_classified)
   
   list(
     worker_exposure_classified = we_classified,
@@ -622,7 +621,7 @@ make_cdf_plots <- function(camera_back_data, raff_metrics, observations) {
   spacing_colors <- c(
     "NO TPRS" = "#1f77b4",
     "UDOT" = "#ff7f0e",
-    "PSS" = "#2ca02c",
+    "1:2" = "#2ca02c",
     "LONG" = "#d62728"
   )
   
@@ -635,7 +634,7 @@ make_cdf_plots <- function(camera_back_data, raff_metrics, observations) {
   site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
   
   # Prepare spacing data list - filter out NA values
-  spacing_types <- c("NO TPRS", "UDOT", "PSS", "LONG")
+  spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
   spacing_data_list <- lapply(spacing_types, function(sp) {
     hdwy_data %>% filter(!is.na(spacing_type), spacing_type == sp)
   })
@@ -807,7 +806,7 @@ make_histogram_plots <- function(camera_back, raff_metrics, observations) {
   site_plots <- site_plots[!sapply(site_plots, is.null)]
   
   # Spacing type plots
-  spacing_types <- c("NO TPRS", "UDOT", "PSS", "LONG")
+  spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
   spacing_plots <- lapply(spacing_types, function(sp) {
     spacing_data <- cb_combined %>% filter(spacing_type == sp)
     if (nrow(spacing_data) > 0) {

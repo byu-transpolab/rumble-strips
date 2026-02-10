@@ -327,28 +327,26 @@ list(
   ),
 
   ### Worker Exposure Analysis ###############################################
-
-  # Targets Ben Added Begin Here
   # Helper functions located in R/exposure.R
 
   # Exposure analysis - Headway statistics
   tar_target(
-    name = headway_analysis,
-    command = make_headway_analysis(worker_exposure_data = worker_exposure_data)
+    headway_analysis,
+    make_headway_analysis(worker_exposure_data = worker_exposure_data)
   ),
   
   # Exposure analysis - CDF plots
   tar_target(
-    name = cdf_plots,
-    command = make_cdf_plots(
+    cdf_plots,
+    make_cdf_plots(
       camera_back = camera_back_data,
       raff_metrics = headway_analysis$raff_metrics,
       observations = observations
     )
   ),
   tar_target(
-    name = cdf_plot_files,
-    command = save_cdf_plots(cdf_plots, output_dir = "output"),
+    cdf_plot_files,
+    save_cdf_plots(cdf_plots, output_dir = "output"),
     format = "file"
   )
 
