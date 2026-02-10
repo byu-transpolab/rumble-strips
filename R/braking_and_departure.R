@@ -36,9 +36,7 @@ plot_braking <- function(brake_and_departure) {
             axis.text.x = element_text(angle = 45, hjust = 1)
         )
 
-    # Save the plot to output/ and return the plot for _targets.R
-    ggsave("output/braking_plot.svg", 
-        plot = p, width = 10, height = 13)
+    # Return plot for future use in _targets.R and save file in separate target
     p
 }
 
@@ -61,9 +59,7 @@ plot_departure <- function(brake_and_departure) {
             axis.text.x = element_text(angle = 45, hjust = 1)
         )
 
-    # Save the plot to output/ and return the plot for _targets.R
-    ggsave("output/departure_plot.svg", 
-        plot = p, width = 10, height = 13)
+    # Return plot for future use in _targets.R and save file in separate target
     p
 }
 

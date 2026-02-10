@@ -133,7 +133,7 @@ list(
   tar_target(trailer_spacing, pivot_trailer_spacing(observations)),
   tar_target(camera_spacing, pivot_camera_spacing(observations)),
 
-  ### Changes in Speed Analysis ##############################################
+  ### Changes in Speed #######################################################
   # Helper functions are found in R/speed.R
 
   # create tibble from wavetronix data with columns:
@@ -146,15 +146,23 @@ list(
 
 # plot confidence bounds for the t-test results of speed
   tar_target(confidence_bounds,
-  plot_confidence_bounds(paired_t_test)
+    plot_confidence_bounds(paired_t_test)
+  ),
+
+  tar_target(confidence_bounds_file,
+    ggsave(
+      "output/change-in-speeds.svg", 
+      plot = confidence_bounds,
+      width = 10,
+      height = 8)
   ),
 
   # t-test of 85th percentile speed by each unit alone
   tar_target(single_unit_t_test_w1, 
-  run_single_unit_t_test(speed_data, unit = "w1")
+    run_single_unit_t_test(speed_data, unit = "w1")
   ),
   tar_target(single_unit_t_test_w2, 
-  run_single_unit_t_test(speed_data, unit = "w2")
+    run_single_unit_t_test(speed_data, unit = "w2")
   ),
 
   # plot confidence bounds for the single unit t-test results
@@ -165,7 +173,23 @@ list(
     plot_single_unit_confidence_bounds(single_unit_t_test_w2, unit = "w2")
   ),
 
-  ### Driver Braking and TPRS Avoidance Analysis #############################
+  # Save the single unit confidence bounds plots
+  tar_target(single_unit_speed_w1_file,
+    ggsave(
+      "output/single_unit_speed_w1.svg",
+      plot = single_unit_confidence_bounds_w1,
+      width = 10,
+      height = 8)
+  ),
+  tar_target(single_unit_speed_w2_file,
+    ggsave(
+      "output/single_unit_speed_w2.svg",
+      plot = single_unit_confidence_bounds_w2,
+      width = 10,
+      height = 8)
+  ),
+
+  ### Driver Braking and TPRS Avoidance ######################################
   # Helper functions are listed in braking_and_departure.R
 
   # Combine camera_back_data and observations so driver behavior and
@@ -179,7 +203,27 @@ list(
   # # Plot departure response in a bar chart, faceted by spacing_type and class.
   tar_target(departure_plot, plot_departure(brake_and_departure)),
 
-  ### TPRS displacement by volume Analysis ###################################
+  # Save the braking and departure plots
+  tar_target(braking_plot_file,
+    ggsave(
+      "output/braking_plot.svg",
+      plot = braking_plot,
+      width = 10,
+      height = 13)
+  ),
+  tar_target(departure_plot_file,
+    ggsave(
+      "output/departure_plot.svg",
+      plot = departure_plot,
+      width = 10,
+      height = 13)
+  ),
+
+  # models of braking and avoidance
+  tar_target(brake_models, estimate_brake_models(brake_and_departure)),
+  tar_target(avoid_models, estimate_avoid_models(brake_and_departure)),
+
+  ### TPRS displacement by volume ############################################
   # Helper functions are found in R/displacement_by_volume.R
 
   # calculate cumulative traffic volume for each day from Wavetronix data
@@ -192,16 +236,34 @@ list(
     cumulate_class_volume(camera_back_data, observations)
   ),
 
-  # Plot class volumes and events for each site with camera back data
-  tar_target(displacement_plots_cb,
-  make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
+  # List the available site names
+  tar_target(site_names,
+    unique(cumulated_volume$site)
   ),
 
-  # models of braking and avoidance
-  tar_target(brake_models, estimate_brake_models(brake_and_departure)),
-  tar_target(avoid_models, estimate_avoid_models(brake_and_departure)),
+  # Plot class volumes and events for each site
+  tar_target(displacement_by_class_plots,
+    make_displacement_plot_class_data(
+      cumulated_class_volume,
+      camera_top_data,
+      site_info = site_names),
+    # Pattern here is what lets the target iterate over each site
+    pattern = map(site_names)
+  ),
 
-  ### TPRS Displacement by momentum Analysis ###################################
+  # Save each of the displacement by class plots
+  tar_target(displacement_by_class_plot_files,
+    save_displacement_plots(
+      site_info = site_names,
+      plot = displacement_by_class_plots,
+      output_dir = "output"
+    ),
+    # Pattern is what lets the target iterate over each site
+    pattern = map(site_names, displacement_by_class_plots),
+    format = "file"
+  ),
+
+  ### TPRS Displacement by momentum ##########################################
   # Helper Functions are found in R/displacement_by_momentum.R
 
   # define vehicle weights
@@ -246,6 +308,22 @@ list(
   # Plot the impact momentum for each transition, colored by site
   tar_target(momentum_per_transition_site,
     plot_momentum_site(disp_plot_data)
+  ),
+
+  # Save the momentum per transition plots
+  tar_target(momentum_per_transition_spacing_file,
+    ggsave(
+      "output/momentum_per_transition_spacing.svg",
+      plot = momentum_per_transition_spacing,
+      width = 10,
+      height = 8)
+  ),
+  tar_target(momentum_per_transition_site_file,
+    ggsave(
+      "output/momentum_per_transition_site.svg",
+      plot = momentum_per_transition_site,
+      width = 10,
+      height = 6)
   ),
 
   ### Worker Exposure Analysis ###############################################

@@ -181,66 +181,76 @@ make_displacement_plot_data <- function(cumulated_volume,
 }
 
 # Plots cumulative class volumes and TPRS displacement events using cb data
-make_displacement_plot_class_data <- function(class_volume, camera_top_data, output_dir = "output") {
+make_displacement_plot_class_data <- function(
+    class_volume,
+    camera_top_data,
+    site_info) {
 
-  # Get unique sites
-  sites <- unique(class_volume$site)
+  # Filter class volume data to this site, all days
+  cv_site <- class_volume %>% filter(site == site_info)
+  # Remove July 11 data if present (no displacement data that day)
+  cv_site <- cv_site %>% filter(as.Date(time) != as.Date("2025-07-11"))
+  # Filter camera data to this site, all days
+  cam_site <- camera_top_data %>% filter(site == site_info)
 
-  # Make an empty list to store output paths
-  output_paths <- list()
+  # Get unique spacing_type-date pairs for this site
+  spacing_dates <- cv_site %>%
+    mutate(date = as.Date(time)) %>%
+    arrange(date) %>%
+    group_by(site, spacing_type) %>%
+    slice(1) %>%  # keep only the first date per spacing
+    ungroup() %>%
+    select(spacing_type, date) %>%
+    rename(target_date = date)
 
-  for (s in sites) {
-    # Filter class volume data to this site, all days
-    cv_site <- class_volume %>% filter(site == s)
-    # Remove July 11 data if present (no displacement data that day)
-    cv_site <- cv_site %>% filter(as.Date(time) != as.Date("2025-07-11"))
-    # Filter camera data to this site, all days
-    cam_site <- camera_top_data %>% filter(site == s)
+  # Add spacing_type to camera data
+  cam_site <- cam_site %>%
+    mutate(date = as.Date(time)) %>%
+    inner_join(spacing_dates, by = c("date" = "target_date"))
 
-    # Get unique spacing_type-date pairs for this site
-    spacing_dates <- cv_site %>%
-      mutate(date = as.Date(time)) %>%
-      arrange(date) %>%
-      group_by(site, spacing_type) %>%
-      slice(1) %>%  # keep only the first date per spacing
-      ungroup() %>%
-      select(spacing_type, date) %>%
-      rename(target_date = date)
+  # Plot: two cumulative lines (passenger and truck)
+  p <- ggplot() +
+    geom_line(data = cv_site,
+              aes(x = time, y = cumulative, color = class, group = class),
+              linewidth = 1) +
+    geom_vline(data = cam_site,
+              aes(xintercept = time, color = event),
+              linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
+    scale_color_manual(values = c(
+      "Passenger"    = "blue",
+      "Truck"        = "brown",
+      "Reset"        = "#1E822F",
+      "Some"         = "#879D35",
+      "Moderate"     = "#F0B73B",
+      "Significant"  = "#E96123",
+      "Out of Spec." = "#E10A0A"),
+    breaks = c("Passenger", "Truck",
+                "Reset", "Some", "Moderate",
+                "Significant", "Out of Spec.")) +
+    facet_wrap(~spacing_type, scales = "free_x") +
+    labs(x = "Time", y = "Cumulative Volume", color = "Legend") +
+    theme_minimal()
 
-    # Add spacing_type to camera data
-    cam_site <- cam_site %>%
-      mutate(date = as.Date(time)) %>%
-      inner_join(spacing_dates, by = c("date" = "target_date"))
+  # return the plot object
+  return(p)
+}
 
-    # Plot: two cumulative lines (passenger and truck)
-    p <- ggplot() +
-      geom_line(data = cv_site,
-                aes(x = time, y = cumulative, color = class, group = class),
-                linewidth = 1) +
-      geom_vline(data = cam_site,
-                aes(xintercept = time, color = event),
-                linetype = "dashed", alpha = 0.7, linewidth = 0.8) +
-      scale_color_manual(values = c(
-        "Passenger"    = "blue",
-        "Truck"        = "brown",
-        "Reset"        = "#1E822F",
-        "Some"         = "#879D35",
-        "Moderate"     = "#F0B73B",
-        "Significant"  = "#E96123",
-        "Out of Spec." = "#E10A0A"),
-      breaks = c("Passenger", "Truck",
-                 "Reset", "Some", "Moderate",
-                 "Significant", "Out of Spec.")) +
-      facet_wrap(~spacing_type, scales = "free_x") +
-      labs(x = "Time", y = "Cumulative Volume", color = "Legend") +
-      theme_minimal()
+save_displacement_plots <- function(site_info, plot, output_dir = "output") {
+  
+  out_path <- file.path(
+    output_dir, 
+    paste0("displacement_plot_class_", 
+    site_info, 
+    ".svg")
+  )
 
-    # Save plot
-    out_path <- file.path(output_dir, paste0("class_displacement_plot_", s, ".svg"))
-    ggsave(out_path, plot = p, width = 8, height = 4.5)
-    output_paths[[s]] <- out_path
-  }
+  ggsave(
+    out_path,
+    plot = plot,
+    width = 8,
+    height = 4.5,
+    device = "svg"
+  )
 
-  return(output_paths)
-
+  return(out_path)
 }

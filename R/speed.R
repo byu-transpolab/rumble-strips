@@ -89,10 +89,8 @@ plot_confidence_bounds <- function(paired_t_test) {
       x = "Speed Difference",
       y = "Site",
       color = "Spacing Type"
-    )
-
-  # Save and return
-  ggsave("output/change-in-speeds.svg", plot = p, width = 10, height = 8)
+    )  
+  # return the plot object so it can be saved in a separate target
   p
 }
 
@@ -180,12 +178,6 @@ plot_single_unit_confidence_bounds <- function(
       y = "Site",
       color = "Spacing Type"
     )
-
-  # Save and return
-  ggsave(
-    file_name,
-    plot = p,
-    width = 10,
-    height = 8)
+  # return the plot object so it can be saved in a separate target
   p
 }
