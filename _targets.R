@@ -351,11 +351,13 @@ list(
     sort_headway_data(headway_data)
   ),
 
-  # Generate the CDF plots
+  # Generate the Cumulative Distribution Function plots for headway
+  # Add a vertical line to mark the critical time and label the percentage
+  # At each intersection
   tar_target(
     cdf_plots,
     make_cdf_plots(
-      headway_data,
+      sorted_headway,
       critical_time
     )
   ),

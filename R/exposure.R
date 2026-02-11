@@ -285,7 +285,7 @@ sort_headway_data <- function(headway_data) {
   names(headway_by_site) <- sites
 
   # Remove any empty rows just in case
-  headyway_by_site <- headway_by_site[sapply(headway_by_site, nrow) > 0]
+  headway_by_site <- headway_by_site[sapply(headway_by_site, nrow) > 0]
   
   ### Prepare spacing data list ###
 
@@ -300,15 +300,15 @@ sort_headway_data <- function(headway_data) {
   })
 
   # Name each list item using the list of spacing types created earlier
-  names(headyway_by_spacing) <- spacing_types
+  names(headway_by_spacing) <- spacing_types
 
   # Remove any empty rows just in case
   headway_by_spacing <- headway_by_spacing[sapply(headway_by_spacing, nrow) > 0]
  
   # Return both lists
   list(
-    headway_sites,
-    headyway_spacing,
+    headway_by_site,
+    headway_by_spacing
   )
 }
 
@@ -320,7 +320,8 @@ sort_headway_data <- function(headway_data) {
 # these were the original function calls to create the CDF plots.
 # they need to be reworked into standalone functions or targets.
 
-   # Define colors for sites and spacing types
+make_cdf_plots <- function(sorted_headway, critical_time) {
+  # Define colors for sites and spacing types
   # Update this to pull the names from the inputs instead of fixing them here.
   site_colors <- c(
     "SR-12" = "#1f77b4",
@@ -335,6 +336,10 @@ sort_headway_data <- function(headway_data) {
     "1:2" = "#2ca02c",
     "LONG" = "#d62728"
   )
+
+# pull out the two lists and separate them
+site_headway_list <- sorted_headway$headway_by_site
+spacing_headway_list <- sorted_headway$headway_by_spacing
 
   # Create combined plots
   site_plot <- if (length(site_headway_list) > 0) {
@@ -359,6 +364,12 @@ sort_headway_data <- function(headway_data) {
     NULL
   }
 
+  list(
+    site_plot,
+    spacing_plot
+  )
+}
+
 #######################################################################
 
 ## Create a CDF plot for multiple data subsets (combined comparison)
@@ -370,49 +381,43 @@ sort_headway_data <- function(headway_data) {
 ## @return ggplot object
 create_combined_cdf_plot <- function(headway_list, title, critical_time, colors = NULL) {
 
-
-
-  # Default colors if not provided
-  if (is.null(colors)) {
-    colors <- setNames(
-      c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"),
-      names(headway_list)[1:min(4, length(headway_list))]
-    )
-  }
-  
+  # This limit is meant to only apply to the plot.
+  # coord_cartesian(xlim = c(0, 100)) can be added to ggplot to cut it off.
   # Set x-axis limit to 100 seconds
   x_limit <- 100
   
   # Manually calculate ECDF for each group using ALL data
-  ecdf_headway_list <- lapply(names(headway_list), function(name) {
-    d <- headway_list[[name]]
-    
-    # Sort the headways
-    sorted_hdwy <- sort(d$headway_sec)
-    n_total <- length(sorted_hdwy)
-    
-    # Create ECDF points (only up to x_limit for plotting, but calculated from all data)
-    # Include all unique values up to x_limit, plus ensure we have x_limit itself
-    x_vals <- unique(c(sorted_hdwy[sorted_hdwy <= x_limit], x_limit))
-    x_vals <- sort(x_vals)
-    
-    # Calculate cumulative proportion at each x value based on ALL data
-    y_vals <- sapply(x_vals, function(x) {
-      sum(sorted_hdwy <= x) / n_total
-    })
-    
-    # Create tibble for plotting
-    tibble(
-      group = name,
-      headway_sec = x_vals,
-      cdf = y_vals
-    )
-  })
+  ecdf_headway_list <- lapply(
+    names(headway_list), function(name) {
+      d <- headway_list[[name]]
+      
+      # Sort the headways
+      sorted_hdwy <- sort(d$headway_sec)
+      n_total <- length(sorted_hdwy)
+      
+      # Create ECDF points (only up to x_limit for plotting, but calculated from all data)
+      # Include all unique values up to x_limit, plus ensure we have x_limit itself
+      x_vals <- unique(c(sorted_hdwy[sorted_hdwy <= x_limit], x_limit))
+      x_vals <- sort(x_vals)
+      
+      # Calculate cumulative proportion at each x value based on ALL data
+      y_vals <- sapply(x_vals, function(x) {
+        sum(sorted_hdwy <= x) / n_total
+      })
+      
+      # Create tibble for plotting
+      tibble(
+        group = name,
+        headway_sec = x_vals,
+        cdf = y_vals
+      )
+    }
+  )
   
   # Combine all ECDF data
   ecdf_data <- bind_rows(ecdf_headway_list)
   
-  # Calculate CDF values at t_c for each group using ALL data (unfiltered)
+  # Calculate CDF values at critical time for each group using ALL data
   cdf_at_tc_list <- lapply(names(headway_list), function(name) {
     d <- headway_list[[name]]
     if (!is.na(critical_time) && nrow(d) > 0) {
@@ -442,6 +447,14 @@ create_combined_cdf_plot <- function(headway_list, title, critical_time, colors 
     }
   }
   
+  # Default colors if not provided
+  if (is.null(colors)) {
+    colors <- setNames(
+      c("#1f77b4","#ff7f0e","#2ca02c","#d62728"),
+      names(headway_list)[1:min(4, length(headway_list))]
+    )
+  }
+
   # Create CDF plot using manually calculated ECDF
   p <- ggplot(ecdf_data, aes(x = headway_sec, y = cdf, color = group)) +
     geom_step(linewidth = 1.2, direction = "hv") +
