@@ -8,6 +8,11 @@ library(lubridate)
 
 ### observation_data.csv ###############################################
 
+#' Read observation CSV into a tibble
+#'
+#' @param file_path Character. Path to the observations CSV file.
+#' @return A tibble with the observation rows. Columns are adjusted/cleaned
+#'   (spacing_type recoded, site standardized, and date parsed to Date).
 read_observations <- function(file_path) {
 
   read_csv(file_path) |>
@@ -37,15 +42,16 @@ read_observations <- function(file_path) {
 ### Wavetronix data ##################################################
 
 #' Read in all Wavetronix files in a folder
-#' 
-#' @param folder_path path to Wavetronix folder
-#' 
+#'
+#' @param folder_path Character. Path to a folder containing Wavetronix CSV files
+#'   or a character vector of file paths.
+#' @return A tibble combining all Wavetronix files in the folder.
 read_wavetronix_folder <- function(folder_path) {
   
   # Read all files in the folder
   files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
 
-
+  
   
   # Read each file
   dfs <- purrr::map(files, read_wavetronix) |>
@@ -55,10 +61,11 @@ read_wavetronix_folder <- function(folder_path) {
   dfs
 }
 
-#' Read in a single raw file from Wavetonix
-#' 
-#' @param file_path path to Wavetronix file
-#' 
+#' Read a single raw Wavetronix file
+#'
+#' @param file_path Character. Path to a single Wavetronix CSV file.
+#' @return A tibble with columns: site, unit, lane, volume, occupancy, speed,
+#'   speed_85, headway, gap, sensor_time (POSIXct), date (Date), interval.
 read_wavetronix <- function(file_path) {
 
   path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(file_path)), "-"))
@@ -95,8 +102,15 @@ read_wavetronix <- function(file_path) {
 
 }
 
-# depreciated
-# return per-date aggregated wavetronix (time, total, cumulative)
+#' Aggregate wavetronix for a single date (deprecated)
+#'
+#' @param combined_df Data frame. Combined Wavetronix data (as produced by
+#'   read_wavetronix_folder).
+#' @param date_code Character. Date in "%Y%m%d" format identifying the target
+#'   day to aggregate.
+#' @param lane_value Character. Lane identifier to filter (defaults to "1").
+#' @return A tibble with columns time, total (sum of volume) and cumulative
+#'   (running total). Deprecated: kept for backward compatibility.
 get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
   target_date <- as.Date(date_code, format = "%Y%m%d")
   combined_df %>%
@@ -111,7 +125,12 @@ get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
 
 ### Camera top data ##################################################
 
-# expects a vector of files and returns a combined dataframe
+#' Read and combine camera top event files from a folder or a list
+#'
+#' @param folder_path Character. Path to a folder containing camera top CSV files
+#'   or a character vector of file paths.
+#' @return A tibble with site, time and event for combined files. Consecutive
+#'   duplicate events are removed.
 get_camera_top_data <- function(folder_path) {
  # Accept either a single folder path or a character vector of file paths
   if (length(folder_path) == 1 && dir.exists(folder_path)) {
@@ -132,7 +151,11 @@ get_camera_top_data <- function(folder_path) {
   dfs
 }
 
-# read camera_top files (time,event)
+#' Read a single camera top CSV
+#'
+#' @param path Character. Path to a camera top CSV file (filename expected to
+#'   include a date prefix used to build timestamps).
+#' @return A tibble with columns site, time (POSIXct) and event (factor).
 read_camera_top <- function(path) {
 
   path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "-"))
@@ -176,7 +199,12 @@ read_camera_top <- function(path) {
 
 ### Camera back data ##################################################
 
-# Read camera back data from folder and return combined dataframe
+#' Read and combine camera back files from a folder or list
+#'
+#' @param folder_path Character. Path to a folder containing camera back CSV
+#'   files or a character vector of file paths.
+#' @return A tibble with camera back records; offsets from offsets CSV are
+#'   applied and flagged records are removed.
 get_camera_back_data <- function(folder_path) {
    # Accept either a single folder path or a character vector of file paths
   if (length(folder_path) == 1 && dir.exists(folder_path)) {
@@ -206,8 +234,11 @@ get_camera_back_data <- function(folder_path) {
 
 #' Read a single camera_back CSV file
 #' 
-#' @param path path to camera_back CSV file (e.g., 20250708_sr12_cb_B.csv)
-#' 
+#' @param path Character. Path to a camera_back CSV file (e.g.,
+#'   20250708_sr12_cb_B.csv).
+#' @return A tibble with columns: site, date (Date), time (POSIXct), session,
+#'   class (factor), brake (factor), departure (factor), flagged (character),
+#'   lane (character).
 read_camera_back <- function(path) {
   # Extract date, site and session data from filename
   # Example: 20250708_sr12_cb_B.csv
@@ -290,7 +321,12 @@ read_camera_back <- function(path) {
     dplyr::select(site, date, time, session, class, brake, departure, flagged, lane)
 }
 
-# Find how much time passed between session A and B in camera_back_data
+#' Find time between session A and B in camera back data
+#'
+#' @param cb_data Data frame. Camera back data as returned by
+#'   get_camera_back_data or read_camera_back.
+#' @return A tibble with site, date, last_A, first_B and diff_mins (numeric
+#'   minutes between sessions).
 time_between_sessions <- function(cb_data) {
   cb_data %>%
     group_by(site, date) %>%
@@ -307,7 +343,11 @@ time_between_sessions <- function(cb_data) {
     )
 }
 
-# List which sessions do not have the correct time offset
+#' List camera_back sessions with missing/incorrect offsets
+#'
+#' @param cb_data Data frame. Camera back data with time column.
+#' @return A tibble (site, date, session, first_time) for sessions whose first
+#'   timestamp is at or before 01:00:00, indicating a likely missing offset.
 missing_offsets <- function(cb_data) {
   cb_data %>%
     group_by(date, site, session) %>%
@@ -324,7 +364,14 @@ missing_offsets <- function(cb_data) {
 
 }
 
-# Add Offsets to camera back data
+#' Add offsets to camera back timestamps
+#'
+#' @param cb_data Data frame. Camera back data with columns date and session.
+#' @param offsets_csv Character. Path to CSV containing offsets (defaults to
+#'   "data/camera_back/cb_offsets.csv"). The offsets file must contain columns
+#'   date, session and offset.
+#' @return cb_data with the time column adjusted by the matching offset and the
+#'   offset column removed.
 add_offsets_to_cb <- function(cb_data, 
                               offsets_csv = "data/camera_back/cb_offsets.csv") {
   # read offsets file
@@ -348,6 +395,11 @@ add_offsets_to_cb <- function(cb_data,
 
 ### BTS Truck Counts ######################################################
 
+#' Check for and instruct manual download of BTS truck counts
+#'
+#' @return Character path to the existing BTS truck counts Excel file if it
+#'   already exists; otherwise returns NULL after printing instructions to the
+#'   console.
 dnld_bts_truck_counts <- function() {
   # check if the file already exists
   output_file <- "data/bts_truck_counts.xlsx"
@@ -365,6 +417,11 @@ dnld_bts_truck_counts <- function() {
   }
 }
 
+#' Process BTS truck counts Excel into a tidy tibble
+#'
+#' @param file_path Character. Path to the BTS truck counts Excel file.
+#' @return A tibble with columns: weight (integer, mean of the class), count
+#'   (numeric, in thousands) and class (integer truck class).
 process_bts_truck_counts <- function(
   file_path = "data/bts_truck_counts.xlsx") {
 
@@ -423,6 +480,13 @@ process_bts_truck_counts <- function(
 
 ### Worker exposure data ##################################################
 
+#' Read worker exposure CSVs and join with observations to get site
+#'
+#' @param folder_path Character. Path to a folder of worker exposure CSVs or a
+#'   character vector of file paths.
+#' @param observations Data frame. Observations tibble used to map date -> site.
+#' @return A combined tibble with columns site, date, time and event for worker
+#'   exposure entries.
 get_worker_exposure_data <- function(folder_path, observations) {
    # Accept either a single folder path or a character vector of file paths
   if (length(folder_path) == 1 && dir.exists(folder_path)) {
@@ -480,4 +544,3 @@ get_worker_exposure_data <- function(folder_path, observations) {
   
   dfs
 }
-
