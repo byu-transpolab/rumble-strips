@@ -320,15 +320,17 @@ list(
     ggsave(
       "output/momentum_per_transition_spacing.svg",
       plot = momentum_per_transition_spacing,
-      width = 10,
-      height = 8)
+      width = 6,
+      height = 4,
+      units = "in")
   ),
   tar_target(momentum_per_transition_site_file,
     ggsave(
       "output/momentum_per_transition_site.svg",
       plot = momentum_per_transition_site,
-      width = 10,
-      height = 6)
+      width = 6,
+      height = 4,
+      units = "in")
   ),
 
   ### Worker Exposure Analysis ###############################################
