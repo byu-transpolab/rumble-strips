@@ -15,9 +15,6 @@ library(lubridate)
 # Set option to display timestamps with millisecond precision (3 decimal places)
 options(digits.secs = 3)
 
-## find the Critical Time ######################################################
-
-
 #' Find the critical gap time workers need to adjust TPRS
 #
 #' @param worker_exposure_data Worker exposure data from targets
@@ -52,8 +49,6 @@ find_critical_time <- function(worker_exposure_data) {
   
 return(raff_results$overall$t_c_critical_s)
 }
-
-## Helper Functions for find_critical_time() ##############################
 
 ## Compute headways between vehicle passing events -- compute_vehicle_headways()
 # Calculates time differences between consecutive Vehicle Passing events
@@ -235,7 +230,7 @@ compute_raff_metrics <- function(df) {
   )
 }
 
-## Compute headways  ######################################################
+
 
 #' Compute headways and join with spacing data
 #'
@@ -255,69 +250,33 @@ compute_headways_with_spacing <- function(camera_back_data, observations) {
       by = "date")
 }
 
-##Make CDF Plots #############################################################
+#' Make a named list of headway tibbles grouped by site or spacing_type
+#'
+#' @param headway_data tibble. Headway rows (must contain `site` and `spacing_type`).
+#' @param group_by_site logical. If TRUE (default) group by `site`; if FALSE
+#'   group by `spacing_type` (NA spacing rows are dropped).
+#' @return Named list of headway tibbles. List names are the group keys (site or spacing_type).
+group_headway <- function(headway_data, group_by_site = TRUE) {
+  # Determine grouping column, whether by site or spacing_type
+  group_col <- if (group_by_site) "site" else "spacing_type"
 
-#' Generate CDF plots for targets pipeline
-#
-#' @param camera_back Camera back data from targets
-#' @param raff_metrics Raff metrics from headway analysis
-#' @return List of ggplot objects
-make_cdf_plots <- function(headway_data, critical_time) {
-  
-  ### Prepare site data list ###
-  # get a list of unique sites avaiable.
-  sites <- headway_data %>% distinct(site) %>% pull(site)
-
-  # Create a list of tibbles, each item is headway for a specific site.
-  site_data_list <- lapply(sites, function(s) {
-    headway_data %>% filter(site == s)
-  })
-
-  # Name the list items by site
-  names(site_data_list) <- sites
-
-  
-  ### Prepare spacing data list ###
-  # get a list of unique spacing types available.
-  spacing_types <- headway_data %>% 
-    distinct(spacing_type) %>% pull(spacing_type)
-
-  # Create a list of tibbles, each item is headway for a specific spacing type.
-  spacing_data_list <- lapply(spacing_types, function(sp) {
-    headway_data %>% filter(!is.na(spacing_type), spacing_type == sp)
-  })
-
-  # Name the list items by spacing type
-  names(spacing_data_list) <- spacing_types
-  
-  # Create combined plots
-  site_plot <- if (length(site_data_list) > 0) {
-    create_combined_cdf_plot(
-      site_data_list,
-      "CDF by Site",
-      critical_time
-    )
-  } else {
-    NULL
+  # 
+  df <- headway_data
+  if (!group_by_site) {
+    df <- df %>% filter(!is.na(.data[[group_col]]))
   }
-  
-  spacing_plot <- if (length(spacing_data_list) > 0) {
-    create_combined_cdf_plot(
-      spacing_data_list,
-      "CDF by Spacing Type",
-      critical_time
-    )
-  } else {
-    NULL
-  }
-  
-  list(
-    site_plot = site_plot,
-    spacing_plot = spacing_plot
-  )
+
+  # make a list of distinct sites or spacing types
+  groups <- df %>% distinct(.data[[group_col]]) %>% pull(1)
+
+  # make a list of tibbles.
+  # each tibble containing headway data for one site or spacing type.
+  grouped_headway_list <- map(groups, function(g) {
+    df %>% filter(.data[[group_col]] == g)
+  }) %>% set_names(groups)
+
+  grouped_headway_list
 }
-
-
 
 ## Create a CDF plot for multiple data subsets (combined comparison)
 ##
