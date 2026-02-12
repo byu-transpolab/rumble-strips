@@ -1,4 +1,5 @@
-# This file contains helper functions related to driver speed analysis.
+# R/speed.R
+# Helper functions related to driver speed analysis.
 
 library(tidyverse)
 library(readr)
@@ -6,7 +7,17 @@ library(readxl)
 library(lubridate)
 library(ggplot2)
 
-# prepare tibble for statistical tests
+#' Prepare tibble for statistical tests
+#'
+#' @param wavetronix data.frame or tibble. Wavetronix measurements containing at
+#'   minimum the columns `lane`, `site`, `unit`, `date`, `sensor_time`, and
+#'   `speed_85`.
+#' @param observations data.frame or tibble. Observations tibble containing at
+#'   minimum the columns `site`, `date`, and `spacing_type` used to join with
+#'   wavetronix rows.
+#' @return A tibble filtered to lane "01" with columns `site`, `unit` (factor),
+#'   `date`, `time` (from `sensor_time`), `speed_85` (numeric) and `spacing_type`.
+#'   Rows with missing `speed_85` or missing `spacing_type` are removed.
 prepare_speed_data <- function(wavetronix, observations) {
   wavetronix %>%
     filter(lane == "01") %>%
@@ -18,7 +29,15 @@ prepare_speed_data <- function(wavetronix, observations) {
 }
 
 
-# perform t-tests on speed_85 grouped by site, unit, spacing_type
+#' Perform paired t-tests on speed_85 grouped by site and spacing_type
+#'
+#' @param speed_data data.frame or tibble. Prepared speed data (see
+#'   prepare_speed_data) containing `site`, `unit`, `time`, `speed_85`, and
+#'   `spacing_type`. Units should be named consistently (e.g., "w1", "w2").
+#' @return A tibble with one row per `site` x `spacing_type` containing the
+#'   t-test results: `statistic`, `p_value`, `mean_diff` (w2 - w1 estimate),
+#'   `conf_low`, and `conf_high`. If a valid paired test cannot be calculated,
+#'   numeric columns contain NA.
 paired_test <- function(speed_data) {
   grouped <- speed_data %>%
     group_by(site, spacing_type) %>%
@@ -62,6 +81,13 @@ paired_test <- function(speed_data) {
   results
 }
 
+#' Plot confidence bounds for paired t-test results
+#'
+#' @param paired_t_test data.frame or tibble. Output of paired_test containing
+#'   `site`, `spacing_type`, `mean_diff`, `conf_low`, and `conf_high`.
+#' @return A ggplot object showing mean differences with horizontal 95% confidence
+#'   intervals per `site`, colored by `spacing_type`. The plot object is returned
+#'   (not written to disk).
 plot_confidence_bounds <- function(paired_t_test) {
   # Prepare data
   plot_data <- paired_t_test %>%
@@ -94,7 +120,17 @@ plot_confidence_bounds <- function(paired_t_test) {
   p
 }
 
-# run t-tests on speed data for only the given unit.
+#' Run one-sample t-tests on a single unit grouped by site and spacing_type
+#'
+#' @param speed_data data.frame or tibble. Prepared speed data (see
+#'   prepare_speed_data) containing `site`, `unit`, `speed_85`, and
+#'   `spacing_type`.
+#' @param unit character. Unit identifier to test (e.g., "w1" or "w2"). Default
+#'   is "w1".
+#' @return A tibble with one row per `site` x `spacing_type` containing the
+#'   one-sample t-test results for the specified unit: `statistic`, `p_value`,
+#'   `mean`, `conf_low`, and `conf_high`. If the test cannot be performed, the
+#'   numeric columns contain NA.
 run_single_unit_t_test <- function(speed_data, unit = "w1") {
   grouped <- speed_data %>%
     group_by(site, spacing_type) %>%
@@ -136,7 +172,16 @@ run_single_unit_t_test <- function(speed_data, unit = "w1") {
   single_unit_t_test
 }
 
-# Plot the confidence bounds for single unit t-test results
+#' Plot confidence bounds for single-unit t-test results
+#'
+#' @param single_unit_t_test data.frame or tibble. Output of
+#'   run_single_unit_t_test containing `site`, `spacing_type`, `mean`,
+#'   `conf_low`, and `conf_high`.
+#' @param unit character. Unit identifier used to create the file name and axis
+#'   label (e.g., "w1"). Default is "w1".
+#' @return A ggplot object showing mean speeds with 95% confidence intervals per
+#'   `site`, colored by `spacing_type`. The plot object is returned (and the
+#'   function also computes a filename but does not save the plot).
 plot_single_unit_confidence_bounds <- function(
   single_unit_t_test, unit = "w1") {
 
