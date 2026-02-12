@@ -277,71 +277,42 @@ prep_transition_data <- function(transition_data) {
   return(disp_plot_data)
 }
 
-# Plot the prepared plot_data and color by spacing type.
-plot_momentum_spacing <- function(plot_data) {
+# plot the momentum per transition data
+plot_momentum <- function(plot_data, color_by_site = TRUE) {
+  # Decide which column to color by + legend title
+  if (color_by_site) {
+    column_name  <- "site"
+    column_label <- "Site"
+  } else {
+    column_name  <- "spacing_type"
+    column_label <- "Spacing Type"
+  }
 
-  p <- plot_data %>%
-ggplot(
+  # Ensure state labels are stable
+  state_levels <- levels(as.factor(plot_data$state))
+
+  p <- ggplot(
+    plot_data,
     aes(
       x = state_jitter,
-      y = cum_momentum, # <----- Can change between cum_momentum and momentum.
-      color = spacing_type,
+      y = cum_momentum,  # change to 'momentum' here if needed
+      color = .data[[column_name]],
       group = interaction(site, date, segment_id)
     )
   ) +
-  geom_line(
-    linewidth = 0.7,
-    alpha = 0.5
-  ) +
-  geom_point(size = 2) +
-  scale_x_continuous(
-    breaks = sort(unique(as.numeric(plot_data$state))),
-    labels = unique(plot_data$state)
-  ) +
-  labs(
-    x = "Displacement",
-    y = " Cumulative Momentum (million kg*m/s)",
-    color = "Spacing Type"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
+    geom_line(linewidth = 0.7, alpha = 0.5) +
+    geom_point(size = 2) +
+    scale_x_continuous(
+      breaks = sort(unique(as.numeric(plot_data$state))),
+      labels = state_levels
+    ) +
+    labs(
+      x = "Displacement",
+      y = "Cumulative Momentum (million kg*m/s)",
+      color = column_label
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-  # Return just the plot object for later saving or manipulation
-  return(p)
-}
-
-# Plot the prepared plot_data and color by site.
-plot_momentum_site <- function(plot_data) {
-  p <- plot_data %>%
-  ggplot(
-    aes(
-      x = state_jitter,
-      y = cum_momentum, # <----- Can change between cum_momentum and momentum.
-      color = site,
-      group = interaction(site, date, segment_id)
-    )
-  ) +
-  geom_line(
-    linewidth = 0.7,
-    alpha = 0.5
-  ) +
-  geom_point(size = 2) +
-  scale_x_continuous(
-    breaks = sort(unique(as.numeric(plot_data$state))),
-    labels = unique(plot_data$state)
-  ) +
-  labs(
-    x = "Displacement",
-    y = " Cumulative Momentum (million kg*m/s)",
-    color = "Site"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
-
-  # return the plot object for later use. Saved in a later target.
-  return(p)
+  p
 }

@@ -307,12 +307,12 @@ list(
 
   # Plot the impact momentum for each transition, colored by spacing
   tar_target(momentum_per_transition_spacing,
-    plot_momentum_spacing(disp_plot_data)
+    plot_momentum(disp_plot_data, FALSE)
   ),
 
   # Plot the impact momentum for each transition, colored by site
   tar_target(momentum_per_transition_site,
-    plot_momentum_site(disp_plot_data)
+    plot_momentum(disp_plot_data, TRUE)
   ),
 
   # Save the momentum per transition plots
