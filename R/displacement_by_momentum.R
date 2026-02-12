@@ -1,3 +1,4 @@
+# R/displacement_by_momentum.R
 # Helper Functionsn related to calculating TPRS Displacement
 
 library(tidyverse)
@@ -6,8 +7,12 @@ library(readxl)
 library(lubridate)
 library(ggplot2)
 
-# Function to calculate weighted average truck weight from BTS truck counts.
-#' @param bts_truck_counts a df with columns: class, count, weight 
+#' Calculate weighted average truck weight from BTS truck counts
+#'
+#' @param bts_truck_counts data.frame or tibble. Must contain numeric columns
+#'   `class`, `count`, and `weight`. Only classes >= 4 are used by this function.
+#' @return Numeric. Weighted average truck weight (same units as the `weight`
+#'   column) computed as sum(count * weight) / sum(count) for classes >= 4.
 calc_truck_weight <- function(bts_truck_counts) {
 
   # Only include class 4 trucks and above (busses, dualies, semi's, etc.)
@@ -24,15 +29,22 @@ calc_truck_weight <- function(bts_truck_counts) {
   return(weighted_avg_weight)
 }
 
-#' compile the wavetronix speed data, camera_back_data, and camera_top_data into a single data frame
-#' @param wavetronix a data frame containing the wavetronix data
-#' @param camera_back_data a data frame containing the camera back data
-#' @param camera_top_data a data frame containing the camera top data
-#' @param observations a data frame containing the observation data
-#' @param motorcycle_weight weight of motorcycle in lbs (default 800 lbs)
-#' @param passenger_weight weight of passenger vehicle in lbs (default 4419 lbs)
-#' @param truck_weight weight of truck in lbs (default 40000 lbs)
-#' 
+#' Compile displacement dataset from multiple sources
+#'
+#' @param wavetronix data.frame or tibble. Wavetronix measurements expected to
+#'   include at minimum `unit`, `lane`, `sensor_time`, and `speed`.
+#' @param camera_back_data data.frame or tibble. Camera back records expected
+#'   to include at minimum `site`, `time`, `class`, and `lane`.
+#' @param camera_top_data data.frame or tibble. Camera top events expected to
+#'   include at minimum `time` and `event` (state).
+#' @param observations data.frame or tibble. Observation records expected to
+#'   include at minimum `date` and `spacing_type`.
+#' @param motorcycle_weight Numeric. Assumed motorcycle weight in lbs (default 800).
+#' @param passenger_weight Numeric. Assumed passenger vehicle weight in lbs (default 4419).
+#' @param truck_weight Numeric. Assumed truck weight in lbs (default 40000).
+#' @return A tibble. Combined displacement rows with columns: `site`, `time`,
+#'   `class`, `speed`, `momentum` (speed * weight proxy), `spacing_type`, and
+#'   `state`. Rows with non-positive momentum are filtered out.
 compile_displacement_data <- function(
   wavetronix,       # Provides mean speed data
   camera_back_data, # Provides vehicles class, counts, and time data
@@ -93,7 +105,17 @@ displacement_data <- cb %>%
   return(displacement_data)
 }
 
-# Summarize the momentum and other values per state transition
+#' Summarize displacement rows into state-transition summaries
+#'
+#' @param displacement_data data.frame or tibble. Output of
+#'   compile_displacement_data containing at minimum `time`, `site`, `class`,
+#'   `speed`, `momentum`, `spacing_type`, and `state`.
+#' @return A tibble. One row per detected state period (period_id) containing:
+#'   site, date, spacing_type, start_time, end_time, start_state, momentum
+#'   (sum, in millions lbs*mi/hr), motorcycle_volume, passenger_volume,
+#'   truck_volume, mean_speed, duration (mins), and next_state. Rows that do
+#'   not meet filtering criteria (e.g., next_state is Reset or NA, start_state
+#'   Out of Spec., duration > 480 mins) are removed.
 summarize_displacement_data <- function(displacement_data) {
   # Identify state transitions and number each period of constant state uniquely
   state_change <- displacement_data %>%
@@ -147,6 +169,15 @@ summarize_displacement_data <- function(displacement_data) {
   return (displacement_summary)
 }
 
+#' Filter summarized transitions to valid chains starting at Reset
+#'
+#' @param displacement_summary data.frame or tibble. Output of
+#'   summarize_displacement_data containing at minimum `site`, `date`,
+#'   `start_time`, `spacing_type`, `start_state`, `next_state`, and `momentum`.
+#' @return A tibble. Filtered transition-level rows (chronological) that form
+#'   valid chains: either they start with "Reset" or their start_state equals
+#'   the previous row's next_state. The returned tibble includes columns:
+#'   site, date, start_time, spacing_type, start_state, next_state, momentum.
 filter_displacement_summary <- function(displacement_summary) {
   # Focus on just momentum per transition (exclude volumes and mean speeds)
   # I know we put a lot of effort into summarizing that data, but it's not used.
@@ -209,6 +240,14 @@ filter_displacement_summary <- function(displacement_summary) {
   return(transition_data)
 }
 
+#' Prepare transition summaries for plotting (add resets, cumulative momentum)
+#'
+#' @param transition_data data.frame or tibble. Output of
+#'   filter_displacement_summary containing at minimum `site`, `date`,
+#'   `start_time`, `spacing_type`, `start_state`, `next_state`, and `momentum`.
+#' @return A tibble. Plot-ready rows including explicit "Reset" rows,
+#'   `segment_id`, `cum_momentum` (cumulative momentum per segment), converted
+#'   momentum units (kg*m/s), and `state_jitter` for plotting x-axis separation.
 prep_transition_data <- function(transition_data) {
   # Take in the filtered transition_data provided by filter_displacement_summary
   # and prepare it for plotting
@@ -277,7 +316,16 @@ prep_transition_data <- function(transition_data) {
   return(disp_plot_data)
 }
 
-# plot the momentum per transition data
+#' Plot cumulative momentum per transition
+#'
+#' @param plot_data data.frame or tibble. Output of prep_transition_data;
+#'   expected to include `state_jitter`, `cum_momentum`, `site`, `date`,
+#'   `segment_id`, and `state`.
+#' @param color_by_site logical. If TRUE (default) color lines by `site`,
+#'   otherwise color by `spacing_type`.
+#' @return A ggplot object. Line/point plot of cumulative momentum across
+#'   displacement states, with x-axis labels set to state levels and a legend
+#'   indicating the chosen color grouping.
 plot_momentum <- function(plot_data, color_by_site = TRUE) {
   # Decide which column to color by + legend title
   if (color_by_site) {
