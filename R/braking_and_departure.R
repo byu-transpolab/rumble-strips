@@ -2,7 +2,17 @@
 
 library(tidyverse)
 
-# ==== Combine camera_back_data with observations ======= #
+#' Combine camera back data with observations
+#'
+#' @param camera_back_data data.frame or tibble. Camera back records; expected
+#'   to contain at minimum the columns `site`, `date`, `class`, `brake`,
+#'   `departure` (or equivalent event columns).
+#' @param observations data.frame or tibble. Observations tibble used to map
+#'   `date` -> `site` and provide `spacing_type` (expected columns: `date`,
+#'   `site`, `spacing_type`).
+#' @return A tibble with columns `site`, `date`, `spacing_type`, `class`,
+#'   `brake`, and `departure`. Factors/strings for `brake`, `departure`, and
+#'   `class` are title-cased for presentation.
 compile_brake_and_departure <- function(camera_back_data, observations) {
 
     brake_and_departure <- camera_back_data %>%
@@ -18,7 +28,14 @@ compile_brake_and_departure <- function(camera_back_data, observations) {
         select(site, date, spacing_type, class, brake, departure)
 }
 
-# ==== Plot Braking data ==== #
+#' Plot braking counts by vehicle class and spacing type
+#'
+#' @param brake_and_departure data.frame or tibble. Output of
+#'   compile_brake_and_departure containing at least `class`, `brake`, and
+#'   `spacing_type`.
+#' @return A ggplot object: faceted bar chart of brake counts with rows by
+#'   `class` and columns by `spacing_type`. The plot object is returned (not
+#'   written to disk).
 plot_braking <- function(brake_and_departure) {
 
     # Generate the plot
@@ -40,7 +57,15 @@ plot_braking <- function(brake_and_departure) {
     p
 }
 
-# ==== Plot Departure data ==== #
+#' Plot departure (TPRS avoidance) counts by vehicle class and spacing type
+#'
+#' @param brake_and_departure data.frame or tibble. Output of
+#'   compile_brake_and_departure containing at least `class`, `departure`, and
+#'   `spacing_type`.
+#' @return A ggplot object: faceted bar chart of departure/avoidance counts with
+#'   rows by `class` and columns by `spacing_type`. Rows with `spacing_type ==
+#'   "NO TPRS"` are removed because avoidance is not applicable. The plot object
+#'   is returned (not written to disk).
 plot_departure <- function(brake_and_departure) {
 
     p <- brake_and_departure %>%
