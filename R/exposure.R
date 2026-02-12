@@ -264,21 +264,31 @@ compute_headways_with_spacing <- function(camera_back_data, observations) {
 #' @return List of ggplot objects
 make_cdf_plots <- function(headway_data, critical_time) {
   
-  # Prepare site data list - using actual site names
+  ### Prepare site data list ###
+  # get a list of unique sites avaiable.
   sites <- headway_data %>% distinct(site) %>% pull(site)
+
+  # Create a list of tibbles, each item is headway for a specific site.
   site_data_list <- lapply(sites, function(s) {
     headway_data %>% filter(site == s)
   })
+
+  # Name the list items by site
   names(site_data_list) <- sites
-  site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
+
   
-  # Prepare spacing data list - filter out NA values
-  spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
+  ### Prepare spacing data list ###
+  # get a list of unique spacing types available.
+  spacing_types <- headway_data %>% 
+    distinct(spacing_type) %>% pull(spacing_type)
+
+  # Create a list of tibbles, each item is headway for a specific spacing type.
   spacing_data_list <- lapply(spacing_types, function(sp) {
     headway_data %>% filter(!is.na(spacing_type), spacing_type == sp)
   })
+
+  # Name the list items by spacing type
   names(spacing_data_list) <- spacing_types
-  spacing_data_list <- spacing_data_list[sapply(spacing_data_list, nrow) > 0]
   
   # Create combined plots
   site_plot <- if (length(site_data_list) > 0) {
