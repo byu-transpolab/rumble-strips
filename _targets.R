@@ -329,40 +329,21 @@ list(
   ### Worker Exposure Analysis ###############################################
   # Helper functions located in R/exposure.R
 
-  # Find the critical gap time the workers need to adjust the strips
+  # Exposure analysis - Headway statistics
   tar_target(
     critical_time,
     find_critical_time(worker_exposure_data)
   ),
   
-  # Find the headway in secs for each vehicle observed.
-  # Add the spacing type to each row.
-  tar_target(
-    headway_data,
-    compute_headways(camera_back_data, observations)
-  ),
-
-  # Sort the headway data into two lists: 
-  # headway__by_site and headway_by_spacing
-  # Each item in each list is a subset of the headway data for that one site
-  # or spacing
-  tar_target(
-    sorted_headway,
-    sort_headway_data(headway_data)
-  ),
-
-  # Generate the Cumulative Distribution Function plots for headway
-  # Add a vertical line to mark the critical time and label the percentage
-  # At each intersection
+  # Exposure analysis - CDF plots
   tar_target(
     cdf_plots,
     make_cdf_plots(
-      sorted_headway,
-      critical_time
+      camera_back_data,
+      critical_time,
+      observations
     )
   ),
-
-  # Save the plots to files
   tar_target(
     cdf_plot_files,
     save_cdf_plots(cdf_plots, output_dir = "output"),

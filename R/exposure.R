@@ -43,10 +43,10 @@ find_critical_time <- function(worker_exposure_data) {
   # Summary and Raff metrics use classified headways
   raff_results <- compute_all_raff_metrics(we_classified)
   
-return(raff_results$overall$critical_time)
+return(raff_results$overall$t_c_critical_s)
 }
 
-
+## Helper Functions for find_critical_time() ##############################
 
 ## Compute headways between vehicle passing events -- compute_vehicle_headways()
 # Calculates time differences between consecutive Vehicle Passing events
@@ -172,6 +172,62 @@ classify_headways <- function(vehicle_headways, wfg_events, er_events) {
   return(headways_couplets)
 }
 
+## Compute event combination summaries -- compute_event_combinations() ##
+# Analyzes sequences of key events (pairs and triplets)
+# @param events Tibble with parsed timestamps and event types
+# @return List containing pair_counts and triplet_counts tibbles
+compute_event_combinations <- function(events) {
+  key_events <- c("Waiting for Gap", "Entering Roadway", "Exiting Roadway")
+  
+  events_key <- events %>%
+    filter(event %in% key_events) %>%
+    group_by(site, date) %>%
+    arrange(ts, .by_group = TRUE) %>%
+    mutate(
+      next_event1 = lead(event, 1),
+      next_event2 = lead(event, 2),
+      pair_label  = if_else(!is.na(next_event1),
+                            paste(event, "→", next_event1),
+                            NA_character_),
+      triplet_label = if_else(!is.na(next_event2),
+                              paste(event, "→", next_event1, "→", next_event2),
+                              NA_character_)
+    ) %>%
+    ungroup()
+  
+  event_pair_counts <- events_key %>%
+    filter(!is.na(pair_label)) %>%
+    count(pair_label, sort = TRUE, name = "n")
+  
+  event_triplet_counts <- events_key %>%
+    filter(!is.na(triplet_label)) %>%
+    count(triplet_label, sort = TRUE, name = "n")
+  
+  return(list(
+    pair_counts = event_pair_counts,
+    triplet_counts = event_triplet_counts
+  ))
+}
+
+## Generate headway summary by site and status -- generate_headway_summary() ##
+# Summarizes headway counts and statistics by site and headway_status
+# @param headways_couplets Tibble with classified headways
+# @return Tibble with summary statistics by site and status
+generate_headway_summary <- function(headways_couplets) {
+  headway_summary <- headways_couplets %>%
+    group_by(site, headway_status) %>%
+    summarise(
+      n = n(),
+      mean_headway_s = mean(headway_s, na.rm = TRUE),
+      median_headway_s = median(headway_s, na.rm = TRUE),
+      min_headway_s = min(headway_s, na.rm = TRUE),
+      max_headway_s = max(headway_s, na.rm = TRUE),
+      .groups = "drop"
+    )
+  
+  return(headway_summary)
+}
+
 ## Compute overall and grouped Raff metrics -- compute_all_raff_metrics() ##
 # Calculates critical headway metrics overall, by site, and by site+date
 # @param headways_couplets Tibble with classified headways
@@ -246,81 +302,27 @@ compute_raff_metrics <- function(df) {
     A_t2 = A_t2, R_t2 = R_t2,
     A_overall = A_overall,   # overall % accepted (0..1)
     R_overall = R_overall,   # overall % rejected (0..1)
-    critical_time = tc
+    t_c_critical_s = tc
   )
 }
 
-## Functions used to compute headways ######################################
+##Make CDF Plots #############################################################
 
-## Compute headways and join with spacing data
-##
-## @param cb Camera back data
-## @param obs_data Observation data with spacing
-## @return Tibble with headways and spacing joined
-compute_headways <- function(camera_back_data, observations) {
-  headway_data <- camera_back_data %>%
-    arrange(site, date, time) %>%
-    group_by(site, date) %>%
-    mutate(
-      headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))
-    ) %>%
-    ungroup() %>%
-    filter(!is.na(headway_sec), headway_sec > 0) %>%
-    left_join(observations %>% select(date, spacing_type), by = "date")
-}
-
-
-sort_headway_data <- function(headway_data) {
-  ### Prepare site data list ###
-
-  # Create a list of all the site names (chr) available in headway_data
-  sites <- headway_data %>% distinct(site) %>% pull(site)
-
-  # Create a list where each item in the list is headway_data from just one site
-  headway_by_site <- lapply(sites, function(s) {
-    headway_data %>% filter(site == s)
-  })
-
-  # name each item in the list with the same name found in list sites
-  names(headway_by_site) <- sites
-
-  # Remove any empty rows just in case
-  headway_by_site <- headway_by_site[sapply(headway_by_site, nrow) > 0]
+# Generate CDF plots for targets pipeline
+#
+# @param camera_back Camera back data from targets
+# @param raff_metrics Raff metrics from headway analysis
+# @return List of ggplot objects
+# Generate CDF plots for targets pipeline
+#
+# @param camera_back Camera back data from targets
+# @param raff_metrics Raff metrics from headway analysis
+# @return List of ggplot objects
+make_cdf_plots <- function(camera_back_data, critical_time, observations) {
+  hdwy_data <- compute_headways_with_spacing(camera_back_data, observations)
   
-  ### Prepare spacing data list ###
-
-  # Create a list of all the spacing types (chr) available in headway_data
-  spacing_types <- headway_data %>% 
-    distinct(spacing_type) %>% 
-    pull(spacing_type)
-
-  # Create a list where each item is headway_data from just one spacing type
-  headway_by_spacing <- lapply(spacing_types, function(sp) {
-    headway_data %>% filter(!is.na(spacing_type), spacing_type == sp)
-  })
-
-  # Name each list item using the list of spacing types created earlier
-  names(headway_by_spacing) <- spacing_types
-
-  # Remove any empty rows just in case
-  headway_by_spacing <- headway_by_spacing[sapply(headway_by_spacing, nrow) > 0]
- 
-  # Return both lists
-  list(
-    headway_by_site,
-    headway_by_spacing
-  )
-}
-
-## Helper Functions to make CDF Plots ######################################
-
-
-
-#######################################################################
-# these were the original function calls to create the CDF plots.
-# they need to be reworked into standalone functions or targets.
-
-make_cdf_plots <- function(sorted_headway, critical_time) {
+  t_c_critical_s <- critical_time
+  
   # Define colors for sites and spacing types
   # Update this to pull the names from the inputs instead of fixing them here.
   site_colors <- c(
@@ -336,92 +338,127 @@ make_cdf_plots <- function(sorted_headway, critical_time) {
     "1:2" = "#2ca02c",
     "LONG" = "#d62728"
   )
-
-# pull out the two lists and separate them
-site_headway_list <- sorted_headway$headway_by_site
-spacing_headway_list <- sorted_headway$headway_by_spacing
-
+  
+  # Prepare site data list - using actual site names
+  sites <- c("SR-12", "US-6", "I-70", "US-191")
+  site_data_list <- lapply(sites, function(s) {
+    hdwy_data %>% filter(site == s)
+  })
+  names(site_data_list) <- sites
+  site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
+  
+  # Prepare spacing data list - filter out NA values
+  spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
+  spacing_data_list <- lapply(spacing_types, function(sp) {
+    hdwy_data %>% filter(!is.na(spacing_type), spacing_type == sp)
+  })
+  names(spacing_data_list) <- spacing_types
+  spacing_data_list <- spacing_data_list[sapply(spacing_data_list, nrow) > 0]
+  
   # Create combined plots
-  site_plot <- if (length(site_headway_list) > 0) {
+  site_plot <- if (length(site_data_list) > 0) {
     create_combined_cdf_plot(
-      site_headway_list,
+      site_data_list,
       "CDF by Site",
-      critical_time,
+      t_c_critical_s,
       site_colors
     )
   } else {
     NULL
   }
   
-  spacing_plot <- if (length(spacing_headway_list) > 0) {
+  spacing_plot <- if (length(spacing_data_list) > 0) {
     create_combined_cdf_plot(
-      spacing_headway_list,
+      spacing_data_list,
       "CDF by Spacing Type",
-      critical_time,
+      t_c_critical_s,
       spacing_colors
     )
   } else {
     NULL
   }
-
+  
+  summary_stats <- generate_summary_stats(hdwy_data)
+  
   list(
-    site_plot,
-    spacing_plot
+    site_plot = site_plot,
+    spacing_plot = spacing_plot,
+    summary_stats = summary_stats,
+    headway_data = hdwy_data
   )
 }
 
-#######################################################################
+## Helper Functions to make CDF Plots ######################################
+
+## Compute headways and join with spacing data
+##
+## @param cb Camera back data
+## @param obs_data Observation data with spacing
+## @return Tibble with headways and spacing joined
+compute_headways_with_spacing <- function(cb, obs_data) {
+  cb %>%
+    arrange(site, date, time) %>%
+    group_by(site, date) %>%
+    mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))
+    ) %>%
+    ungroup() %>%
+    filter(!is.na(headway_sec), headway_sec > 0) %>%
+    left_join(obs_data, by = "site")
+}
 
 ## Create a CDF plot for multiple data subsets (combined comparison)
 ##
-## @param headway_list Named list of tibbles with headway_sec column
+## @param data_list Named list of tibbles with headway_sec column
 ## @param title Plot title
-## @param critical_time Numeric value for critical headway
+## @param t_c_critical_s Numeric value for critical headway
 ## @param colors Named vector of colors for each group
 ## @return ggplot object
-create_combined_cdf_plot <- function(headway_list, title, critical_time, colors = NULL) {
-
-  # This limit is meant to only apply to the plot.
-  # coord_cartesian(xlim = c(0, 100)) can be added to ggplot to cut it off.
+create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = NULL) {
+  # Default colors if not provided
+  if (is.null(colors)) {
+    colors <- setNames(
+      c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"),
+      names(data_list)[1:min(4, length(data_list))]
+    )
+  }
+  
   # Set x-axis limit to 100 seconds
   x_limit <- 100
   
   # Manually calculate ECDF for each group using ALL data
-  ecdf_headway_list <- lapply(
-    names(headway_list), function(name) {
-      d <- headway_list[[name]]
-      
-      # Sort the headways
-      sorted_hdwy <- sort(d$headway_sec)
-      n_total <- length(sorted_hdwy)
-      
-      # Create ECDF points (only up to x_limit for plotting, but calculated from all data)
-      # Include all unique values up to x_limit, plus ensure we have x_limit itself
-      x_vals <- unique(c(sorted_hdwy[sorted_hdwy <= x_limit], x_limit))
-      x_vals <- sort(x_vals)
-      
-      # Calculate cumulative proportion at each x value based on ALL data
-      y_vals <- sapply(x_vals, function(x) {
-        sum(sorted_hdwy <= x) / n_total
-      })
-      
-      # Create tibble for plotting
-      tibble(
-        group = name,
-        headway_sec = x_vals,
-        cdf = y_vals
-      )
-    }
-  )
+  ecdf_data_list <- lapply(names(data_list), function(name) {
+    d <- data_list[[name]]
+    
+    # Sort the headways
+    sorted_hdwy <- sort(d$headway_sec)
+    n_total <- length(sorted_hdwy)
+    
+    # Create ECDF points (only up to x_limit for plotting, but calculated from all data)
+    # Include all unique values up to x_limit, plus ensure we have x_limit itself
+    x_vals <- unique(c(sorted_hdwy[sorted_hdwy <= x_limit], x_limit))
+    x_vals <- sort(x_vals)
+    
+    # Calculate cumulative proportion at each x value based on ALL data
+    y_vals <- sapply(x_vals, function(x) {
+      sum(sorted_hdwy <= x) / n_total
+    })
+    
+    # Create tibble for plotting
+    tibble(
+      group = name,
+      headway_sec = x_vals,
+      cdf = y_vals
+    )
+  })
   
   # Combine all ECDF data
-  ecdf_data <- bind_rows(ecdf_headway_list)
+  ecdf_data <- bind_rows(ecdf_data_list)
   
-  # Calculate CDF values at critical time for each group using ALL data
-  cdf_at_tc_list <- lapply(names(headway_list), function(name) {
-    d <- headway_list[[name]]
-    if (!is.na(critical_time) && nrow(d) > 0) {
-      cdf_val <- sum(d$headway_sec <= critical_time, na.rm = TRUE) / nrow(d)
+  # Calculate CDF values at t_c for each group using ALL data (unfiltered)
+  cdf_at_tc_list <- lapply(names(data_list), function(name) {
+    d <- data_list[[name]]
+    if (!is.na(t_c_critical_s) && nrow(d) > 0) {
+      cdf_val <- sum(d$headway_sec <= t_c_critical_s, na.rm = TRUE) / nrow(d)
       tibble(group = name, cdf_at_tc = cdf_val)
     } else {
       tibble(group = name, cdf_at_tc = NA_real_)
@@ -447,14 +484,6 @@ create_combined_cdf_plot <- function(headway_list, title, critical_time, colors 
     }
   }
   
-  # Default colors if not provided
-  if (is.null(colors)) {
-    colors <- setNames(
-      c("#1f77b4","#ff7f0e","#2ca02c","#d62728"),
-      names(headway_list)[1:min(4, length(headway_list))]
-    )
-  }
-
   # Create CDF plot using manually calculated ECDF
   p <- ggplot(ecdf_data, aes(x = headway_sec, y = cdf, color = group)) +
     geom_step(linewidth = 1.2, direction = "hv") +
@@ -475,23 +504,23 @@ create_combined_cdf_plot <- function(headway_list, title, critical_time, colors 
     )
   
   # Add critical headway vertical line
-  if (!is.na(critical_time) && critical_time <= x_limit) {
+  if (!is.na(t_c_critical_s) && t_c_critical_s <= x_limit) {
     p <- p +
       geom_vline(
-        xintercept = critical_time,
+        xintercept = t_c_critical_s,
         color = "red",
         linetype = "dashed",
         linewidth = 1
       ) +
       annotate(
         "text",
-        x = critical_time,
+        x = t_c_critical_s,
         y = 0.98,
-        label = sprintf("t_c = %.1f s", critical_time),
+        label = sprintf("t_c = %.1f s", t_c_critical_s),
         color = "red",
         size = 3.5,
         fontface = "bold",
-        hjust = ifelse(critical_time < x_limit * 0.5, -0.1, 1.1)
+        hjust = ifelse(t_c_critical_s < x_limit * 0.5, -0.1, 1.1)
       )
     
     # Add percentage labels with spacing (no horizontal lines)
@@ -518,6 +547,22 @@ create_combined_cdf_plot <- function(headway_list, title, critical_time, colors 
   }
   
   return(p)
+}
+
+## Generate summary statistics for headways
+##
+## @param hdwy_data Tibble with headway data
+## @return Tibble with summary stats by site and spacing
+generate_summary_stats <- function(hdwy_data) {
+  hdwy_data %>%
+    group_by(site, strip_spacing) %>%
+    summarise(
+      count = n(),
+      mean_hdwy = mean(headway_sec),
+      median_hdwy = median(headway_sec),
+      sd_hdwy = sd(headway_sec),
+      .groups = "drop"
+    )
 }
 
 ## functions to save the CDF plots #######################################
