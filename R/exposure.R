@@ -582,7 +582,7 @@ save_cdf_plots <- function(cdf_results, output_dir = "output") {
   if (!is.null(cdf_results$site_plot)) {
     site_path <- file.path(output_dir, "cdf_sites.svg")
     ggsave(site_path, plot = cdf_results$site_plot, 
-           device = svglite, width = 10, height = 7)
+           device = svglite, width = 6, height = 4)
     files <- c(files, site_path)
   }
   
@@ -590,7 +590,7 @@ save_cdf_plots <- function(cdf_results, output_dir = "output") {
   if (!is.null(cdf_results$spacing_plot)) {
     spacing_path <- file.path(output_dir, "cdf_spacing.svg")
     ggsave(spacing_path, plot = cdf_results$spacing_plot, 
-           device = svglite, width = 10, height = 7)
+           device = svglite, width = 6, height = 4)
     files <- c(files, spacing_path)
   }
   
