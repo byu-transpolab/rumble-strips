@@ -211,15 +211,17 @@ list(
     ggsave(
       "output/braking_plot.svg",
       plot = braking_plot,
-      width = 10,
-      height = 13)
+      width = 5,
+      height = 6,
+      units = "in")
   ),
   tar_target(departure_plot_file,
     ggsave(
       "output/departure_plot.svg",
       plot = departure_plot,
-      width = 10,
-      height = 13)
+      width = 4,
+      height = 6,
+      units = "in")
   ),
 
   # models of braking and avoidance
