@@ -235,6 +235,24 @@ compute_raff_metrics <- function(df) {
   )
 }
 
+## Compute headways  ######################################################
+
+#' Compute headways and join with spacing data
+#'
+#' @param cb Camera back data
+#' @param obs_data Observation data with spacing
+#' @return Tibble with headways and spacing joined
+compute_headways_with_spacing <- function(cb, obs_data) {
+  cb %>%
+    arrange(site, date, time) %>%
+    group_by(site, date) %>%
+    mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))
+    ) %>%
+    ungroup() %>%
+    filter(!is.na(headway_sec), headway_sec > 0) %>%
+    left_join(obs_data, by = "site")
+}
+
 ##Make CDF Plots #############################################################
 
 #' Generate CDF plots for targets pipeline
@@ -242,7 +260,7 @@ compute_raff_metrics <- function(df) {
 #' @param camera_back Camera back data from targets
 #' @param raff_metrics Raff metrics from headway analysis
 #' @return List of ggplot objects
-make_cdf_plots <- function(hdwy_data, critical_time) {
+make_cdf_plots <- function(headway_data, critical_time) {
   
   # Define colors for sites and spacing types
   # Update this to pull the names from the inputs instead of fixing them here.
@@ -261,9 +279,9 @@ make_cdf_plots <- function(hdwy_data, critical_time) {
   )
   
   # Prepare site data list - using actual site names
-  sites <- c("SR-12", "US-6", "I-70", "US-191")
+  sites <- headway_data %>% distinct(site) %>% pull(site)
   site_data_list <- lapply(sites, function(s) {
-    hdwy_data %>% filter(site == s)
+    headway_data %>% filter(site == s)
   })
   names(site_data_list) <- sites
   site_data_list <- site_data_list[sapply(site_data_list, nrow) > 0]
@@ -271,7 +289,7 @@ make_cdf_plots <- function(hdwy_data, critical_time) {
   # Prepare spacing data list - filter out NA values
   spacing_types <- c("NO TPRS", "UDOT", "1:2", "LONG")
   spacing_data_list <- lapply(spacing_types, function(sp) {
-    hdwy_data %>% filter(!is.na(spacing_type), spacing_type == sp)
+    headway_data %>% filter(!is.na(spacing_type), spacing_type == sp)
   })
   names(spacing_data_list) <- spacing_types
   spacing_data_list <- spacing_data_list[sapply(spacing_data_list, nrow) > 0]
@@ -305,23 +323,7 @@ make_cdf_plots <- function(hdwy_data, critical_time) {
   )
 }
 
-## Helper Functions to make CDF Plots ######################################
 
-#' Compute headways and join with spacing data
-#'
-#' @param cb Camera back data
-#' @param obs_data Observation data with spacing
-#' @return Tibble with headways and spacing joined
-compute_headways_with_spacing <- function(cb, obs_data) {
-  cb %>%
-    arrange(site, date, time) %>%
-    group_by(site, date) %>%
-    mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))
-    ) %>%
-    ungroup() %>%
-    filter(!is.na(headway_sec), headway_sec > 0) %>%
-    left_join(obs_data, by = "site")
-}
 
 ## Create a CDF plot for multiple data subsets (combined comparison)
 ##
