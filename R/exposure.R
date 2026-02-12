@@ -491,7 +491,6 @@ create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = 
     scale_x_continuous(breaks = seq(0, x_limit, by = 10), limits = c(0, x_limit)) +
     scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
     labs(
-      title = title,
       x = "Headway (s)",
       y = "Cumulative %"
     ) +
