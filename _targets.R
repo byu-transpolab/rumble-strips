@@ -336,21 +336,28 @@ list(
   ### Worker Exposure Analysis ###############################################
   # Helper functions located in R/exposure.R
 
-  # Exposure analysis - Headway statistics
+  # Find the critical time workers need to replace the TPRS
   tar_target(
     critical_time,
     find_critical_time(worker_exposure_data)
   ),
+
+  # Get headway data for each vehicle and add which spacing type they were in
+  tar_target(
+    headway_data,
+    compute_headways_with_spacing(camera_back_data, observations)
+  ),
   
-  # Exposure analysis - CDF plots
+  # Generate and return the CDF plots by site and spacing type.
   tar_target(
     cdf_plots,
     make_cdf_plots(
-      camera_back_data,
-      critical_time,
-      observations
+      headway_data,
+      critical_time
     )
   ),
+
+  # Save the CDF plots to disk
   tar_target(
     cdf_plot_files,
     save_cdf_plots(cdf_plots, output_dir = "output"),

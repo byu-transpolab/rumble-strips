@@ -242,10 +242,7 @@ compute_raff_metrics <- function(df) {
 #' @param camera_back Camera back data from targets
 #' @param raff_metrics Raff metrics from headway analysis
 #' @return List of ggplot objects
-make_cdf_plots <- function(camera_back_data, critical_time, observations) {
-  hdwy_data <- compute_headways_with_spacing(camera_back_data, observations)
-  
-  critical_time <- critical_time
+make_cdf_plots <- function(hdwy_data, critical_time) {
   
   # Define colors for sites and spacing types
   # Update this to pull the names from the inputs instead of fixing them here.
@@ -310,11 +307,11 @@ make_cdf_plots <- function(camera_back_data, critical_time, observations) {
 
 ## Helper Functions to make CDF Plots ######################################
 
-## Compute headways and join with spacing data
-##
-## @param cb Camera back data
-## @param obs_data Observation data with spacing
-## @return Tibble with headways and spacing joined
+#' Compute headways and join with spacing data
+#'
+#' @param cb Camera back data
+#' @param obs_data Observation data with spacing
+#' @return Tibble with headways and spacing joined
 compute_headways_with_spacing <- function(cb, obs_data) {
   cb %>%
     arrange(site, date, time) %>%
