@@ -294,6 +294,10 @@ ggplot(
     alpha = 0.5
   ) +
   geom_point(size = 2) +
+  scale_x_continuous(
+    breaks = sort(unique(as.numeric(plot_data$state))),
+    labels = unique(plot_data$state)
+  ) +
   labs(
     x = "Displacement",
     y = " Cumulative Momentum (million kg*m/s)",
@@ -304,11 +308,8 @@ ggplot(
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
-
-  # Save and return
-  ggsave("output/momentum-per-transition-by-spacing.svg", 
-    plot = p, width = 10, height = 6)
-  p
+  # Return just the plot object for later saving or manipulation
+  return(p)
 }
 
 # Plot the prepared plot_data and color by site.
@@ -326,7 +327,7 @@ plot_momentum_site <- function(plot_data) {
     linewidth = 0.7,
     alpha = 0.5
   ) +
-  geom_point(size = 1) +
+  geom_point(size = 2) +
   scale_x_continuous(
     breaks = sort(unique(as.numeric(plot_data$state))),
     labels = unique(plot_data$state)
