@@ -1,3 +1,4 @@
+# R/displacement_by_volume.R
 # This file has the helper functions related to analyzing
 # TPRS displacement as it relates to vehicle volume.
 
@@ -7,8 +8,21 @@ library(readxl)
 library(lubridate)
 library(ggplot2)
 
-# Return cummulative wavetronix volumes per date with average speed per date
-# tibble with columns: site, date, time, cumulative, speed
+#' Compute cumulative Wavetronix volumes per date with 85th-percentile speed
+#'
+#' @param combined_df data.frame or tibble. Combined Wavetronix measurements.
+#'   Expected columns include at least: `site`, `date`, `sensor_time`, `unit`,
+#'   `lane`, `volume`, and `speed_85`.
+#' @param observation_data NULL, a data.frame/tibble, or a character path to a
+#'   CSV. If provided, must include `site`, `date`, and `spacing_type`. When
+#'   supplied the function will join spacing_type into the result.
+#' @param lane_value character. Lane identifier to filter (defaults to "01").
+#'   The function accepts variants with or without leading zeros.
+#' @param unit_value character. Unit identifier to filter (defaults to "w1").
+#' @return A tibble with columns: `site`, `date`, `time` (string "HHMMSS"),
+#'   `cumulative` (running sum of volumes), `speed` (85th percentile speed for
+#'   the day; NA if none), and `spacing_type` (joined from observation_data or
+#'   NA if not provided).
 cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "01", unit_value = "w1") {
   # prepare observations table if provided (accepts path or data.frame)
   obs_df <- NULL
@@ -68,8 +82,16 @@ cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "
     dplyr::select(site, date, time, cumulative, speed, spacing_type)
 }
 
-# Return cumulative class volumes per date
-# tibble with columns: site, date, time, class, cumulative, spacing_type
+#' Compute cumulative class-specific volumes per date
+#'
+#' @param class_volume data.frame or tibble. Row-wise class volume records.
+#'   Expected to include at least: `site`, `date` or `time`, and `class`.
+#' @param observation_data NULL, a data.frame/tibble, or a character path to a
+#'   CSV. If provided, must include `site`, `date`, and `spacing_type`. When
+#'   supplied the function will join spacing_type into the result.
+#' @return A tibble with columns: `site`, `time`, `session`, `class`, `cumulative`
+#'   (row-wise cumulative count within site/date/class), and `spacing_type`
+#'   (joined from observation_data or NA if not provided).
 cumulate_class_volume <- function(class_volume, observation_data = NULL) {
   # prepare observations table if provided (accepts path or data.frame)
   obs_df <- NULL
@@ -110,7 +132,17 @@ cumulate_class_volume <- function(class_volume, observation_data = NULL) {
     dplyr::select(site, time, session, class, cumulative, spacing_type)
 }
 
-# Plots cumulative volume and TPRS displacement events using wavetronix data
+#' Create and save displacement plots (cumulative volume with TPRS events)
+#'
+#' @param cumulated_volume data.frame or tibble. Output of cumulate_volume.
+#'   Expected columns include: `site`, `date`, `time` (HHMMSS or POSIX), `cumulative`,
+#'   `speed`, and `spacing_type`.
+#' @param camera_top_data data.frame or tibble. Camera top events containing at
+#'   minimum `site`, `time` (POSIXct), and `event` (factor/character).
+#' @param output_dir character. Directory where SVG files will be written
+#'   (defaults to "output"). The function will create one SVG per site.
+#' @return A named list of file paths (character) pointing to the saved SVGs,
+#'   names correspond to site values. Side effect: saves SVG files via ggsave.
 make_displacement_plot_data <- function(cumulated_volume,
                                         camera_top_data,
                                         output_dir = "output") {
@@ -180,7 +212,16 @@ make_displacement_plot_data <- function(cumulated_volume,
   return(output_paths)
 }
 
-# Plots cumulative class volumes and TPRS displacement events using cb data
+#' Create displacement plot of cumulative class volumes with TPRS events
+#'
+#' @param class_volume data.frame or tibble. Output of cumulate_class_volume.
+#'   Expected to include `site`, `time`, `class`, `cumulative`, and `spacing_type`.
+#' @param camera_top_data data.frame or tibble. Camera top events with at least
+#'   `site`, `time` (POSIXct), and `event`.
+#' @param site_info character. Site identifier to plot (e.g., "SR-12").
+#' @return A ggplot object showing cumulative class volumes (passenger, truck)
+#'   faceted by spacing_type with vertical lines for camera events. The plot is
+#'   returned but not saved.
 make_displacement_plot_class_data <- function(
     class_volume,
     camera_top_data,
@@ -235,6 +276,13 @@ make_displacement_plot_class_data <- function(
   return(p)
 }
 
+#' Save a class-displacement plot to disk as SVG
+#'
+#' @param site_info character. Site identifier used to build the filename.
+#' @param plot ggplot. Plot object to save.
+#' @param output_dir character. Directory where the SVG will be written
+#'   (defaults to "output").
+#' @return Character. File path to the saved SVG.
 save_displacement_plots <- function(site_info, plot, output_dir = "output") {
   
   out_path <- file.path(
