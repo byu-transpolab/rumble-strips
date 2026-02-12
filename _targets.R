@@ -153,8 +153,9 @@ list(
     ggsave(
       "output/change-in-speeds.svg", 
       plot = confidence_bounds,
-      width = 10,
-      height = 8)
+      width = 6,
+      height = 4,
+      units = "in")
   ),
 
   # t-test of 85th percentile speed by each unit alone
@@ -178,15 +179,17 @@ list(
     ggsave(
       "output/single_unit_speed_w1.svg",
       plot = single_unit_confidence_bounds_w1,
-      width = 10,
-      height = 8)
+      width = 6,
+      height = 4,
+      units = "in")
   ),
   tar_target(single_unit_speed_w2_file,
     ggsave(
       "output/single_unit_speed_w2.svg",
       plot = single_unit_confidence_bounds_w2,
-      width = 10,
-      height = 8)
+      width = 6,
+      height = 4,
+      units = "in")
   ),
 
   ### Driver Braking and TPRS Avoidance ######################################
