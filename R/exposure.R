@@ -264,22 +264,6 @@ compute_headways_with_spacing <- function(camera_back_data, observations) {
 #' @return List of ggplot objects
 make_cdf_plots <- function(headway_data, critical_time) {
   
-  # Define colors for sites and spacing types
-  # Update this to pull the names from the inputs instead of fixing them here.
-  site_colors <- c(
-    "SR-12" = "#1f77b4",
-    "US-6" = "#ff7f0e",
-    "I-70" = "#2ca02c",
-    "US-191" = "#d62728"
-  )
-  
-  spacing_colors <- c(
-    "NO TPRS" = "#1f77b4",
-    "UDOT" = "#ff7f0e",
-    "1:2" = "#2ca02c",
-    "LONG" = "#d62728"
-  )
-  
   # Prepare site data list - using actual site names
   sites <- headway_data %>% distinct(site) %>% pull(site)
   site_data_list <- lapply(sites, function(s) {
@@ -301,8 +285,7 @@ make_cdf_plots <- function(headway_data, critical_time) {
     create_combined_cdf_plot(
       site_data_list,
       "CDF by Site",
-      critical_time,
-      site_colors
+      critical_time
     )
   } else {
     NULL
@@ -312,8 +295,7 @@ make_cdf_plots <- function(headway_data, critical_time) {
     create_combined_cdf_plot(
       spacing_data_list,
       "CDF by Spacing Type",
-      critical_time,
-      spacing_colors
+      critical_time
     )
   } else {
     NULL
