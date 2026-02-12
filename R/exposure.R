@@ -420,22 +420,6 @@ create_combined_cdf_plot <- function(data_list, title, critical_time, colors = N
   return(p)
 }
 
-## Generate summary statistics for headways
-##
-## @param hdwy_data Tibble with headway data
-## @return Tibble with summary stats by site and spacing
-generate_summary_stats <- function(hdwy_data) {
-  hdwy_data %>%
-    group_by(site, strip_spacing) %>%
-    summarise(
-      count = n(),
-      mean_hdwy = mean(headway_sec),
-      median_hdwy = median(headway_sec),
-      sd_hdwy = sd(headway_sec),
-      .groups = "drop"
-    )
-}
-
 ## functions to save the CDF plots #######################################
 
 ## Save CDF plots to files
