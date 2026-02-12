@@ -239,18 +239,20 @@ compute_raff_metrics <- function(df) {
 
 #' Compute headways and join with spacing data
 #'
-#' @param cb Camera back data
-#' @param obs_data Observation data with spacing
+#' @param camera_back_data Camera back data
+#' @param observations Observation data with spacing
 #' @return Tibble with headways and spacing joined
-compute_headways_with_spacing <- function(cb, obs_data) {
-  cb %>%
+compute_headways_with_spacing <- function(camera_back_data, observations) {
+  headway_data <- camera_back_data %>%
     arrange(site, date, time) %>%
     group_by(site, date) %>%
     mutate(headway_sec = as.numeric(difftime(time, lag(time), units = "secs"))
     ) %>%
     ungroup() %>%
     filter(!is.na(headway_sec), headway_sec > 0) %>%
-    left_join(obs_data, by = "site")
+    left_join(
+      observations %>% select(date, spacing_type),
+      by = "date")
 }
 
 ##Make CDF Plots #############################################################
