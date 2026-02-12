@@ -18,10 +18,10 @@ options(digits.secs = 3)
 ## find the Critical Time ######################################################
 
 
-## Find the critical gap time workers need to adjust TPRS
-##
-## @param worker_exposure_data Worker exposure data from targets
-## @return a dbl value representing the critical gap in seconds
+#' Find the critical gap time workers need to adjust TPRS
+#
+#' @param worker_exposure_data Worker exposure data from targets
+#' @return a dbl value representing the critical gap in seconds
 find_critical_time <- function(worker_exposure_data) {
   we <- worker_exposure_data %>%
     mutate(
@@ -34,8 +34,15 @@ find_critical_time <- function(worker_exposure_data) {
   we_headways <- compute_vehicle_headways(we)
   
    # Prepare lookups
-  wfg_lookup <- prepare_wfg_events(we)
-  er_lookup <- prepare_er_events(we)
+  wfg_lookup <- we %>%
+    filter(event == "Waiting for Gap") %>%
+    group_by(site, date) %>%
+    summarise(wfg_ts_vec = list(ts), .groups = "drop")
+
+  er_lookup <- we %>%
+    filter(event == "Entering Roadway") %>%
+    group_by(site, date) %>%
+    summarise(er_ts_vec = list(ts), .groups = "drop")
 
    # Classify headways
   we_classified <- classify_headways(we_headways, wfg_lookup, er_lookup)
@@ -75,28 +82,6 @@ compute_vehicle_headways <- function(events) {
     ungroup()
   
   return(vp)
-}
-
-prepare_wfg_events <- function(events) {
-  wfg_events <- events %>%
-    filter(event == "Waiting for Gap") %>%
-    group_by(site, date) %>%
-    summarise(wfg_ts_vec = list(ts), .groups = "drop")
-  
-  return(wfg_events)
-}
-
-## Prepare Entering Roadway lookup data -- prepare_er_events() ##
-# Creates a lookup table of Entering Roadway timestamps by site and date
-# @param events Tibble with parsed timestamps and event types
-# @return Tibble with er_ts_vec list column containing vectors of ER timestamps
-prepare_er_events <- function(events) {
-  er_events <- events %>%
-    filter(event == "Entering Roadway") %>%
-    group_by(site, date) %>%
-    summarise(er_ts_vec = list(ts), .groups = "drop")
-  
-  return(er_events)
 }
 
 ## Classify headways as Accepted, Rejected, or NotTracked -- classify_headways()
@@ -170,62 +155,6 @@ classify_headways <- function(vehicle_headways, wfg_events, er_events) {
   headways_couplets <- headways_all %>% filter(!is.na(prev_vp_ts))
   
   return(headways_couplets)
-}
-
-## Compute event combination summaries -- compute_event_combinations() ##
-# Analyzes sequences of key events (pairs and triplets)
-# @param events Tibble with parsed timestamps and event types
-# @return List containing pair_counts and triplet_counts tibbles
-compute_event_combinations <- function(events) {
-  key_events <- c("Waiting for Gap", "Entering Roadway", "Exiting Roadway")
-  
-  events_key <- events %>%
-    filter(event %in% key_events) %>%
-    group_by(site, date) %>%
-    arrange(ts, .by_group = TRUE) %>%
-    mutate(
-      next_event1 = lead(event, 1),
-      next_event2 = lead(event, 2),
-      pair_label  = if_else(!is.na(next_event1),
-                            paste(event, "→", next_event1),
-                            NA_character_),
-      triplet_label = if_else(!is.na(next_event2),
-                              paste(event, "→", next_event1, "→", next_event2),
-                              NA_character_)
-    ) %>%
-    ungroup()
-  
-  event_pair_counts <- events_key %>%
-    filter(!is.na(pair_label)) %>%
-    count(pair_label, sort = TRUE, name = "n")
-  
-  event_triplet_counts <- events_key %>%
-    filter(!is.na(triplet_label)) %>%
-    count(triplet_label, sort = TRUE, name = "n")
-  
-  return(list(
-    pair_counts = event_pair_counts,
-    triplet_counts = event_triplet_counts
-  ))
-}
-
-## Generate headway summary by site and status -- generate_headway_summary() ##
-# Summarizes headway counts and statistics by site and headway_status
-# @param headways_couplets Tibble with classified headways
-# @return Tibble with summary statistics by site and status
-generate_headway_summary <- function(headways_couplets) {
-  headway_summary <- headways_couplets %>%
-    group_by(site, headway_status) %>%
-    summarise(
-      n = n(),
-      mean_headway_s = mean(headway_s, na.rm = TRUE),
-      median_headway_s = median(headway_s, na.rm = TRUE),
-      min_headway_s = min(headway_s, na.rm = TRUE),
-      max_headway_s = max(headway_s, na.rm = TRUE),
-      .groups = "drop"
-    )
-  
-  return(headway_summary)
 }
 
 ## Compute overall and grouped Raff metrics -- compute_all_raff_metrics() ##
@@ -308,20 +237,15 @@ compute_raff_metrics <- function(df) {
 
 ##Make CDF Plots #############################################################
 
-# Generate CDF plots for targets pipeline
+#' Generate CDF plots for targets pipeline
 #
-# @param camera_back Camera back data from targets
-# @param raff_metrics Raff metrics from headway analysis
-# @return List of ggplot objects
-# Generate CDF plots for targets pipeline
-#
-# @param camera_back Camera back data from targets
-# @param raff_metrics Raff metrics from headway analysis
-# @return List of ggplot objects
+#' @param camera_back Camera back data from targets
+#' @param raff_metrics Raff metrics from headway analysis
+#' @return List of ggplot objects
 make_cdf_plots <- function(camera_back_data, critical_time, observations) {
   hdwy_data <- compute_headways_with_spacing(camera_back_data, observations)
   
-  t_c_critical_s <- critical_time
+  critical_time <- critical_time
   
   # Define colors for sites and spacing types
   # Update this to pull the names from the inputs instead of fixing them here.
@@ -360,7 +284,7 @@ make_cdf_plots <- function(camera_back_data, critical_time, observations) {
     create_combined_cdf_plot(
       site_data_list,
       "CDF by Site",
-      t_c_critical_s,
+      critical_time,
       site_colors
     )
   } else {
@@ -371,20 +295,16 @@ make_cdf_plots <- function(camera_back_data, critical_time, observations) {
     create_combined_cdf_plot(
       spacing_data_list,
       "CDF by Spacing Type",
-      t_c_critical_s,
+      critical_time,
       spacing_colors
     )
   } else {
     NULL
   }
   
-  summary_stats <- generate_summary_stats(hdwy_data)
-  
   list(
     site_plot = site_plot,
-    spacing_plot = spacing_plot,
-    summary_stats = summary_stats,
-    headway_data = hdwy_data
+    spacing_plot = spacing_plot
   )
 }
 
@@ -410,10 +330,10 @@ compute_headways_with_spacing <- function(cb, obs_data) {
 ##
 ## @param data_list Named list of tibbles with headway_sec column
 ## @param title Plot title
-## @param t_c_critical_s Numeric value for critical headway
+## @param critical_time Numeric value for critical headway
 ## @param colors Named vector of colors for each group
 ## @return ggplot object
-create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = NULL) {
+create_combined_cdf_plot <- function(data_list, title, critical_time, colors = NULL) {
   # Default colors if not provided
   if (is.null(colors)) {
     colors <- setNames(
@@ -457,8 +377,8 @@ create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = 
   # Calculate CDF values at t_c for each group using ALL data (unfiltered)
   cdf_at_tc_list <- lapply(names(data_list), function(name) {
     d <- data_list[[name]]
-    if (!is.na(t_c_critical_s) && nrow(d) > 0) {
-      cdf_val <- sum(d$headway_sec <= t_c_critical_s, na.rm = TRUE) / nrow(d)
+    if (!is.na(critical_time) && nrow(d) > 0) {
+      cdf_val <- sum(d$headway_sec <= critical_time, na.rm = TRUE) / nrow(d)
       tibble(group = name, cdf_at_tc = cdf_val)
     } else {
       tibble(group = name, cdf_at_tc = NA_real_)
@@ -503,23 +423,23 @@ create_combined_cdf_plot <- function(data_list, title, t_c_critical_s, colors = 
     )
   
   # Add critical headway vertical line
-  if (!is.na(t_c_critical_s) && t_c_critical_s <= x_limit) {
+  if (!is.na(critical_time) && critical_time <= x_limit) {
     p <- p +
       geom_vline(
-        xintercept = t_c_critical_s,
+        xintercept = critical_time,
         color = "red",
         linetype = "dashed",
         linewidth = 1
       ) +
       annotate(
         "text",
-        x = t_c_critical_s,
+        x = critical_time,
         y = 0.98,
-        label = sprintf("t_c = %.1f s", t_c_critical_s),
+        label = sprintf("t_c = %.1f s", critical_time),
         color = "red",
         size = 3.5,
         fontface = "bold",
-        hjust = ifelse(t_c_critical_s < x_limit * 0.5, -0.1, 1.1)
+        hjust = ifelse(critical_time < x_limit * 0.5, -0.1, 1.1)
       )
     
     # Add percentage labels with spacing (no horizontal lines)
