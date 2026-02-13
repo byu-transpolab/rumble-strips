@@ -11,33 +11,16 @@ library(lubridate)
 #' Check whether to remove certain rainy days from a tibble
 #' 
 #' @param df a tibble with column 'date'
-#' @param list with a boolean and a list of rainy days in date format.
-filter_rainy_days <- function(df, exclude_rainy_days) {
-  # Break out the individual items in the list
-  exclude_rain <- exclude_rainy_days[[1]]
-  rainy_days <- exclude_rainy_days[[2]]
-
+#' @param exclude_rain FALSE == include rainy days. TRUE == exclude rainy days.
+#' @param rainy_days list of rainy days in yyyy-mm-dd format. Will coerce to date.
+filter_rainy_days <- function(df, exclude_rain, rainy_days) {
   # if we are not excluding rain days, return the df and exit
   if (!exclude_rain) return(df)
-
-  # observations has column: date
-  # wavetronix has column:   date
-  # camera_top has column:  'time' ddtm
-  # camera_top has column:   date
-
-  # create a date column if df doesn't already have one
   
-  # Ensure there is a date column
-  if (!("date" %in% names(df))) { # is there not a date column?
-    if ("time" %in% names(df)) {  # is there a time column?
-      df <- df %>% mutate(date = as.Date(time)) # make date from time column
-    } else { # if neither exist, throw an error
-      stop("Rainy Days: the data frame must contain either 'date' or 'time' column.")
-    }
-  }
+  # set rainy_days and date column from df to the same variable type
+  df$date <- as.Date(df$date)
 
-
-  # if we've gotten here, it's because exclude rain is TRUE
+  # if we've gotten here, it's because exclude_rain is TRUE
   # so filter to only include days not in the list of rainy_days.
   df %>% 
     filter(!(date %in% rainy_days))
@@ -212,7 +195,7 @@ read_camera_top <- function(path) {
         site == "us6" ~ "US-6",
         TRUE ~ as.character(site)
       ),
-      date = date_code,
+      date = as.Date(date_code, format = "%Y%m%d"),
       time = as.POSIXct(paste0(date_code, " ", timestamp),
                         format = "%Y%m%d %H:%M:%OS",
                         tz = "America/Denver"),

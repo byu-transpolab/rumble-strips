@@ -66,15 +66,12 @@ list(
   # The boolean must be set to true to exclude rain days from the data.
   # Each of the 4 main tibbles (observations, wavetronix, camera_top and camera_back)
   # have follow up targets to filter out rainy days using filter_rainy_days().
-  tar_target(
-    exclude_rainy_days,
-    list(
-      exclude_rain = FALSE,
-      rain_days = as.Date(c(
-        "2025-07-16", # most of the day was dark clouds and rainy
-        "2026-07-15"  # only some of the day was dark and rainy
-      ))
-    )
+  tar_target(exclude_rain, FALSE),
+  tar_target(rainy_days, 
+    as.Date(c(
+    "2025-07-16", # most of the day was dark clouds and rainy
+    "2026-07-15"  # only some of the day was dark and rainy
+    ))
   ),
 
   # read observation_data.csv into a tibble with columns:
@@ -82,7 +79,7 @@ list(
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
   tar_target(observations_complete, read_observations(observations_file)),
   tar_target(observations,
-    filter_rainy_days(observations_complete, exclude_rainy_days)
+    filter_rainy_days(observations_complete, exclude_rain, rainy_days)
   ),
 
   # puts all wavetronix data into one dataframe with columns:
@@ -96,7 +93,7 @@ list(
     read_wavetronix_folder(wavetronix_files)
   ),
   tar_target(wavetronix,
-    filter_rainy_days(wavetronix_complete, exclude_rainy_days)
+    filter_rainy_days(wavetronix_complete, exclude_rain, rainy_days)
   ),
 
   # puts all camera top data into one dataframe with columns:
@@ -110,7 +107,7 @@ list(
     get_camera_top_data(camera_top_files)
   ),
   tar_target(camera_top_data,
-    filter_rainy_days(camera_top_complete, exclude_rainy_days)
+    filter_rainy_days(camera_top_complete, exclude_rain, rainy_days)
   ),
 
   # puts all camera back data into one dataframe with columns:
@@ -124,7 +121,7 @@ list(
     get_camera_back_data(camera_back_files)
   ),
   tar_target(camera_back_data,
-    filter_rainy_days(camera_back_complete, exclude_rainy_days)
+    filter_rainy_days(camera_back_complete, exclude_rain, rainy_days)
   ),
 
   # Download truck counts from BTS.gov and process into tibble
