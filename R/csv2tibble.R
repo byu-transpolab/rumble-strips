@@ -18,7 +18,7 @@ filter_rainy_days <- function(df, exclude_rainy_days) {
   rainy_days <- exclude_rainy_days[[2]]
 
   # if we are not excluding rain days, return the df and exit
-  if (!exclude_rain) return df
+  if (!exclude_rain) return(df)
 
   # observations has column: date
   # wavetronix has column:   date

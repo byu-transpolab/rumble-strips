@@ -69,7 +69,7 @@ list(
   tar_target(
     exclude_rainy_days,
     list(
-      exclude_rain = false,
+      exclude_rain = FALSE,
       rain_days = as.Date(c(
         "2025-07-16", # most of the day was dark clouds and rainy
         "2026-07-15"  # only some of the day was dark and rainy
