@@ -212,6 +212,7 @@ read_camera_top <- function(path) {
         site == "us6" ~ "US-6",
         TRUE ~ as.character(site)
       ),
+      date = date_code,
       time = as.POSIXct(paste0(date_code, " ", timestamp),
                         format = "%Y%m%d %H:%M:%OS",
                         tz = "America/Denver"),
@@ -231,7 +232,7 @@ read_camera_top <- function(path) {
           "Significant",
           "Out of Spec."))
     ) %>%
-    select(site, time, event)
+    select(site, date, time, event)
 }
 
 ### Camera back data ##################################################
