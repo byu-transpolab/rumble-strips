@@ -10,18 +10,18 @@ library(ggplot2)
 #' Prepare tibble for statistical tests
 #'
 #' @param wavetronix data.frame or tibble. Wavetronix measurements containing at
-#'   minimum the columns `lane`, `site`, `unit`, `date`, `sensor_time`, and
+#'   minimum the columns `lane`, `site`, `unit`, `date`, `time`, and
 #'   `speed_85`.
 #' @param observations data.frame or tibble. Observations tibble containing at
 #'   minimum the columns `site`, `date`, and `spacing_type` used to join with
 #'   wavetronix rows.
 #' @return A tibble filtered to lane "01" with columns `site`, `unit` (factor),
-#'   `date`, `time` (from `sensor_time`), `speed_85` (numeric) and `spacing_type`.
+#'   `date`, `time` (from `time`), `speed_85` (numeric) and `spacing_type`.
 #'   Rows with missing `speed_85` or missing `spacing_type` are removed.
 prepare_speed_data <- function(wavetronix, observations) {
   wavetronix %>%
     filter(lane == "01") %>%
-    select(site, unit, date, time = sensor_time, speed_85) %>%
+    select(site, unit, date,time, speed_85) %>%
     mutate(unit = as.factor(as.character(unit)),
            speed_85 = as.numeric(speed_85)) %>%
     left_join(observations %>% select(site, date, spacing_type), by = c("site", "date")) %>%

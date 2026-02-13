@@ -95,7 +95,7 @@ list(
     read_wavetronix_folder(wavetronix_files)
   ),
   tar_target(wavetronix,
-    filter_rainy_days(wavetronix_complete, exclude_rain, rainy_days)
+    filter_rainy_days(wavetronix_complete, exclude_rain, rainy_periods)
   ),
 
   # puts all camera top data into one dataframe with columns:
@@ -109,7 +109,7 @@ list(
     get_camera_top_data(camera_top_files)
   ),
   tar_target(camera_top_data,
-    filter_rainy_days(camera_top_complete, exclude_rain, rainy_days)
+    filter_rainy_days(camera_top_complete, exclude_rain, rainy_periods)
   ),
 
   # puts all camera back data into one dataframe with columns:
@@ -123,7 +123,7 @@ list(
     get_camera_back_data(camera_back_files)
   ),
   tar_target(camera_back_data,
-    filter_rainy_days(camera_back_complete, exclude_rain, rainy_days)
+    filter_rainy_days(camera_back_complete, exclude_rain, rainy_periods)
   ),
 
   # Download truck counts from BTS.gov and process into tibble

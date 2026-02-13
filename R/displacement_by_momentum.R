@@ -32,7 +32,7 @@ calc_truck_weight <- function(bts_truck_counts) {
 #' Compile displacement dataset from multiple sources
 #'
 #' @param wavetronix data.frame or tibble. Wavetronix measurements expected to
-#'   include at minimum `unit`, `lane`, `sensor_time`, and `speed`.
+#'   include at minimum `unit`, `lane`, `time`, and `speed`.
 #' @param camera_back_data data.frame or tibble. Camera back records expected
 #'   to include at minimum `site`, `time`, `class`, and `lane`.
 #' @param camera_top_data data.frame or tibble. Camera top events expected to
@@ -56,11 +56,11 @@ compile_displacement_data <- function(
   truck_weight      = 40000   # in lbs
   ) {
   # Process wavetronix data
-  # only keep site, unit=w1, lane=01, volume, speed, sensor_time
+  # only keep site, unit=w1, lane=01, volume, speed, time
   wav <- wavetronix %>%
     filter(unit=="w1") %>%
     filter(lane=="01") %>%
-    mutate(bin = floor_date(sensor_time, unit = "15 minutes")) %>%
+    mutate(bin = floor_date(time, unit = "15 minutes")) %>%
     select(speed, bin)
   
   # Process camera back data, only keep lane 1 to match wavetronix data

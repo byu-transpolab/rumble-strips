@@ -11,7 +11,7 @@ library(ggplot2)
 #' Compute cumulative Wavetronix volumes per date with 85th-percentile speed
 #'
 #' @param combined_df data.frame or tibble. Combined Wavetronix measurements.
-#'   Expected columns include at least: `site`, `date`, `sensor_time`, `unit`,
+#'   Expected columns include at least: `site`, `date`, `time`, `unit`,
 #'   `lane`, `volume`, and `speed_85`.
 #' @param observation_data NULL, a data.frame/tibble, or a character path to a
 #'   CSV. If provided, must include `site`, `date`, and `spacing_type`. When
@@ -48,7 +48,7 @@ cumulate_volume <- function(combined_df, observation_data = NULL, lane_value = "
 
   # per-site, per-day total by timestamp
   daily_by_time <- df %>%
-    dplyr::group_by(site, date, time = sensor_time) %>%
+    dplyr::group_by(site, date, time) %>%
     dplyr::summarise(total = sum(volume, na.rm = TRUE), .groups = "drop") %>%
     dplyr::arrange(site, date, time) %>%
     dplyr::group_by(site, date) %>%
