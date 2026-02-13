@@ -372,7 +372,7 @@ list(
   # Get headway data for each vehicle and add which spacing type they were in
   tar_target(
     headway_data,
-    compute_headways_with_spacing(camera_back_data, observations)
+    compute_headways(camera_back_data, observations)
   ),
   
   # Group headway data by site and spacing_type and prepare for CDF plotting

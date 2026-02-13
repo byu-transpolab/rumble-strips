@@ -237,7 +237,7 @@ compute_raff_metrics <- function(df) {
 #' @param camera_back_data Camera back data
 #' @param observations Observation data with spacing
 #' @return Tibble with headways and spacing joined
-compute_headways_with_spacing <- function(camera_back_data, observations) {
+compute_headways <- function(camera_back_data, observations) {
   headway_data <- camera_back_data %>%
     arrange(site, date, time) %>%
     group_by(site, date) %>%
