@@ -64,23 +64,22 @@ list(
   # Targets related to rainy days. 
   # Returns a boolean and a list of rainy days to be exlcuded
   # The boolean must be set to true to exclude rain days from the data.
-  # Each of the 4 main tibbles (observations, wavetronix, camera_top and camera_back)
+  # Each of the 3 main tibbles (wavetronix, camera_top and camera_back)
   # have follow up targets to filter out rainy days using filter_rainy_days().
-  tar_target(exclude_rain, FALSE),
+  tar_target(exclude_rain, TRUE),
   tar_target(rainy_days, 
     as.Date(c(
-    "2025-07-16", # most of the day was dark clouds and rainy
-    "2025-07-15"  # only some of the day was dark and rainy
+    "2025-07-16", # US-6, NO TPRS.
+    "2025-07-15"  # US-6, 1:2. Winds were strong enough to rotate TPRS sign
     ))
   ),
 
   # read observation_data.csv into a tibble with columns:
   # date, site, strip_spacing, trailer_spacing, gopro_spacing, spacing_type
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
-  tar_target(observations_complete, read_observations(observations_file)),
-  tar_target(observations,
-    filter_rainy_days(observations_complete, exclude_rain, rainy_days)
-  ),
+  tar_target(observations, read_observations(observations_file)),
+  # observations should not be filtered by rain, or it will cause errors with
+  # worker_exposure_data further down the pipeline.
 
   # puts all wavetronix data into one dataframe with columns:
   # site, unit, lane, volume, occupancy, speed, speed_85,
