@@ -374,7 +374,43 @@ list(
     headway_data,
     compute_headways(camera_back_data, observations)
   ),
-  
+
+  # Plot headway CDF with critical time has a vertical dashed line
+  # Colored by site:
+  tar_target(
+    headway_cdf_site_plot,
+    plot_headway(headway_data, critical_time, "site")
+  ),
+  # Colored by spacing_type:
+  tar_target(
+    headway_cdf_spacing_plot,
+    plot_headway(headway_data, critical_time, "spacing_type")
+  ),
+
+  # Save the CDF plots
+  tar_target(
+    headway_cdf_site_plot_file,
+    ggsave(
+      "output/cdf_sites.svg",
+      headway_cdf_site_plot,
+      device = svglite,
+      width = 6,
+      height = 4,
+      units = "in"
+    )
+  ),
+  tar_target(
+    headway_cdf_spacing_plot_file,
+    ggsave(
+      "output/cdf_spacing.svg",
+      headway_cdf_spacing_plot,
+      device = svglite,
+      width = 6,
+      height = 4,
+      units = "in"
+    )
+  ),
+
   # Group headway data by site and spacing_type and prepare for CDF plotting
   tar_target(
     headway_by_site,
@@ -384,13 +420,6 @@ list(
     headway_by_spacing,
     group_headway(headway_data, group_by_site = FALSE)
   ),
-
-  # Take grouped headway data and create ecdf data frames for plotting
-
-  # Find where the critical time falls on the CDF for each site and spacing type
-
-  # Pass ecdf data frames and critical time intercepts to plotting function
-
 
   # Generate and return the headyway CDF plots by site and spacing type.
   # Mark the critical time on the plots.

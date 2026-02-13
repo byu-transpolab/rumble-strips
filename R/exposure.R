@@ -250,6 +250,34 @@ compute_headways <- function(camera_back_data, observations) {
       by = "date")
 }
 
+#' Plot the headway data as a cumulative distribution function
+#' 
+#' @param headway_data tibble with the all the headway information
+#' @param critical_time dbl with the critical time in seconds
+#' @param color_by str specifying how the plot should be colored
+#' @return ggplot showing cdf curves of headway with critical time marked
+plot_headway <- function(headway_data, critical_time, color_by) {
+  
+p <-ggplot(headway_data, aes(x=headway_sec, color = .data[[color_by]])) +
+  stat_ecdf() +
+  geom_vline(
+    xintercept = critical_time, 
+    linetype = "dashed", 
+    linewidth = 0.6,
+    color = "red") +
+  coord_cartesian(xlim = c(0, 100)) +
+  scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
+  labs(x = "Headway (s)", y = "Cumulative %") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 10),
+    panel.grid.minor = element_blank()
+  )
+
+  return(p)
+}
+
 #' Make a named list of headway tibbles grouped by site or spacing_type
 #'
 #' @param headway_data tibble. Headway rows (must contain `site` and `spacing_type`).
