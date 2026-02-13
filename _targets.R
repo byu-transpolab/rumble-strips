@@ -358,6 +358,13 @@ list(
     group_headway(headway_data, group_by_site = FALSE)
   ),
 
+  # Take grouped headway data and create ecdf data frames for plotting
+
+  # Find where the critical time falls on the CDF for each site and spacing type
+
+  # Pass ecdf data frames and critical time intercepts to plotting function
+
+
   # Generate and return the headyway CDF plots by site and spacing type.
   # Mark the critical time on the plots.
   tar_target(
