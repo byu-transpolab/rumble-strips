@@ -66,11 +66,11 @@ list(
   # The boolean must be set to true to exclude rain days from the data.
   # Each of the 4 main tibbles (observations, wavetronix, camera_top and camera_back)
   # have follow up targets to filter out rainy days using filter_rainy_days().
-  tar_target(exclude_rain, FALSE),
+  tar_target(exclude_rain, TRUE),
   tar_target(rainy_days, 
     as.Date(c(
     "2025-07-16", # most of the day was dark clouds and rainy
-    "2026-07-15"  # only some of the day was dark and rainy
+    "2025-07-15"  # only some of the day was dark and rainy
     ))
   ),
 

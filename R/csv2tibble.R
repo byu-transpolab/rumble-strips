@@ -16,9 +16,6 @@ library(lubridate)
 filter_rainy_days <- function(df, exclude_rain, rainy_days) {
   # if we are not excluding rain days, return the df and exit
   if (!exclude_rain) return(df)
-  
-  # set rainy_days and date column from df to the same variable type
-  df$date <- as.Date(df$date)
 
   # if we've gotten here, it's because exclude_rain is TRUE
   # so filter to only include days not in the list of rainy_days.
