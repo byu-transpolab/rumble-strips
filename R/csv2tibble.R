@@ -517,25 +517,20 @@ get_worker_exposure_data <- function(folder_path, observations) {
   dfs <- purrr::map(files, function(path) {
     # Extract date from filename
     path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(path)), "-"))
-    date_code <- path_elements[1]
+    date_code <- path_elements[1] # "yyyymmdd", will be formatted better later
 
     # Find site from observations data
     site <- observations %>%
       filter(date == as.Date(date_code, format = "%Y%m%d")) %>%
       pull(site) %>%
       unique()
-
+    
+    
     df <- readr::read_csv(path, show_col_types = FALSE)
 
     df %>%
       mutate(
-        site = case_when(
-        site == "sr12" ~ "SR-12",
-        site == "i70" ~ "I-70",
-        site == "us191" ~ "US-191",
-        site == "us6" ~ "US-6",
-        TRUE ~ as.character(site)
-        ),
+        site = site, # Observations already has properly formatted site names.
         date = as.Date(date_code, format = "%Y%m%d"),
         event = case_when(  
           brake == "d" ~ "Arrival",
@@ -556,8 +551,8 @@ get_worker_exposure_data <- function(folder_path, observations) {
       # Filter out numeric events (the event counting software
       # used 0-9 for internal purposes)
       dplyr::filter(!event %in% as.character(0:9))
-  }) |>
-    # Combine into a single data frame
+  }) |> # end the function that looped through each file and...
+    # Combine the df from each file into a single data frame.
     dplyr::bind_rows()
   
   dfs
