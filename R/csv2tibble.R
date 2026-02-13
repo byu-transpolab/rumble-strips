@@ -10,17 +10,23 @@ library(lubridate)
 
 #' Check whether to remove certain rainy days from a tibble
 #' 
-#' @param df a tibble with column 'date'
+#' @param df a tibble with column 'time' with format yyyy-mm-dd hh:mm:ss
 #' @param exclude_rain FALSE == include rainy days. TRUE == exclude rainy days.
-#' @param rainy_days list of rainy days in yyyy-mm-dd format. Will coerce to date.
-filter_rainy_days <- function(df, exclude_rain, rainy_days) {
+#' @param rainy_periods list of rainy days in yyyy-mm-dd format. Will coerce to date.
+filter_rainy_days <- function(df, exclude_rain, rainy_periods) {
   # if we are not excluding rain days, return the df and exit
-  if (!exclude_rain) return(df)
+  if (!exclude_rain || is.null(rainy_periods)) return(df)
 
   # if we've gotten here, it's because exclude_rain is TRUE
-  # so filter to only include days not in the list of rainy_days.
+  # so filter to only include times not in the intervals listed.
   df %>% 
-    filter(!(date %in% rainy_days))
+    filter(
+      !map_lgl(
+        # Iterate through every interval in the list and filter accordingly
+        time,
+        function(t) any(map_lgl(rainy_periods, ~t %within% .x))
+      )
+    )
 }
 
 ### observation_data.csv ###############################################
@@ -82,7 +88,7 @@ read_wavetronix_folder <- function(folder_path) {
 #'
 #' @param file_path Character. Path to a single Wavetronix CSV file.
 #' @return A tibble with columns: site, unit, lane, volume, occupancy, speed,
-#'   speed_85, headway, gap, sensor_time (POSIXct), date (Date), interval.
+#'   speed_85, headway, gap, time (POSIXct), date (Date), interval.
 read_wavetronix <- function(file_path) {
 
   path_elements <- unlist(stringr::str_split(tools::file_path_sans_ext(basename(file_path)), "-"))
@@ -109,10 +115,10 @@ read_wavetronix <- function(file_path) {
       speed_85 = `85% SPEED (mph)`,
       headway = HEADWAY,
       gap = GAP,
-      sensor_time = lubridate::as_datetime(`SENSOR TIME (MM/dd/yy  HH:mm:ss)`,
+      time = lubridate::as_datetime(`SENSOR TIME (MM/dd/yy  HH:mm:ss)`,
                     format = "%m/%d/%y %H:%M:%OS",
                     tz = "America/Denver"),
-      date = lubridate::date(sensor_time),
+      date = lubridate::date(time),
       interval = `INTERVAL (sec)`
   ) |>
     dplyr::filter(lane != "03")
@@ -134,7 +140,7 @@ get_wavetronix_for_date <- function(combined_df, date_code, lane_value = "1") {
     filter(date == target_date) %>%
     # keep only requested lane (accept "1" or "01", etc.)
     filter(stringr::str_detect(lane, paste0("^0*", lane_value, "$"))) %>%
-    group_by(time = sensor_time) %>%
+    group_by(time) %>%
     summarise(total = sum(as.numeric(volume), na.rm = TRUE), .groups = "drop") %>%
     arrange(time) %>%
     mutate(cumulative = cumsum(total))

@@ -66,12 +66,15 @@ list(
   # The boolean must be set to true to exclude rain days from the data.
   # Each of the 3 main tibbles (wavetronix, camera_top and camera_back)
   # have follow up targets to filter out rainy days using filter_rainy_days().
-  tar_target(exclude_rain, FALSE),
-  tar_target(rainy_days, 
-    as.Date(c(
-    "2025-07-16", # US-6, NO TPRS.
-    "2025-07-15"  # US-6, 1:2. Winds were strong enough to rotate TPRS sign
-    ))
+  tar_target(exclude_rain, TRUE),
+  tar_target(rainy_periods, 
+    list(
+      # Dates are accurate, but time estimates exceed time of bad weather
+      # US-6, NO TPRS.
+      interval(ymd_hms("2025-07-16 15:00:00"), ymd_hms("2025-07-16 17:00:00")),
+      # # US-6, 1:2.
+      interval(ymd_hms("2025-07-15 16:00:00"), ymd_hms("2025-07-15 19:00:00"))
+    )
   ),
 
   # read observation_data.csv into a tibble with columns:
