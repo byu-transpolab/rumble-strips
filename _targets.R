@@ -61,10 +61,29 @@ list(
   ### Reading in CSV files and returning tibbles #############################
   # helper functions are found in R/csv2tibble.R
 
+  # Targets related to rainy days. 
+  # Returns a boolean and a list of rainy days to be exlcuded
+  # The boolean must be set to true to exclude rain days from the data.
+  # Each of the 4 main tibbles (observations, wavetronix, camera_top and camera_back)
+  # have follow up targets to filter out rainy days using filter_rainy_days().
+  tar_target(
+    exclude_rainy_days,
+    list(
+      exclude_rain = false,
+      rain_days = as.Date(c(
+        "2025-07-16", # most of the day was dark clouds and rainy
+        "2026-07-15"  # only some of the day was dark and rainy
+      ))
+    )
+  ),
+
   # read observation_data.csv into a tibble with columns:
   # date, site, strip_spacing, trailer_spacing, gopro_spacing, spacing_type
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
-  tar_target(observations, read_observations(observations_file)),
+  tar_target(observations_complete, read_observations(observations_file)),
+  tar_target(observations,
+    filter_rainy_days(observations_complete, exclude_rainy_days)
+  ),
 
   # puts all wavetronix data into one dataframe with columns:
   # site, unit, lane, volume, occupancy, speed, speed_85,
@@ -73,8 +92,11 @@ list(
     "data/wavetronix",
     format = "file"
   ),
-  tar_target(wavetronix,
+  tar_target(wavetronix_complete,
     read_wavetronix_folder(wavetronix_files)
+  ),
+  tar_target(wavetronix,
+    filter_rainy_days(wavetronix_complete, exclude_rainy_days)
   ),
 
   # puts all camera top data into one dataframe with columns:
@@ -84,9 +106,11 @@ list(
     list.files("data/camera_top", full.names = TRUE),
     format = "file"
   ),
-  tar_target(
-    camera_top_data,
+  tar_target(camera_top_complete,
     get_camera_top_data(camera_top_files)
+  ),
+  tar_target(camera_top_data,
+    filter_rainy_days(camera_top_complete, exclude_rainy_days)
   ),
 
   # puts all camera back data into one dataframe with columns:
@@ -96,9 +120,11 @@ list(
     list.files("data/camera_back", full.names = TRUE),
     format = "file"
   ),
-  tar_target(
-    camera_back_data,
+  tar_target(camera_back_complete,
     get_camera_back_data(camera_back_files)
+  ),
+  tar_target(camera_back_data,
+    filter_rainy_days(camera_back_complete, exclude_rainy_days)
   ),
 
   # Download truck counts from BTS.gov and process into tibble
@@ -125,6 +151,8 @@ list(
     worker_exposure_data,
     get_worker_exposure_data(worker_exposure_files, observations)
   ),
+  # worker_exposure_data does not need to be filtered by rainy days.
+  # The workers never worked in the rain, though they did move strips on 07/15.
 
   ### Trailer and camera spacing #############################################
   # Helper functions are found in R/observations.R
