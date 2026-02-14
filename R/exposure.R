@@ -5,6 +5,7 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 library(ggplot2)
+library(ggrepel)   # for ggplot to position labels correctly
 library(svglite)   # for ggsave(..., device = svglite)
 library(readr)     # for reading observation_data.csv
 library(patchwork) # for combining plots
@@ -286,39 +287,53 @@ plot_headway <- function(headway_data, critical_time, color_by) {
     ) +
     # Add a label to the vertical line representing critical time
     annotate(
-      "text",
-      x = 0,
-      y = 0.98,
+      "label",
+      x = critical_time,
+      y = 1.02,
       label = paste0("Critical Time: ", round(critical_time, 1), " s"),
       color = "red",
+      fill = "white",
       vjust = -0.4,
       hjust = 1,
-      size = 3.5
+      size = 3.5,
+      label.size = 0.2,
+      label.r = unit(0.1, "lines"),
+      label.padding = unit(0.15, "lines")
     ) +
     # Fix the x_axis to 0-100 seconds without changing data
-    coord_cartesian(xlim = c(0, 100)) +
+    coord_cartesian(xlim = c(0, 100), ylim = c(0, 1), clip = "off") +
     # Make the why scale show percentage points
     scale_y_continuous(
-      limits = c(0, 1), 
       labels = scales::percent,
       # add a little headspace on the top for the critical time label
-      expand = expansion(mult = c(0, 0.02))
+      expand = expansion(mult = c(0, 0.06))
     ) +
     labs(x = "Headway (s)", y = "Cumulative %") +
     theme_minimal() +
     theme(
       legend.position = "bottom",
-      legend.text = element_text(size = 10),
-      panel.grid.minor = element_blank()
+      legend.text = element_text(size = 12),
+      panel.grid.minor = element_blank(),
+      axis.title = element_text(face = "bold")
     ) +
-    # Add labels to the points intersecting cdf and vertical line
-    geom_text(
+    # Add labels to intersecting cdf and vertical line with white boxes
+    geom_label_repel(
       data = ecdf_at_crit,
-      aes(x = critical_time, y = p, label = label, color = .grp),
-      nudge_x = 2.5,
-      vjust = 0.5,
-      size = 3.3,
-      show.legend = FALSE
+      aes(x = 0, y = p, label = label, color = .grp),
+      inherit.aes = FALSE,
+      direction = "y",            # only move vertically
+      nudge_x = 0.6,              # small horizontal offset from the y-axis
+      hjust = 0,                  # left-justify text inside the label
+      min.segment.length = 0,     # always draw a segment
+      segment.color = "grey50",
+      segment.size = 0.3,
+      box.padding = 0.15,
+      point.padding = 0.1,
+      label.size = 0.2,                    # border around the label
+      label.r = unit(0.1, "lines"),        # slight rounded corners
+      fill = "white",                      # white boxes
+      show.legend = FALSE,
+      seed = 123                           # reproducible place
     )
   
   return(p)
