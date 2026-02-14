@@ -409,51 +409,6 @@ list(
       height = 4,
       units = "in"
     )
-  ),
-
-  # Group headway data by site and spacing_type and prepare for CDF plotting
-  tar_target(
-    headway_by_site,
-    group_headway(headway_data, group_by_site = TRUE)
-  ),
-  tar_target(
-    headway_by_spacing,
-    group_headway(headway_data, group_by_site = FALSE)
-  ),
-
-  # Generate and return the headyway CDF plots by site and spacing type.
-  # Mark the critical time on the plots.
-  tar_target(
-    headway_cdf_by_site_plot,
-    create_combined_cdf_plot(
-      headway_by_site,
-      "CDF by Site",
-      critical_time,
-    )
-  ),
-  tar_target(
-    headway_cdf_by_spacing_plot,
-    create_combined_cdf_plot(
-      headway_by_spacing,
-      "CDF by Spacing Type",
-      critical_time
-    )
-  ),
-
-  # Combine the CDF plots into a list for easier saving in the next target
-  tar_target(
-    cdf_plots,
-    list(
-      headway_cdf_by_site_plot,
-      headway_cdf_by_spacing_plot
-    )
-  ),
-
-  # Save the CDF plots to disk
-  tar_target(
-    cdf_plot_files,
-    save_cdf_plots(cdf_plots, output_dir = "output"),
-    format = "file"
   )
 
 ) # closes list of targets

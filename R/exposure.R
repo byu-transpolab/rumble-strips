@@ -296,7 +296,6 @@ plot_headway <- function(headway_data, critical_time, color_by) {
       vjust = -0.4,
       hjust = 1,
       size = 3.5,
-      label.size = 0.2,
       label.r = unit(0.1, "lines"),
       label.padding = unit(0.15, "lines")
     ) +
@@ -306,9 +305,13 @@ plot_headway <- function(headway_data, critical_time, color_by) {
     scale_y_continuous(
       labels = scales::percent,
       # add a little headspace on the top for the critical time label
-      expand = expansion(mult = c(0, 0.06))
+      expand = expansion(mult = c(0, 0.1))
     ) +
-    labs(x = "Headway (s)", y = "Cumulative %") +
+    labs(
+      x = "Headway (s)",
+      y = "Cumulative %",
+      color = NULL
+    ) +
     theme_minimal() +
     theme(
       legend.position = "bottom",
@@ -324,9 +327,6 @@ plot_headway <- function(headway_data, critical_time, color_by) {
       direction = "y",            # only move vertically
       nudge_x = 0.6,              # small horizontal offset from the y-axis
       hjust = 0,                  # left-justify text inside the label
-      min.segment.length = 0,     # always draw a segment
-      segment.color = "grey50",
-      segment.size = 0.3,
       box.padding = 0.15,
       point.padding = 0.1,
       label.size = 0.2,                    # border around the label
