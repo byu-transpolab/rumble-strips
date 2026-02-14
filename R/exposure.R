@@ -258,23 +258,69 @@ compute_headways <- function(camera_back_data, observations) {
 #' @return ggplot showing cdf curves of headway with critical time marked
 plot_headway <- function(headway_data, critical_time, color_by) {
   
-p <-ggplot(headway_data, aes(x=headway_sec, color = .data[[color_by]])) +
-  stat_ecdf() +
-  geom_vline(
-    xintercept = critical_time, 
-    linetype = "dashed", 
-    linewidth = 0.6,
-    color = "red") +
-  coord_cartesian(xlim = c(0, 100)) +
-  scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-  labs(x = "Headway (s)", y = "Cumulative %") +
-  theme_minimal() +
-  theme(
-    legend.position = "bottom",
-    legend.text = element_text(size = 10),
-    panel.grid.minor = element_blank()
-  )
+  # First, we compute where the critical time intersects with each CDF line
+  # This is used to label the intersections for easier reading.
+  ecdf_at_crit <- headway_data %>%
+    mutate(.grp = .data[[color_by]]) %>%
+    group_by(.grp) %>%
+    summarise(
+      # ECDF at x = critical_time
+      p = mean(headway_sec <= critical_time, na.rm = TRUE),  
+      .groups = "drop"
+    ) %>%
+    mutate(
+      label = scales::percent(p, accuracy = 0.1)  # one decimal place
+    )
 
+  # Now we start building the plot.
+
+  p <-ggplot(headway_data, aes(x=headway_sec, color = .data[[color_by]])) +
+    # add cumulative distribution lines
+    stat_ecdf() +
+    # Add a vertical line to mark the critical time
+    geom_vline(
+      xintercept = critical_time, 
+      linetype = "dashed", 
+      linewidth = 0.6,
+      color = "red"
+    ) +
+    # Add a label to the vertical line representing critical time
+    annotate(
+      "text",
+      x = 0,
+      y = 0.98,
+      label = paste0("Critical Time: ", round(critical_time, 1), " s"),
+      color = "red",
+      vjust = -0.4,
+      hjust = 1,
+      size = 3.5
+    ) +
+    # Fix the x_axis to 0-100 seconds without changing data
+    coord_cartesian(xlim = c(0, 100)) +
+    # Make the why scale show percentage points
+    scale_y_continuous(
+      limits = c(0, 1), 
+      labels = scales::percent,
+      # add a little headspace on the top for the critical time label
+      expand = expansion(mult = c(0, 0.02))
+    ) +
+    labs(x = "Headway (s)", y = "Cumulative %") +
+    theme_minimal() +
+    theme(
+      legend.position = "bottom",
+      legend.text = element_text(size = 10),
+      panel.grid.minor = element_blank()
+    ) +
+    # Add labels to the points intersecting cdf and vertical line
+    geom_text(
+      data = ecdf_at_crit,
+      aes(x = critical_time, y = p, label = label, color = .grp),
+      nudge_x = 2.5,
+      vjust = 0.5,
+      size = 3.3,
+      show.legend = FALSE
+    )
+  
   return(p)
 }
 
@@ -479,135 +525,4 @@ save_cdf_plots <- function(cdf_results, output_dir = "output") {
   }
   
   files
-}
-
-
-#' Build ECDF points for groups of headways
-#'
-#' @param grouped_headway Named list of tibbles. Each list element is a tibble
-#'   containing a numeric column `headway_sec` (headway in seconds). List names
-#'   are used as the `group` values in the output.
-#' @return A tibble with columns:
-#'   - `group` (character): name of the group (either sites or spacing types),
-#'   - `headway_sec` (numeric): sorted, unique observed headway values,
-#'   - `cdf` (numeric): empirical cumulative probability at each `headway_sec`.
-#'   Rows for groups with no non-NA headways are omitted.
-make_ecdf_data <- function(grouped_headway) {
-  # interate through the list of tibbles, do some math, and put it together.
-  imap_dfr(grouped_headway, function(tbl, name) {
-    # sort the headway secs for this group
-    hdwy <- tbl$headway_sec
-    # filter out any NAs just in case, since we need to do math on these
-    hdwy <- hdwy[!is.na(hdwy)]
-    # find how many headways we have for this group
-    n <- length(hdwy)
-    # sort the headways for this group
-    sorted <- sort(hdwy)
-    # create ECDF points
-    x_vals <- sort(unique(sorted))
-    # calculate cumulative proportion at each x value
-    y_vals <- vapply(x_vals, function(x) sum(sorted <= x) / n, numeric(1))
-    # create a tibble for this group with the ECDF points
-    tibble(group = name, headway_sec = x_vals, cdf = y_vals)
-  })
-  # imap takes all the individual tibbles andn binds them together.
-}
-
-# 2) Compute CDF values at the critical time for each group
-compute_cdf_at_tc <- function(data_list, critical_time) {
-  # data_list: named list of tibbles; each tibble must have headway_sec
-  # critical_time: numeric (seconds) or NA
-  if (is.na(critical_time)) {
-    return(tibble::tibble(group = names(data_list), cdf_at_tc = NA_real_))
-  }
-  purrr::imap_dfr(data_list, function(tbl, name) {
-    hdwy <- tbl$headway_sec
-    hdwy <- hdwy[!is.na(hdwy)]
-    if (length(hdwy) == 0) {
-      tibble::tibble(group = name, cdf_at_tc = NA_real_)
-    } else {
-      tibble::tibble(group = name,
-                     cdf_at_tc = sum(hdwy <= critical_time, na.rm = TRUE) / length(hdwy))
-    }
-  })
-}
-
-# 3) Plot ECDF points and annotate critical-time information
-plot_ecdf_with_tc <- function(ecdf_data,
-                              cdf_at_tc_df,
-                              title = NULL,
-                              critical_time = NA,
-                              colors = NULL,
-                              x_limit = 100) {
-  # ecdf_data: tibble produced by make_ecdf_data (group, headway_sec, cdf)
-  # cdf_at_tc_df: tibble produced by compute_cdf_at_tc (group, cdf_at_tc)
-  # colors: named vector of colors (names must match groups in ecdf_data)
-  groups <- unique(ecdf_data$group)
-  if (is.null(colors)) {
-    # default palette matching group order
-    cols <- scales::hue_pal()(length(groups))
-    colors <- setNames(cols, groups)
-  } else {
-    # ensure provided colors include all groups; fallback to hue for missing
-    missing_groups <- setdiff(groups, names(colors))
-    if (length(missing_groups) > 0) {
-      extra_cols <- scales::hue_pal()(length(missing_groups))
-      colors <- c(colors, setNames(extra_cols, missing_groups))
-    }
-  }
-
-  p <- ggplot2::ggplot(ecdf_data, ggplot2::aes(x = headway_sec, y = cdf, color = group)) +
-    ggplot2::geom_step(linewidth = 1.2, direction = "hv") +
-    ggplot2::scale_color_manual(values = colors, name = "") +
-    ggplot2::scale_x_continuous(breaks = seq(0, x_limit, by = 10), limits = c(0, x_limit)) +
-    ggplot2::scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-    ggplot2::labs(x = "Headway (s)", y = "Cumulative %", title = title) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5, size = 14, face = "bold"),
-      legend.position = "bottom",
-      legend.text = ggplot2::element_text(size = 10),
-      panel.grid.minor = ggplot2::element_blank()
-    )
-
-  # add critical time vertical line + label if applicable
-  if (!is.na(critical_time) && critical_time <= x_limit) {
-    p <- p +
-      ggplot2::geom_vline(xintercept = critical_time, color = "red", linetype = "dashed", linewidth = 1) +
-      ggplot2::annotate("text",
-                        x = critical_time,
-                        y = 0.98,
-                        label = sprintf("t_c = %.1f s", critical_time),
-                        color = "red",
-                        size = 3.5,
-                        fontface = "bold",
-                        hjust = ifelse(critical_time < x_limit * 0.5, -0.1, 1.1))
-    # add percent labels at left with simple vertical spacing to avoid overlap
-    cdf_at_tc_df <- cdf_at_tc_df %>% dplyr::filter(!is.na(cdf_at_tc))
-    if (nrow(cdf_at_tc_df) > 0) {
-      cdf_at_tc_df <- cdf_at_tc_df %>% dplyr::arrange(cdf_at_tc) %>% dplyr::mutate(label_y = cdf_at_tc)
-      min_spacing <- 0.05
-      for (i in seq_len(nrow(cdf_at_tc_df))) {
-        if (i > 1 && (cdf_at_tc_df$label_y[i] - cdf_at_tc_df$label_y[i-1]) < min_spacing) {
-          cdf_at_tc_df$label_y[i] <- cdf_at_tc_df$label_y[i-1] + min_spacing
-        }
-      }
-      for (i in seq_len(nrow(cdf_at_tc_df))) {
-        grp <- cdf_at_tc_df$group[i]
-        lab_y <- cdf_at_tc_df$label_y[i]
-        val <- cdf_at_tc_df$cdf_at_tc[i]
-        p <- p + ggplot2::annotate("text",
-                                   x = 2,
-                                   y = lab_y,
-                                   label = sprintf("%.1f%%", val * 100),
-                                   color = colors[grp],
-                                   size = 3,
-                                   fontface = "bold",
-                                   hjust = 0,
-                                   vjust = 0.5)
-      }
-    }
-  }
-
-  p
 }
