@@ -259,39 +259,36 @@ get_individual_station_data <- function(station, excel_files) {
 
 #' Filter the station data down to the provided start and end date
 #' 
-#' @param df data frame of station data
-#' @param sd start date formatted as string "YYYY-MM-DD"
-#' @param ed   end date formatted as string "YYYY-MM-DD"
-#' @return vector with average volumes per hour within given dates
-get_hourly_volume <- function(df, sd, 
-                          ed = sd) {
+#' @param all_station_data tibble with all the stations' data
+#' @param start_date start date formatted as string "YYYY-MM-DD"
+#' @param end_date   end date formatted as string "YYYY-MM-DD"
+#' @return tibble with average volumes per hour within given dates
+get_hourly_volume <- function(
+  all_station_data, start_date, end_date = start_date) {
   
 # Ensure the date column is in Date format
-df$DATE <- as.Date(df$DATE)
+all_station_data$DATE <- as.Date(df$DATE)
 
-#determine which rows have the needed dates
-df <- df %>%
-  filter(DATE >= sd & DATE <= ed)
+# Filter down to only requested dates
+all_station_data <- all_station_data %>%
+  filter(DATE >= start_date & DATE <= end_date)
 
 # Count the number of unique days
 days <- length(unique(df$DATE))
- 
 
 #identify the first row with sd and last row with ed
-slected_rows <- df$DATE >= sd & df$DATE <= ed
+selected_rows <- df$DATE >= sd & df$DATE <= ed
     
-#isolate just the volume data (i.e. columns F to AC)
-vdata <- df %>%
+#isolate just the volume data
+volume_data <- all_station_data %>%
+  # columns are named by 24-hr system (0 = midnight, 23 = 11PM)
+  # select all 24-hours of data
   select("0":"23") %>%
+  # Make sure they are all integer values
   mutate_all(as.integer)
   
 #add all columns together into one vector
-hourly_volume <- colSums(vdata[slected_rows, ], na.rm = TRUE)  
-
-#isolate just the volume data (i.e. columns F to AC)
-  df <- df %>%
-    select("0":"23") %>%
-    mutate_all(as.integer)
+hourly_volume <- colSums(vdata[selected_rows, ], na.rm = TRUE)  
   
 #average the total using the total # of days
 y = rep(days, 24)
