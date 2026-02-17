@@ -29,12 +29,33 @@ get_min_obs <- function(o = 3, z = 1.959964,
   return(n)  
 }
 
-#' Read in a csv file that lists all the stations we want to examine
-#' 
-#' @param file_path string to the csv file listing the stations.
-#' @return tibble listing all the stations we want.
+#' Read a csv file that lists all the stations we want to examine
+#'
+#' @param file_path String path to the csv file listing the stations.
+#' @return Character vector of 4-digit, zero-padded station numbers.
 get_station_list <- function(file_path) {
-  station_list <- read.csv(file_path, colClasses =  c("character"))
+  # Read only the needed column as character
+  df <- read_csv(
+    file = file_path,
+    col_types = cols(
+      station_number = col_character()
+    )
+  )
+
+  if (!"station_number" %in% names(df)) {
+    stop("Column 'station_number' not found in the CSV.\n",
+    "Ensure the first line in station_list.csv is 'station_number'.")
+  }
+
+  station_list <- df$station_number |> 
+    trimws() |>
+    # remove NA/empty rows
+    (\(x) x[!is.na(x) & nzchar(x)])() |>
+    # keep only digits
+    (\(x) gsub("\\D", "", x))() |>
+    # zero-pad to width 4
+    (\(x) str_pad(x, width = 4, side = "left", pad = "0"))()
+
   return(station_list)
 }
 
@@ -96,6 +117,7 @@ dnld_google_sheet <- function() {
   ) # end of the try_catch funciton
   } # of the dnld_google_sheet function
 
+
 #' List the excel files in a given folder
 #' 
 #' @param folder_path file path to a folder
@@ -120,12 +142,12 @@ get_available_stations <- function(excel_files) {
   # Combine and deduplicate
   sheets <- unique(c(sheet_names1, sheet_names2))
 
-  
   # Keep only sheets that look like station numbers:
   #   - entirely digits
-  #   - length 3 or 4 (your examples are 4-digit)
+  #   - length 3 or 4
   valid_station_pattern <- "^[0-9]{3,4}$"
 
+  # Make a list of sheet names that look like station numbers
   available_stations <- sheets[grepl(valid_station_pattern, sheets)]
 
   # Deduplicate and sort
@@ -136,27 +158,31 @@ get_available_stations <- function(excel_files) {
 
 #' Remove unavailable station numbers from station_list
 #' 
-#' @param station_list a tibble with column station_number
-#' @param approved_stations a tibble with a column of available station #s
-#' @return returns tibble with column station_number of only available stations
-clean_stations <- function(station_list, approved_stations){
+#' @param station_list a list of desired station numbers
+#' @param approved_stations a list of available stations
+#' @return a list of desired station filtered down to only what is available.
+clean_stations <- function(station_list, available_stations){
  
-  # 
-  cleaned_station_list <- station_list %>%
-    filter(station_number %in% approved_stations)
+  # Filter station_list down to only whats on the available list
+  cleaned_station_list <- station_list[station_list %in% available_stations]
   
-  # Convert the character column to integer
-  cleaned_station_list$station_number <- 
-    as.integer(cleaned_station_list$station_number)
   
+
   return(cleaned_station_list)
 }
 
+
+#' Go through a column of station numbers and pull their respective data
+#' 
+#' @param cleaned_station_list list station numbers
+#' @param excel_files list of excel files with station data
+#' @return a list of tibbles, each named with their respective station number
 get_all_station_data <- function(cleaned_station_list, excel_files){
   # Iterate through the column of station numbers
   # and collect all the data into one tibble.
-  map(cleaned_station_list$station_number, 
-    ~ get_individual_station_data(.x, excel_files))
+  map(cleaned_station_list, ~ get_individual_station_data(.x, excel_files)) |>
+    set_names(cleaned_station_list) |>
+    bind_rows(.id = "station_number")
 }
 
 #' Find the provided station number in the excel sheets and return a tibble
@@ -167,7 +193,11 @@ get_all_station_data <- function(cleaned_station_list, excel_files){
 #' @return complete data frame of that station
 get_individual_station_data <- function(station, excel_files) {
 
-    # step 1: Pick pattern based on station
+  sheet_name <- station
+  # Convert characters to integers to determine which excel file to read
+  station <- suppressWarnings(as.integer(station))
+
+    # Pick 'pattern' based on station
     pattern <- NULL
     if (station > 300 && station < 432) {
       pattern <- "301-431"
@@ -179,20 +209,19 @@ get_individual_station_data <- function(station, excel_files) {
       stop(paste0("station # ", station, " not found."))
     }
 
-    # Step 2: Find the excel file whose name contains pattern.
+    # Find the excel file whose name contains pattern.
     local_path <- excel_files[grepl(pattern, excel_files)]
     # If the excel file doesn't exist, throw an error
     if (length(local_path) == 0) {
       stop(paste0("No Excel file found for stations '", pattern, "'."))
     }
-
-    #step 3: read the sheet info from the excel file
-    # If the excel files weren't downloaded properly, we'll get an error
+  
+    # Read the sheet info from the excel file
+    # If the excel files weren't downloaded properly, we'll get an error.
     # Wrap the data extraction in a tryCatch to report the error more clearly.
     tryCatch(
       {
         # Read the sheet for the station from the local Excel file
-        sheet_name <- paste0("0", station)
         data <- readxl::read_excel(
           path = local_path,
           sheet = sheet_name,
