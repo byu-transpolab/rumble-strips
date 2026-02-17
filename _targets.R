@@ -1,7 +1,7 @@
 # Created by use_targets().
 # Follow the comments below to fill in this target script.
 # Then follow the manual to check and run the pipeline:
-#   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline
+#   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline # nolint
 
 # Load packages required to define the pipeline:
 library(targets)
@@ -12,17 +12,16 @@ library(readxl)
 library(mlogit)
 library(modelsummary)
 library(svglite)
-# library(tarchetypes)
-# Load other packages as needed.
-# setwd("~/Documents/GitHub/rumble-strips")
+# library(tarchetypes) # Load other packages as needed. # nolint
+#setwd("~/Documents/GitHub/rumble-strips")
 
 # Set target options:
 tar_option_set(
-  packages = c("tidyverse",
-               "mlogit",
-               "modelsummary",
-               "readxl",
-               "googledrive"),
+  packages = c("tidyverse", 
+               "mlogit", 
+               "modelsummary", 
+               "readxl", 
+               "googledrive"), # updated: removed googlesheets4, added readxl and googledrive
   format = "rds" # default storage format
   # Set other options as needed.
 )
@@ -33,8 +32,7 @@ tar_option_set(
 # options(clustermq.scheduler = "multicore")
 
 # tar_make_future() configuration (okay to leave alone):
-# Install packages {{future}}, {{future.callr}}, and {{future.batchtools}}
-# to allow use_targets() to configure tar_make_future() options.
+# Install packages {{future}}, {{future.callr}}, and {{future.batchtools}} to allow use_targets() to configure tar_make_future() options.
 
 # Load the R scripts stored in R/ with your custom functions:
 #for (file in list.files("R", full.names = TRUE)) source(file)
@@ -46,10 +44,10 @@ source("R/hourly_volumes.R")
 source("R/csv2tibble.R")
 source("R/observations.R")
 source("R/speed.R")
-source("R/braking_and_departure.R")
+source("R/braking_and_avoidance.R")
 source("R/exposure.R")
 source("R/displacement_by_volume.R")
-source("R/displacement_by_momentum.R")
+source("R/displacement_by_energy.R")
 
 
 
@@ -61,28 +59,10 @@ list(
   ### Reading in CSV files and returning tibbles #############################
   # helper functions are found in R/csv2tibble.R
 
-  # Targets related to rainy days. 
-  # Returns a boolean and a list of rainy days to be exlcuded
-  # The boolean must be set to true to exclude rain days from the data.
-  # Each of the 3 main tibbles (wavetronix, camera_top and camera_back)
-  # have follow up targets to filter out rainy days using filter_rainy_days().
-  tar_target(exclude_rain, TRUE),
-  tar_target(rainy_periods, 
-    list(
-      # Dates are accurate, but time estimates exceed time of bad weather
-      # US-6, NO TPRS.
-      interval(ymd_hms("2025-07-16 15:00:00"), ymd_hms("2025-07-16 17:00:00")),
-      # # US-6, 1:2.
-      interval(ymd_hms("2025-07-15 16:00:00"), ymd_hms("2025-07-15 19:00:00"))
-    )
-  ),
-
   # read observation_data.csv into a tibble with columns:
   # date, site, strip_spacing, trailer_spacing, gopro_spacing, spacing_type
   tar_target(observations_file, "data/observation_data.csv", format = "file"),
   tar_target(observations, read_observations(observations_file)),
-  # observations should not be filtered by rain, or it will cause errors with
-  # worker_exposure_data further down the pipeline.
 
   # puts all wavetronix data into one dataframe with columns:
   # site, unit, lane, volume, occupancy, speed, speed_85,
@@ -91,11 +71,8 @@ list(
     "data/wavetronix",
     format = "file"
   ),
-  tar_target(wavetronix_complete,
-    read_wavetronix_folder(wavetronix_files)
-  ),
   tar_target(wavetronix,
-    filter_rainy_days(wavetronix_complete, exclude_rain, rainy_periods)
+    read_wavetronix_folder(wavetronix_files)
   ),
 
   # puts all camera top data into one dataframe with columns:
@@ -105,11 +82,9 @@ list(
     list.files("data/camera_top", full.names = TRUE),
     format = "file"
   ),
-  tar_target(camera_top_complete,
+  tar_target(
+    camera_top_data,
     get_camera_top_data(camera_top_files)
-  ),
-  tar_target(camera_top_data,
-    filter_rainy_days(camera_top_complete, exclude_rain, rainy_periods)
   ),
 
   # puts all camera back data into one dataframe with columns:
@@ -119,22 +94,9 @@ list(
     list.files("data/camera_back", full.names = TRUE),
     format = "file"
   ),
-  tar_target(camera_back_complete,
+  tar_target(
+    camera_back_data,
     get_camera_back_data(camera_back_files)
-  ),
-  tar_target(camera_back_data,
-    filter_rainy_days(camera_back_complete, exclude_rain, rainy_periods)
-  ),
-
-  # Download truck counts from BTS.gov and process into tibble
-  tar_target(
-    truck_counts_file,
-    dnld_bts_truck_counts(),
-    format = "file"
-  ),
-  tar_target(
-    bts_truck_counts,
-    process_bts_truck_counts(truck_counts_file)
   ),
 
   # puts all worker exposure data into one dataframe with columns:
@@ -150,8 +112,6 @@ list(
     worker_exposure_data,
     get_worker_exposure_data(worker_exposure_files, observations)
   ),
-  # worker_exposure_data does not need to be filtered by rainy days.
-  # The workers never worked in the rain, though they did move strips on 07/15.
 
   ### Trailer and camera spacing #############################################
   # Helper functions are found in R/observations.R
@@ -160,7 +120,7 @@ list(
   tar_target(trailer_spacing, pivot_trailer_spacing(observations)),
   tar_target(camera_spacing, pivot_camera_spacing(observations)),
 
-  ### Changes in Speed #######################################################
+  ### Changes in Speed Analysis ##############################################
   # Helper functions are found in R/speed.R
 
   # create tibble from wavetronix data with columns:
@@ -173,53 +133,10 @@ list(
 
 # plot confidence bounds for the t-test results of speed
   tar_target(confidence_bounds,
-    plot_confidence_bounds(paired_t_test)
+  plot_confidence_bounds(paired_t_test)
   ),
 
-  tar_target(confidence_bounds_file,
-    ggsave(
-      "output/change-in-speeds.svg", 
-      plot = confidence_bounds,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
-
-  # t-test of 85th percentile speed by each unit alone
-  tar_target(single_unit_t_test_w1, 
-    run_single_unit_t_test(speed_data, unit = "w1")
-  ),
-  tar_target(single_unit_t_test_w2, 
-    run_single_unit_t_test(speed_data, unit = "w2")
-  ),
-
-  # plot confidence bounds for the single unit t-test results
-  tar_target(single_unit_confidence_bounds_w1,
-    plot_single_unit_confidence_bounds(single_unit_t_test_w1, unit = "w1")
-  ),
-  tar_target(single_unit_confidence_bounds_w2,
-    plot_single_unit_confidence_bounds(single_unit_t_test_w2, unit = "w2")
-  ),
-
-  # Save the single unit confidence bounds plots
-  tar_target(single_unit_speed_w1_file,
-    ggsave(
-      "output/single_unit_speed_w1.svg",
-      plot = single_unit_confidence_bounds_w1,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
-  tar_target(single_unit_speed_w2_file,
-    ggsave(
-      "output/single_unit_speed_w2.svg",
-      plot = single_unit_confidence_bounds_w2,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
-
-  ### Driver Braking and TPRS Avoidance ######################################
+  ### Driver Braking and TPRS Avoidance Analysis #############################
   # Helper functions are listed in braking_and_departure.R
 
   # Combine camera_back_data and observations so driver behavior and
@@ -233,29 +150,7 @@ list(
   # # Plot departure response in a bar chart, faceted by spacing_type and class.
   tar_target(departure_plot, plot_departure(brake_and_departure)),
 
-  # Save the braking and departure plots
-  tar_target(braking_plot_file,
-    ggsave(
-      "output/braking_plot.svg",
-      plot = braking_plot,
-      width = 5,
-      height = 6,
-      units = "in")
-  ),
-  tar_target(departure_plot_file,
-    ggsave(
-      "output/departure_plot.svg",
-      plot = departure_plot,
-      width = 4,
-      height = 6,
-      units = "in")
-  ),
-
-  # models of braking and avoidance
-  tar_target(brake_models, estimate_brake_models(brake_and_departure)),
-  tar_target(avoid_models, estimate_avoid_models(brake_and_departure)),
-
-  ### TPRS displacement by volume ############################################
+  ### TPRS displacement by volume Analysis ###################################
   # Helper functions are found in R/displacement_by_volume.R
 
   # calculate cumulative traffic volume for each day from Wavetronix data
@@ -268,53 +163,25 @@ list(
     cumulate_class_volume(camera_back_data, observations)
   ),
 
-  # List the available site names
-  tar_target(site_names,
-    unique(cumulated_volume$site)
+  # Plot volume and events for each site with wavetronix data
+  tar_target(displacement_plots_wave,
+    make_displacement_plot_data(cumulated_volume, camera_top_data)
   ),
 
-  # Plot class volumes and events for each site
-  tar_target(displacement_by_class_plots,
-    make_displacement_plot_class_data(
-      cumulated_class_volume,
-      camera_top_data,
-      site_info = site_names),
-    # Pattern here is what lets the target iterate over each site
-    pattern = map(site_names)
+  # Plot class volumes and events for each site with camera back data
+  tar_target(displacement_plots_cb,
+  make_displacement_plot_class_data(cumulated_class_volume, camera_top_data)
   ),
 
-  # Save each of the displacement by class plots
-  tar_target(displacement_by_class_plot_files,
-    save_displacement_plots(
-      site_info = site_names,
-      plot = displacement_by_class_plots,
-      output_dir = "output"
-    ),
-    # Pattern is what lets the target iterate over each site
-    pattern = map(site_names, displacement_by_class_plots),
-    format = "file"
-  ),
-
-  ### TPRS Displacement by momentum ##########################################
-  # Helper Functions are found in R/displacement_by_momentum.R
-
-  # define vehicle weights
-  tar_target(motorcycle_weight, 800), # lbs, initial Google search result
-  tar_target(passenger_weight, 4419), # lbs, Based on EPA data for 2024.
-  tar_target(truck_weight,            # lbs, calculated from BTS data from 2021
-    calc_truck_weight(bts_truck_counts)    # using a weighted average
-  ),
+  ### TPRS Displacement by energy Analysis ###################################
+  # Helper Functions are found in R/displacement_by_energy.R
 
   # compile speed, class, and displacement state into one data frame
   tar_target(displacement_data,
-    compile_displacement_data(
-      wavetronix,
-      camera_back_data,
-      camera_top_data,
-      observations,
-      motorcycle_weight,
-      passenger_weight,
-      truck_weight)
+    compile_displacement_data(wavetronix,
+                            camera_back_data,
+                            camera_top_data,
+                            observations)
   ),
 
   # summarize energy and traffic volume per transition
@@ -332,83 +199,178 @@ list(
     prep_transition_data(transition_data)
   ),
 
-  # Plot the impact momentum for each transition, colored by spacing
-  tar_target(momentum_per_transition_spacing,
-    plot_momentum(disp_plot_data, FALSE)
+  # Plot the impact energy for each transition, colored by spacing
+  tar_target(energy_per_transition_spacing,
+    plot_energy_spacing(disp_plot_data)
   ),
 
-  # Plot the impact momentum for each transition, colored by site
-  tar_target(momentum_per_transition_site,
-    plot_momentum(disp_plot_data, TRUE)
-  ),
-
-  # Save the momentum per transition plots
-  tar_target(momentum_per_transition_spacing_file,
-    ggsave(
-      "output/momentum_per_transition_spacing.svg",
-      plot = momentum_per_transition_spacing,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
-  tar_target(momentum_per_transition_site_file,
-    ggsave(
-      "output/momentum_per_transition_site.svg",
-      plot = momentum_per_transition_site,
-      width = 6,
-      height = 4,
-      units = "in")
+  # Plot the impact energy for each transition, colored by site
+  tar_target(energy_per_transition_site,
+    plot_energy_site(disp_plot_data)
   ),
 
   ### Worker Exposure Analysis ###############################################
-  # Helper functions located in R/exposure.R
+  # Helper functions are being developed
 
-  # Find the critical time workers need to replace the TPRS
-  tar_target(
-    critical_time,
-    find_critical_time(worker_exposure_data)
-  ),
+  ### Hourly Volumes Analysis ################################################
+  # Helper functions are found in R/hourly_volumes.R
 
-  # Get headway data for each vehicle and add which spacing type they were in
-  tar_target(
-    headway_data,
-    compute_headways(camera_back_data, observations)
-  ),
+  # This section created average hourly volume plots which
+  # were used to evaluate how long potential sites would
+  # need to be observed to reach minimum observations.
 
-  # Plot headway CDF with critical time has a vertical dashed line
-  # Colored by site:
+  # Download Google Sheets as Excel files. They're large enough it's better
+  # to download than to read and store a tibble.
   tar_target(
-    headway_cdf_site_plot,
-    plot_headway(headway_data, critical_time, "site")
-  ),
-  # Colored by spacing_type:
-  tar_target(
-    headway_cdf_spacing_plot,
-    plot_headway(headway_data, critical_time, "spacing_type")
-  ),
-
-  # Save the CDF plots
-  tar_target(
-    headway_cdf_site_plot_file,
-    ggsave(
-      "output/cdf_sites.svg",
-      headway_cdf_site_plot,
-      device = svglite,
-      width = 6,
-      height = 4,
-      units = "in"
+    download_sheets,
+    tryCatch(
+      {
+        dnld_google_sheet()
+      },
+      error = function(e) {
+        message(
+          "\n*** ERROR: Failed to download UDOT's hourly volume data.***\n",
+          "Either skip hourly volume estimates, or manually download the files.\n",
+          "To skip, enter 'skip_hourly <- TRUE' and rerun targets.\n",
+          "The required files can be downloaded at:\n",
+          "https://docs.google.com/spreadsheets/d/1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw/edit?gid=2031380538#gid=2031380538\n",
+          "https://docs.google.com/spreadsheets/d/1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI/edit?gid=1035130660#gid=1035130660\n",
+          "The spreadsheets are called '2023 Station 501-733' and\n",
+          "'2023 Station 301-431' respectively.\n",
+          "Save these files in data/temp_data/2023_hourly_volumes_1.xlsx and\n",
+          "data/temp_data/2023_hourly_volumes_2.xlsx.\n",
+          "Original error: ", e$message, "\n"
+          )
+        stop(e) # re-throw to stop the pipeline
+      }
     )
   ),
+
+  # Get a list of which stations are available in the spreadsheets
+  tar_target(available_stations, get_available_stations()),
+
+  # Load list of counting stations we want to examine.
   tar_target(
-    headway_cdf_spacing_plot_file,
-    ggsave(
-      "output/cdf_spacing.svg",
-      headway_cdf_spacing_plot,
-      device = svglite,
-      width = 6,
-      height = 4,
-      units = "in"
+    station_list,
+    read.csv("data/stations_list", colClasses =  c("character"))
+  ),
+
+  # Check remove unavailable stations from station list
+  tar_target(
+    cleaned_station_list,
+    clean_stations(station_list, available_stations)
+  ),
+
+  # Statistical parameters
+  tar_target(o, 3),
+  tar_target(z, 1.959964),
+  tar_target(U, 1.04),
+  tar_target(E, 1),
+
+  # Date and time parameters
+  tar_target(sd, "2023-05-01"), # Start Date
+  tar_target(ed, "2023-08-31"), # End Date
+  tar_target(st, 8), # start time
+  tar_target(et, 17), # end time
+  # Calculate minimum observations
+  tar_target(
+    n,
+    get_min_obs(o, z, U, E)
+  ),
+
+  # Pull station data from local Excel files
+  tar_target(
+    all_station_data,
+    tryCatch(
+      map(cleaned_station_list$station_number, get_station_data),
+      error = function(e) {
+        message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
+                "Try running the program again, or manually check the Excel files in data/temp_data.\n",
+                "See the README file in data/temp_data.\n",
+                "Original error: ", e$message, "\n")
+        stop(e)
+      }
     )
+  ),
+
+  # Summarize each station to their hourly volumes and save the result
+  tar_target(
+    hourly_volumes,
+    {
+      hv <- tibble(cleaned_station_list,
+                   vector = I(map(all_station_data, 
+                                 ~ get_hourly_volume(.x, sd, ed)
+                                 )
+                             )
+                  )
+      save(hv, file = "data/temp_data/hourly_station_data")
+      hv
+    }
+  ),
+
+  # Plot each station
+  tar_target(
+    plots,
+      map2(
+      hourly_volumes$vector, 
+      hourly_volumes$station_number, 
+      ~ ggsave(
+        filename = paste0("output/", "plot_", .y,"_", sd, "_to_", ed,".svg"), 
+        plot = plot_station(.x, st, et), 
+        width = 7, 
+        height = 5)
+        )
+  ),
+
+  # Create station summary with initial values
+  tar_target(
+    station_summary,
+    cleaned_station_list %>%
+      mutate(
+        AADT = 0,
+        daytime_perc = 0,
+        min_hours = 0
+      )
+  ),
+
+  # Add AADT to station summary
+  tar_target(
+    AADT_summary,
+    station_summary %>%
+      mutate(AADT = map_int(hourly_volumes$vector, 
+                            ~ {result <- sum(.x, na.rm = TRUE)
+                                if (is.nan(result)) 0 
+                                else as.integer(result)  # Replace NaN with 0
+                              }
+                            ))
+  ),
+
+  # Add daytime percentage to station summary
+  tar_target(
+    daytime_summary,
+    AADT_summary %>%
+      mutate(daytime_perc = map_dbl(hourly_volumes$vector, 
+                              ~ get_aadt_perc(.x, st, et)))
+  ),
+
+  # Add minimum hours of observation to station summary
+  tar_target(
+    final_summary,
+    daytime_summary %>%
+      mutate(min_hours = map_dbl(hourly_volumes$vector, 
+                           ~ get_obs_time(st, et, n, .x)))
+  ),
+
+  # Plot the station summary
+  tar_target(
+    plot_summary,
+    plot_station_summary(final_summary)
+  ),
+
+  # Save the station summary
+  tar_target(
+    save_summary,
+    write_csv(final_summary, "data/temp_data/station_summary")
   )
-
+  
 ) # closes list of targets
