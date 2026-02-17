@@ -10,40 +10,112 @@
 
 ##Functions##########################################
 
+#' Calculate the miniumum required observations based on provided assumptions
+#' 
+#' @param o, dbl, standard deviation 
+#' @param z, dbl, z-score 
+#' @param U, dbl, centrality adjustment 
+#' @param E, dbl, margin of error 
+#' @return number of required observations
+get_min_obs <- function(o = 3, z = 1.959964, 
+                        U = 1.04, E = 1) {
+  
+  #equation to find required observations
+  n = ((o^2) * (z^2) * ((U^2) + 2)) / (2 * (E^2))
+  
+  #round up to nearest whole number
+  n = ceiling(n)
+  
+  return(n)  
+}
+
+#' Read in a csv file that lists all the stations we want to examine
+#' 
+#' @param file_path string to the csv file listing the stations.
+#' @return tibble listing all the stations we want.
+get_station_list <- function(file_path) {
+  station_list <- read.csv(file_path, colClasses =  c("character"))
+  return(station_list)
+}
+
+#' Checks if hourly volume data has already been downloaded from UDOT
+#' Downloads the files if not already downloaded.
+#' 
+#' @return Saves the hourly volume data from UDOT to disk
 dnld_google_sheet <- function() {
+  # make sure the settings do NOT require a google account.
+  # Since we're accessing public info, we don't need one.
   drive_deauth()
 
-  local_path_1 <- file.path("data", "temp_data", "2023_hourly_volumes_1.xlsx")
-  local_path_2 <- file.path("data", "temp_data", "2023_hourly_volumes_2.xlsx")
+  # define files paths.
+  # The names for these excel files are only defined here, they can be adjusted.
+  # However, the strings "301-431" and "501-733" must be included so that
+  # get_station_data() can work properly.
+  local_path_1 <- file.path("data", "hourly_volumes", "2023_volumes_stations_301-431.xlsx")
+  local_path_2 <- file.path("data", "hourly_volumes", "2023_volumes_stations_501-733.xlsx")
 
-  # Download the files if they don't exist
-  if (!file.exists(local_path_1)) {
-    googledrive::drive_download(
-      as_id("1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw"),
-      path = local_path_1,
-      overwrite = TRUE,
-      type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-  }
+  # check if the files already exist. If not, try to download them.
+  # There are common issues downloading these files, so wrap it in a try-catch.
+  # The error message includes instructions on how to handle download errors.
+  tryCatch({
+    # file one
+    if (!file.exists(local_path_1)) {
+      googledrive::drive_download(
+        as_id("1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw"),
+        path = local_path_1,
+        overwrite = TRUE,
+        type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      )
+    }
+    # file two
+    if (!file.exists(local_path_2)) {
+      googledrive::drive_download(
+        as_id("1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI"),
+        path = local_path_2,
+        overwrite = TRUE,
+        type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      )
+    }
+  },
+  error = function(e) {
+    message(
+      "\n*** ERROR: Failed to download UDOT's hourly volume data.***\n",
+      "Either skip hourly volume estimates, or manually download the files.\n",
+      "The required files can be downloaded at:\n",
+      "https://docs.google.com/spreadsheets/d/1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw/edit?gid=2031380538#gid=2031380538\n",
+      "https://docs.google.com/spreadsheets/d/1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI/edit?gid=1035130660#gid=1035130660\n",
+      "The spreadsheets are called '2023 Station 301-431' and\n",
+      "'2023 Station 501-733' respectively.\n",
+      "Save these files as:\n",
+      "data/hourly_volumes/2023_volumes_stations_301-431.xlsx and\n",
+      "data/hourly_volumes/2023_volumes_stations_501-733.xlsx.\n",
+      "Original error: ", e$message, "\n"
+      )
+    stop(e) # re-throw to stop the pipeline
+    }
+  ) # end of the try_catch funciton
+  } # of the dnld_google_sheet function
 
-  if (!file.exists(local_path_2)) {
-    googledrive::drive_download(
-      as_id("1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI"),
-      path = local_path_2,
-      overwrite = TRUE,
-      type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-  }
+#' List the excel files in a given folder
+#' 
+#' @param folder_path file path to a folder
+#' @return a list of file paths to excel files in the given folder
+list_excel_files <- function(folder_path) {
+  
+  files <- list.files(folder_path, pattern = "\\.xlsx$", full.names = TRUE)
+
+  files
 }
 
 
-#' returns a char list of stations available in Sheets
-get_available_stations <- function() {
+#' reads and returns the names of all the sheets in the excel files
+#' 
+#' @param excel_files list of file paths to excel files
+#' @return a list of stations available in the excel files ( ie sheet names)
+get_available_stations <- function(excel_files) {
   # Get sheet names from local Excel files
-  sheet_names1 <- readxl::excel_sheets(
-    "data/temp_data/2023_hourly_volumes_1.xlsx")
-  sheet_names2 <- readxl::excel_sheets(
-    "data/temp_data/2023_hourly_volumes_2.xlsx")
+  sheet_names1 <- readxl::excel_sheets(excel_files[1])
+  sheet_names2 <- readxl::excel_sheets(excel_files[2])
 
   # Combine and deduplicate
   sheets <- unique(c(sheet_names1, sheet_names2))
@@ -62,21 +134,12 @@ get_available_stations <- function() {
   return(available_stations)
 }
 
-
-##clean_stations#####################################
-
+#' Remove unavailable station numbers from station_list
+#' 
 #' @param station_list a tibble with the a column of station #s
-#' returns a column with available stations.
-
+#' @param approved_stations a tibble with a column of available station #s
+#' @return returns a column with available stations.
 clean_stations <- function(station_list, approved_stations){
-if (file.exists("data/available_stations")) {
-  approved_stations <- read.csv("data/available_stations")
-} else {
-  
-  get_available_stations()
-  approved_stations <- read.csv("data/available_stations")
-  
-}
  
   cleaned_station_list <- station_list %>%
     filter(station_number %in% 
@@ -89,50 +152,72 @@ if (file.exists("data/available_stations")) {
   return(cleaned_station_list)
 }
 
-#' @param station integer, 3-digit station  number 
-#' returns complete data frame of that station
-#
-
-#station = 733 #used as a debug tool
-
-get_station_data <- function(station) {
+#' Find the provided station number in the excel sheets and return a tibble
+#' with all that station's hourly volume counts
+#' 
+#' @param station integer, 3-digit station  number
+#' @param excel_files list of file paths to excel files with data
+#' @return complete data frame of that station
+get_station_data <- function(station, excel_files) {
   # Determine which local Excel file to use based on station number
-  if (300 < station & station < 432) {
-    local_path <- "data/temp_data/2023_data_301-431.xlsx"
-  } else if (500 < station & station < 734) {
-    local_path <- "data/temp_data/2023_data_501-733.xlsx"
+  # step 1: Pick pattern based on station
+  pattern <- NULL
+  if (station > 300 && station < 432) {
+    pattern <- "301-431"
+  } else if (station > 500 && station < 734) {
+    pattern <- "501-733"
   } else {
+    # stop if station isn't in the provided range. Shouldn't happen if
+    # clean_station_list() worked properly.
     stop(paste0("station # ", station, " not found."))
   }
 
-  # Read the sheet for the station from the local Excel file
-  sheet_name <- paste0("0", station)
-  data <- readxl::read_excel(
-    path = local_path,
-    sheet = sheet_name,
-    col_names = TRUE
-  )
+  # Find the excel file whose name contains pattern.
+  local_path <- excel_files[grepl(pattern, excel_files)]
+  # If the excel file doesn't exist, throw an error
+  if (length(local_path) == 0) {
+    stop(paste0("No Excel file found for stations '", pattern, "'."))
+  }
 
-  # Remove the first and last columns
-  data <- data[, -c(1, ncol(data))]
+  # If the excel files weren't downloaded properly, we'll get an error
+  # Wrap the data extraction in a tryCatch to report the error more clearly.
+  tryCatch(
+    {
+      # Read the sheet for the station from the local Excel file
+      sheet_name <- paste0("0", station)
+      data <- readxl::read_excel(
+        path = local_path,
+        sheet = sheet_name,
+        col_names = TRUE
+      )
 
-  # Ensure the appropriate column names
-  colnames(data) <- c(
-    'DATE', 'route', 'MP', 'lane',
-    as.character(0:23)
-  )
+      # Remove the first and last columns
+      data <- data[, -c(1, ncol(data))]
+
+      # Ensure the appropriate column names
+      colnames(data) <- c(
+        'DATE', 'route', 'MP', 'lane',
+        as.character(0:23)
+      )
+    },
+    error = function(e) {
+        message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
+                "Try running the program again, or manually check the Excel files in data/hourly_volumes.\n",
+                "The files may not have downloaded properly with target 'download_sheets'\n.",
+                "Original error: ", e$message, "\n")
+        stop(e)
+      }
+    )
 
   return(data)  
 }
 
-
+#' Filter the station data down to the provided start and end date
+#' 
 #' @param df data frame of station data
 #' @param sd start date formatted as string "YYYY-MM-DD"
 #' @param ed   end date formatted as string "YYYY-MM-DD"
-# return vector with average volumes per hour within
-# given dates
-# 
-
+#' @return vector with average volumes per hour within given dates
 get_hourly_volume <- function(df, sd, 
                           ed = sd) {
   
@@ -174,23 +259,7 @@ hourly_volume <- round(hourly_volume,
 return(hourly_volume)  
 }
 
-#' @param o, dbl, standard deviation 
-#' @param z, dbl, z-score 
-#' @param U, dbl, centrality adjustment 
-#' @param E, dbl, margin of error 
-# return number of required observations
 
-get_min_obs <- function(o = 3, z = 1.959964, 
-                        U = 1.04, E = 1) {
-  
-  #equation to find required observations
-  n = ((o^2) * (z^2) * ((U^2) + 2)) / (2 * (E^2))
-  
-  #round up to nearest whole number
-  n = ceiling(n)
-  
-  return(n)  
-}
 
 #' @param hv vector with hourly volume data
 #' @param st start time, integer 0-23 for 24-hour format

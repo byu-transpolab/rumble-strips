@@ -219,78 +219,49 @@ list(
   # were used to evaluate how long potential sites would
   # need to be observed to reach minimum observations.
 
-  # Download Google Sheets as Excel files. They're large enough it's better
-  # to download than to read and store a tibble.
-  tar_target(
-    download_sheets,
-    tryCatch(
-      {
-        dnld_google_sheet()
-      },
-      error = function(e) {
-        message(
-          "\n*** ERROR: Failed to download UDOT's hourly volume data.***\n",
-          "Either skip hourly volume estimates, or manually download the files.\n",
-          "To skip, enter 'skip_hourly <- TRUE' and rerun targets.\n",
-          "The required files can be downloaded at:\n",
-          "https://docs.google.com/spreadsheets/d/1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw/edit?gid=2031380538#gid=2031380538\n",
-          "https://docs.google.com/spreadsheets/d/1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI/edit?gid=1035130660#gid=1035130660\n",
-          "The spreadsheets are called '2023 Station 501-733' and\n",
-          "'2023 Station 301-431' respectively.\n",
-          "Save these files in data/temp_data/2023_hourly_volumes_1.xlsx and\n",
-          "data/temp_data/2023_hourly_volumes_2.xlsx.\n",
-          "Original error: ", e$message, "\n"
-          )
-        stop(e) # re-throw to stop the pipeline
-      }
-    )
-  ),
-
-  # Get a list of which stations are available in the spreadsheets
-  tar_target(available_stations, get_available_stations()),
-
-  # Load list of counting stations we want to examine.
-  tar_target(
-    station_list,
-    read.csv("data/stations_list", colClasses =  c("character"))
-  ),
-
-  # Check remove unavailable stations from station list
-  tar_target(
-    cleaned_station_list,
-    clean_stations(station_list, available_stations)
-  ),
-
   # Statistical parameters
-  tar_target(o, 3),
-  tar_target(z, 1.959964),
-  tar_target(U, 1.04),
-  tar_target(E, 1),
+  tar_target(o, 3),        # dbl, standard deviation of miles per hour (mph)
+  tar_target(z, 1.959964), # dbl, z-score 
+  tar_target(U, 1.04),     # dbl, centrality adjustment (85th percentile)
+  tar_target(E, 1),        # dbl, margin of error in mph
 
   # Date and time parameters
   tar_target(sd, "2023-05-01"), # Start Date
   tar_target(ed, "2023-08-31"), # End Date
-  tar_target(st, 8), # start time
-  tar_target(et, 17), # end time
+  tar_target(st, 8), # start time in 24-hour format, integer
+  tar_target(et, 17), # end time in 24-hour format, integer
+
   # Calculate minimum observations
-  tar_target(
-    n,
-    get_min_obs(o, z, U, E)
+  tar_target(n, get_min_obs(o, z, U, E)),
+
+  # Load list of counting stations we want to examine.
+  tar_target(station_list_file, "data/station_list", format = "file"),
+  tar_target(station_list, get_station_list(station_list_file)),
+
+  # Download UDOT's hourly counter data as Excel files. 
+  # We found it more stable to download the whole workbook and then process
+  # rather than read individual sheets online.
+  # This target often throws download errors. The function dnld_google_sheet()
+  # has an error message with instructions on how to handle it.
+  tar_target(download_sheets, dnld_google_sheet()),
+
+  # Get the file paths to the downloaded files.
+  tar_taget(excel_files, 
+    list_excel_files("data/hourly_volumes"), format = "file"),
+
+  # Get a list of which stations are available in the spreadsheets
+  tar_target(available_stations, get_available_stations(excel_files)),
+
+  # Filter station_list to only include available_stations
+  tar_target(cleaned_station_list,
+    clean_stations(station_list, available_stations)
   ),
 
   # Pull station data from local Excel files
   tar_target(
     all_station_data,
-    tryCatch(
-      map(cleaned_station_list$station_number, get_station_data),
-      error = function(e) {
-        message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
-                "Try running the program again, or manually check the Excel files in data/temp_data.\n",
-                "See the README file in data/temp_data.\n",
-                "Original error: ", e$message, "\n")
-        stop(e)
-      }
-    )
+      map(cleaned_station_list$station_number, 
+        get_station_data(.x, excel_files)),
   ),
 
   # Summarize each station to their hourly volumes and save the result
