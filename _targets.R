@@ -239,17 +239,17 @@ list(
   tar_target(station_list, get_station_list(station_list_file)),
 
   # Download UDOT's hourly counter data as Excel files. 
-  # We found it more stable to download the whole workbook and then process
+  # We found it more stable to download the whole workbook and process locally
   # rather than read individual sheets online.
   # This target often throws download errors. The function dnld_google_sheet()
   # has an error message with instructions on how to handle it.
   tar_target(download_sheets, dnld_google_sheet()),
 
-  # Get the file paths to the downloaded files.
+  # Get the file paths to the downloaded excel files.
   tar_taget(excel_files, 
     list_excel_files("data/hourly_volumes"), format = "file"),
 
-  # Get a list of which stations are available in the spreadsheets
+  # Get a list of which stations are available in the excel workbooks
   tar_target(available_stations, get_available_stations(excel_files)),
 
   # Filter station_list to only include available_stations
