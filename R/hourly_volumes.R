@@ -136,14 +136,14 @@ get_available_stations <- function(excel_files) {
 
 #' Remove unavailable station numbers from station_list
 #' 
-#' @param station_list a tibble with the a column of station #s
+#' @param station_list a tibble with column station_number
 #' @param approved_stations a tibble with a column of available station #s
-#' @return returns a column with available stations.
+#' @return returns tibble with column station_number of only available stations
 clean_stations <- function(station_list, approved_stations){
  
+  # 
   cleaned_station_list <- station_list %>%
-    filter(station_number %in% 
-             approved_stations$available_stations)
+    filter(station_number %in% approved_stations)
   
   # Convert the character column to integer
   cleaned_station_list$station_number <- 
@@ -152,62 +152,78 @@ clean_stations <- function(station_list, approved_stations){
   return(cleaned_station_list)
 }
 
+get_all_station_data <- function(cleaned_station_list, excel_files){
+  # Iterate through the column of station numbers
+  # and collect all the data into one tibble.
+  map(cleaned_station_list$station_number, 
+    ~ get_individual_station_data(.x, excel_files))
+}
+
 #' Find the provided station number in the excel sheets and return a tibble
 #' with all that station's hourly volume counts
 #' 
-#' @param station integer, 3-digit station  number
+#' @param station integer representing the station number
 #' @param excel_files list of file paths to excel files with data
 #' @return complete data frame of that station
-get_station_data <- function(station, excel_files) {
-  # Determine which local Excel file to use based on station number
-  # step 1: Pick pattern based on station
-  pattern <- NULL
-  if (station > 300 && station < 432) {
-    pattern <- "301-431"
-  } else if (station > 500 && station < 734) {
-    pattern <- "501-733"
-  } else {
-    # stop if station isn't in the provided range. Shouldn't happen if
-    # clean_station_list() worked properly.
-    stop(paste0("station # ", station, " not found."))
-  }
+get_individual_station_data <- function(station, excel_files) {
 
-  # Find the excel file whose name contains pattern.
-  local_path <- excel_files[grepl(pattern, excel_files)]
-  # If the excel file doesn't exist, throw an error
-  if (length(local_path) == 0) {
-    stop(paste0("No Excel file found for stations '", pattern, "'."))
-  }
+    # step 1: Pick pattern based on station
+    pattern <- NULL
+    if (station > 300 && station < 432) {
+      pattern <- "301-431"
+    } else if (station > 500 && station < 734) {
+      pattern <- "501-733"
+    } else {
+      # stop if station isn't in the provided range. Shouldn't happen if
+      # clean_station_list() worked properly.
+      stop(paste0("station # ", station, " not found."))
+    }
 
-  # If the excel files weren't downloaded properly, we'll get an error
-  # Wrap the data extraction in a tryCatch to report the error more clearly.
-  tryCatch(
-    {
-      # Read the sheet for the station from the local Excel file
-      sheet_name <- paste0("0", station)
-      data <- readxl::read_excel(
-        path = local_path,
-        sheet = sheet_name,
-        col_names = TRUE
+    # Step 2: Find the excel file whose name contains pattern.
+    local_path <- excel_files[grepl(pattern, excel_files)]
+    # If the excel file doesn't exist, throw an error
+    if (length(local_path) == 0) {
+      stop(paste0("No Excel file found for stations '", pattern, "'."))
+    }
+
+    #step 3: read the sheet info from the excel file
+    # If the excel files weren't downloaded properly, we'll get an error
+    # Wrap the data extraction in a tryCatch to report the error more clearly.
+    tryCatch(
+      {
+        # Read the sheet for the station from the local Excel file
+        sheet_name <- paste0("0", station)
+        data <- readxl::read_excel(
+          path = local_path,
+          sheet = sheet_name,
+          col_names = TRUE
+        )
+
+        # Remove the first and last columns
+        data <- data[, -c(1, ncol(data))]
+
+        # Ensure the appropriate column names
+        colnames(data) <- c(
+          'DATE', 'route', 'MP', 'lane',
+          as.character(0:23)
+        )
+      },
+      error = function(e) {
+          message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
+        "Try running the program again, or manually check the Excel files in data/hourly_volumes.\n",
+        "The files may not have downloaded properly with target 'download_sheets'\n.",
+        "The required files can be downloaded at:\n",
+        "https://docs.google.com/spreadsheets/d/1NroJmNFLNE_GiaSNb0lqkqSnywu_BVfIA232WEaK6xw/edit?gid=2031380538#gid=2031380538\n",
+        "https://docs.google.com/spreadsheets/d/1YGtU_NlKSPI5jOl8kSIeQiqb5lh5xr6431xXVYk2fSI/edit?gid=1035130660#gid=1035130660\n",
+        "The spreadsheets are called '2023 Station 301-431' and\n",
+        "'2023 Station 501-733' respectively.\n",
+        "Save these files as:\n",
+        "data/hourly_volumes/2023_volumes_stations_301-431.xlsx and\n",
+        "data/hourly_volumes/2023_volumes_stations_501-733.xlsx.\n",
+                  "Original error: ", e$message, "\n")
+          stop(e)
+        }
       )
-
-      # Remove the first and last columns
-      data <- data[, -c(1, ncol(data))]
-
-      # Ensure the appropriate column names
-      colnames(data) <- c(
-        'DATE', 'route', 'MP', 'lane',
-        as.character(0:23)
-      )
-    },
-    error = function(e) {
-        message("\n*** ERROR: Failed to load station data from Excel files. ***\n",
-                "Try running the program again, or manually check the Excel files in data/hourly_volumes.\n",
-                "The files may not have downloaded properly with target 'download_sheets'\n.",
-                "Original error: ", e$message, "\n")
-        stop(e)
-      }
-    )
 
   return(data)  
 }

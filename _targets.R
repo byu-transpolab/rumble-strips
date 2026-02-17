@@ -41,13 +41,6 @@ tar_option_set(
 ##target list#########################################
 
 source("R/hourly_volumes.R")
-source("R/csv2tibble.R")
-source("R/observations.R")
-source("R/speed.R")
-source("R/braking_and_avoidance.R")
-source("R/exposure.R")
-source("R/displacement_by_volume.R")
-source("R/displacement_by_energy.R")
 
 
 
@@ -90,7 +83,7 @@ list(
   tar_target(download_sheets, dnld_google_sheet()),
 
   # Get the file paths to the downloaded excel files.
-  tar_taget(excel_files, 
+  tar_target(excel_files, 
     list_excel_files("data/hourly_volumes"), format = "file"),
 
   # Get a list of which stations are available in the excel workbooks
@@ -103,24 +96,19 @@ list(
 
   # Pull station data from local Excel files
   tar_target(
-    all_station_data,
-      map(cleaned_station_list$station_number, 
-        get_station_data(.x, excel_files)),
+    all_station_data, 
+    get_all_station_data(cleaned_station_list, excel_files)
   ),
 
-  # Summarize each station to their hourly volumes and save the result
+  # Summarize each station to their hourly volumes
   tar_target(
     hourly_volumes,
-    {
-      hv <- tibble(cleaned_station_list,
+    tibble(cleaned_station_list,
         vector = I(map(all_station_data, 
           ~ get_hourly_volume(.x, sd, ed)
+            )
           )
-        )
       )
-      save(hv, file = "data/temp_data/hourly_station_data")
-      hv
-    }
   ),
 
   # Plot each station
@@ -185,7 +173,7 @@ list(
   # Save the station summary
   tar_target(
     save_summary,
-    write_csv(final_summary, "data/temp_data/station_summary")
+    write_csv(final_summary, "output/station_summary")
   )
   
 ) # closes list of targets
