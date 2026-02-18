@@ -274,10 +274,9 @@ plot_headway <- function(headway_data, critical_time, color_by) {
     )
 
   # Now we start building the plot.
-
   p <-ggplot(headway_data, aes(x=headway_sec, color = .data[[color_by]])) +
     # add cumulative distribution lines
-    stat_ecdf() +
+    stat_ecdf(linewidth = 1) +
     # Add a vertical line to mark the critical time
     geom_vline(
       xintercept = critical_time, 
