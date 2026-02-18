@@ -478,13 +478,13 @@ list(
   tar_target(
     hourly_volume_plot_file,
     ggsave(
-      "output/hourly_volume_plot",
+      "output/hourly_volume_plot.svg",
       plot = hourly_volume_plot,
+      device = svglite,
       width = 6,
       height = 8,
-      device = "svg"
-    ),
-    format = "file"
+      units = "in"
+    )
   )
 
 ) # closes list of targets
