@@ -58,16 +58,63 @@ list(
   ## ===== Lit Review and Methodology ===== ##
   # These are the targets used in the literature review and methodology
 
-  ### Comparing Different State Spacing Specifications ######################
+  ### Spacing Specifications #############################################
   # Helper functions found in R/spacing_specs.R
 
-  ### Outline the spacing specifications used in the study ##################
-  # Helper functions found in R/spacing_specs.R
+  # read in, and process test spacing data
+  tar_target(test_spacing_file, "data/test_spacing.csv", format = "file"),
+  tar_target(test_spacing, get_test_spacing(test_spacing_file)),
 
-### Hourly Volumes ######################################################
-# Helper functions are kept in R/hourly_volumes.R
+  # read in, and process state spacing data
+  tar_target(state_spacing_file, "data/state_spacing.csv", format = "file"),
+  tar_target(state_spacing, get_state_spacing(state_spacing_file)),
 
-# This section created average hourly volume plots which
+  # read in, and process old test spacing data
+  tar_target(old_test_spacing_file, "data/old_test_spacing.csv", format = "file"),
+  tar_target(old_test_spacing, read.csv(old_test_spacing_file)),
+
+  # Plot each data set individually
+  tar_target(test_spacing_plot, plot_test_spacing(test_spacing)),
+  tar_target(state_spacing_plot, plot_state_spacing(state_spacing)),
+  tar_target(old_test_spacing_plot, plot_old_test_spacing(old_test_spacing)),
+
+  # Save each plot to output
+  tar_target(test_spacing_plot_file,
+    ggsave(
+      "output/test_spacing.svg",
+      plot = test_spacing_plot,
+      device = svglite,
+      width = 6,
+      height = 6,
+      units = "in"
+    )
+  ),
+  tar_target(state_spacing_plot_file,
+    ggsave(
+      "output/state_spacing.svg",
+      plot = state_spacing_plot,
+      device = svglite,
+      width = 6,
+      height = 8,
+      units = "in"
+    )
+  ),
+  tar_target(old_test_spacing_file,
+    ggsave(
+      "output/old_test_spacing.svg",
+      plot = old_test_spacing_plot,
+      device = svglite,
+      width = 6,
+      height = 6,
+      units = "in"
+    )
+  ),
+
+
+  ### Hourly Volumes ######################################################
+  # Helper functions are kept in R/hourly_volumes.R
+
+  # This section created average hourly volume plots which
   # were used to evaluate how long potential sites would
   # need to be observed to reach minimum observations.
 
