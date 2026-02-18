@@ -10,10 +10,17 @@ library(readxl)
 #' @param file_path str pointing to the csv file
 #' @return tibble with the approriate info ready for plotting
 get_test_spacing <- function(file_path) {
+  # read in the csv file
   test_spacing <- read_csv(file_path) %>%
-    select(specifications, speed, spacing) %>%
-    mutate_if(is.character, as.factor) %>%
-    filter(!specifications %in% c("Recommended"))
+    # remove the "Recommended" spec as we did not use it in our testing
+    filter(!specifications %in% c("Recommended")) %>%
+    # Set factor levels so the plot legend will be in order
+    mutate(
+      specifications = factor(
+        specifications,
+        levels = c("Long", "1:2", "UDOT")
+      )
+    )
 }
 
 
@@ -45,7 +52,7 @@ plot_test_spacing <- function(state_spacing) {
     labs(
       x = "Speed [mph]",
       y = "Strip spacing [ft]",
-      color = "Specifications"
+      color = "Spacing Type"
     ) + 
     theme_minimal() +
     theme(
@@ -70,7 +77,7 @@ plot_state_spacing <- function(state_spacing) {
     geom_line() + 
     xlab("Speed [mph]") + 
     ylab("Strip spacing [ft]") +
-    theme_minimal() + 
+    theme_bw() + 
     #axis labels in 14 pt Times New Roman font
     theme(
       text = element_text(size = 14, 
@@ -84,7 +91,7 @@ plot_state_spacing <- function(state_spacing) {
         levels = c("Wisconsin",   "Florida",  "Colorado",
                     "Maryland",    "Virginia", "Minnesota",
                     "New York",    "Texas",    "Missouri", 
-                    "Recommended", "Utah",     "Linear Spacing")),
+                    "Recommended", "Utah",     "1:2 Spacing")),
         drop = TRUE, # removes any NA plots
         ncol = 3 # sets number of columns
     ) + 

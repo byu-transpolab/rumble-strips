@@ -42,6 +42,7 @@ tar_option_set(
 
 ##target list#########################################
 
+source("R/spacing_specs.R")
 source("R/hourly_volumes.R")
 source("R/csv2tibble.R")
 source("R/observations.R")
@@ -99,7 +100,7 @@ list(
       units = "in"
     )
   ),
-  tar_target(old_test_spacing_file,
+  tar_target(old_test_spacing_plot_file,
     ggsave(
       "output/old_test_spacing.svg",
       plot = old_test_spacing_plot,
@@ -134,7 +135,7 @@ list(
   tar_target(n, get_min_obs(o, z, U, E)),
 
   # Load list of counting stations we want to examine.
-  tar_target(station_list_file, "data/station_list", format = "file"),
+  tar_target(station_list_file, "data/station_list.csv", format = "file"),
   tar_target(station_list, get_station_list(station_list_file)),
 
   # Download UDOT's hourly counter data as Excel files. 
