@@ -1,3 +1,7 @@
+# R/spacing_specs.R
+# Helper functions related to plotting the various spacing specifications
+# from other states and what we used in the methodology
+
 library(tidyverse)
 library(readxl)
 
@@ -5,9 +9,10 @@ library(readxl)
 #data <- read_excel("/Users/gregmacfarlane/Library/CloudStorage/Box-Box/Macfarlane/research/tprs/data/spacing_data.xlsx")
 
 data1 <- read_csv("data/spacing_data.csv")
-#How do we make the data path relative?
 
 data2 <- read_csv("data/test_spacing.csv")
+
+data_for_chart <- read.csv("data/test_spacing_update_1.csv")
 
 ###organize and mutate data#################################
 data1 <- data1 |> 
@@ -28,7 +33,7 @@ data2 <- mutate_if(data2, is.character, as.factor) |>
 
 ##test plot#################################################
 
-# Exclude certain specifications (e.g., "Less Spacing" and "More Spacing")
+# Exclude certain specifications
 filtered_data2 <- data2 %>% 
   filter(!specifications %in% c("Recommended"))
 
@@ -42,6 +47,20 @@ ggplot(filtered_data2, aes(x = speed, y = spacing,
                             family = "Times New Roman")) +
   guides(color = guide_legend(title = "Specificiations",))
 
+##test spacings, old ######################################
+
+# Create the line graph with updated title and font settings
+plot <- ggplot(data_for_chart, aes(x = speed, y = spacing, color = specifications)) +
+  geom_line() +
+  labs(title = "Spacing Specifications For Posted Speed Limits",
+       x = "Speed (mph)",
+       y = "Strip Spacing (ft)",
+       color = "Specifications") +
+  theme_minimal() +
+  theme(text = element_text(family = "Times New Roman", size = 20),
+        plot.title = element_text(hjust = 1.0, size = 20),
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 16))
 
 ##State plot################################################
 
