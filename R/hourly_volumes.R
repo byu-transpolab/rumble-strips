@@ -309,6 +309,95 @@ get_hourly_volume <- function(
 
 }
 
+#' Plot hourly volumes of each site in a facted plot
+#' @param hourly_volumes tibble/data.frame with columns:
+#'   - station_number
+#'  - "0","1",...,"23" (hourly volumes)
+#' @param start_time, integer in [0, 23]; inclusive time window
+#' @param end_time integer in [0, 23]; inclusive time window
+#' @param n numeric scalar; horizontal reference level to display on each facet
+plot_hourly_volumes <- function(hourly_volumes, start_time, end_time, n = 30) {
+
+  # Validate inputs
+  if (any(!c(start_time, end_time) %in% 0:23)) {
+    stop("`start_time` and `end_time` must be integers in 0:23.")
+  }
+  if (length(n) != 1 || !is.numeric(n) || is.na(n)) {
+    stop("`n` must be a single numeric value.")
+  }
+
+  # Ensure hour columns exist (as strings "0"..."23")
+  expected_hour_cols <- as.character(0:23)
+  present_hour_cols <- intersect(expected_hour_cols, names(hourly_volumes))
+  if (length(present_hour_cols) == 0) {
+    stop("No hour columns found. Expected some of: '0','1',...,'23'.")
+  }
+
+  # Pivot data to be longer: each row is one hour of one station number
+  long <- hourly_volumes %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(present_hour_cols),
+      names_to = "hour",
+      values_to = "volume",
+      values_drop_na = TRUE
+    ) %>%
+    dplyr::mutate(hour = as.integer(hour))
+
+  # Helper function to identify which hours are inside the window (inclusive)
+  # Supports wrapping windows (e.g., 22 -> 5)
+  in_window_vec <- function(hour, start_time, end_time) {
+    if (start_time <= end_time) {
+      hour >= start_time & hour <= end_time
+    } else {
+      hour >= start_time | hour <= end_time
+    }
+  }
+
+  # Mark hours within the window and set bar colors
+  long <- long %>%
+    dplyr::mutate(
+      in_window = in_window_vec(hour, start_time, end_time),
+      fill = ifelse(in_window, "steelblue", "grey")
+    )
+
+  # Create plot
+  p <- ggplot(
+    long,
+    aes(x = factor(hour, levels = 0:23), y = volume, fill = fill)
+    ) +
+    geom_col() +
+    # Mark the minimum required observation with a horizontal line
+    geom_hline(
+      yintercept = n, 
+      linetype = "dashed", 
+      color = "firebrick", 
+      linewidth = 0.7
+    ) +
+    scale_fill_identity() +
+    # only label every few hours. Adjust frequency with the 'by = ' argument
+    scale_x_discrete(
+      breaks = as.character(seq(0, 23, by = 4))
+    ) +
+    labs(
+      x = "Hour of Day (0-23)",
+      y = "Average Traffic Volume",
+      caption = paste0("Reference line at n = ", n)
+    ) +
+    facet_wrap(
+      ~ station_number,
+      scales = "free_y"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      text = element_text(family = "Times New Roman", size = 14),
+      panel.border = element_blank(),
+      plot.caption = element_text(hjust = 0.5) # center the caption labeling n
+    )
+
+  return(p)
+}
+
 
 
 #' @param hv vector with hourly volume data
@@ -355,42 +444,6 @@ get_obs_time <- function(st, et,
           , 5)
   
   return(hours)
-  
-}
-
-#' @param hv vector, hourly volume data
-#' @param st int, start time in 24-hour format
-#' @param et int, end time in 24-hour format
-#' return plot with AADT%, time window, min observation time
-
-plot_station <- function(hv, st, et){
-  
-  #set column colors based on provided time window
-  co <- rep("grey", 24)
-  if (st > et) {
-      day_indices <- c((st + 1):24, 1:(et + 1))
-    } else {
-      day_indices <- (st + 1):(et + 1)
-  }
-  co[day_indices] <- "steelblue"
-  
-  #convert a vector to a table
-  data <- data.frame(hour = 0:23, volume = hv, color = co)
-  
-   # Create the plot
-  ggplot(data, aes(x = hour, y = volume, fill = color)) +
-    geom_col() + # bar chart
-    scale_fill_identity() +         # color based on color col
-    labs(#             hours),
-      x = "Hours of the Day",   # X-axis label
-      y = "Average Traffic Volume"    # Y-axis label
-    ) +
-    theme_bw() +
-    theme(plot.title = element_text(hjust = 0.5),
-          text = element_text(family = "Times New Roman", 
-                              size = 14),
-          panel.border = element_blank()
-    )                  
   
 }
 

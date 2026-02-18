@@ -109,58 +109,20 @@ list(
   # Plot all the stations in a faceted plot
   tar_target(
     hourly_volume_plot, 
-    plot_hourly_volumes(hourly_volumes, start_time, end_time)
+    plot_hourly_volumes(hourly_volumes, start_time, end_time, n)
   ),
 
-  # Create station summary with initial values
+  # Save the faceted plot to output
   tar_target(
-    station_summary,
-    cleaned_station_list %>%
-      mutate(
-        AADT = 0,
-        daytime_perc = 0,
-        min_hours = 0
-      )
-  ),
-
-  # Add AADT to station summary
-  tar_target(
-    AADT_summary,
-    station_summary %>%
-      mutate(AADT = map_int(hourly_volumes$vector, 
-                            ~ {result <- sum(.x, na.rm = TRUE)
-                                if (is.nan(result)) 0 
-                                else as.integer(result)  # Replace NaN with 0
-                              }
-                            ))
-  ),
-
-  # Add daytime percentage to station summary
-  tar_target(
-    daytime_summary,
-    AADT_summary %>%
-      mutate(daytime_perc = map_dbl(hourly_volumes$vector, 
-                              ~ get_aadt_perc(.x, st, et)))
-  ),
-
-  # Add minimum hours of observation to station summary
-  tar_target(
-    final_summary,
-    daytime_summary %>%
-      mutate(min_hours = map_dbl(hourly_volumes$vector, 
-                           ~ get_obs_time(st, et, n, .x)))
-  ),
-
-  # Plot the station summary
-  tar_target(
-    plot_summary,
-    plot_station_summary(final_summary)
-  ),
-
-  # Save the station summary
-  tar_target(
-    save_summary,
-    write_csv(final_summary, "output/station_summary")
+    hourly_volume_plot_file,
+    ggsave(
+      "output/hourly_volume_plot",
+      plot = hourly_volume_plot,
+      width = 6,
+      height = 8,
+      device = "svg"
+    ),
+    format = "file"
   )
-  
+ 
 ) # closes list of targets
