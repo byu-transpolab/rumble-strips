@@ -63,10 +63,10 @@ list(
   tar_target(E, 1),        # dbl, margin of error in mph
 
   # Date and time parameters
-  tar_target(sd, "2023-05-01"), # Start Date
-  tar_target(ed, "2023-08-31"), # End Date
-  tar_target(st, 8), # start time in 24-hour format, integer
-  tar_target(et, 17), # end time in 24-hour format, integer
+  tar_target(start_date, as.Date("2023-05-01")), # start date of work season
+  tar_target(end_date, as.Date("2023-08-31")), # end date of work season
+  tar_target(start_time, 8), # start time of work day in 24-hour format, integer
+  tar_target(end_time, 17), # end time of work day in 24-hour format, integer
 
   # Calculate minimum observations
   tar_target(n, get_min_obs(o, z, U, E)),
@@ -94,7 +94,7 @@ list(
     clean_stations(station_list, available_stations)
   ),
 
-  # Pull station data from local Excel files
+  # Pull station data from local Excel files into one big tibble
   tar_target(
     all_station_data, 
     get_all_station_data(cleaned_station_list, excel_files)
@@ -103,26 +103,13 @@ list(
   # Summarize each station to their hourly volumes
   tar_target(
     hourly_volumes,
-    tibble(cleaned_station_list,
-        vector = I(map(all_station_data, 
-          ~ get_hourly_volume(.x, sd, ed)
-            )
-          )
-      )
+    get_hourly_volume(all_station_data, start_date, end_date)
   ),
 
-  # Plot each station
+  # Plot all the stations in a faceted plot
   tar_target(
-    plots,
-      map2(
-      hourly_volumes$vector, 
-      hourly_volumes$station_number, 
-      ~ ggsave(
-        filename = paste0("output/", "plot_", .y,"_", sd, "_to_", ed,".svg"), 
-        plot = plot_station(.x, st, et), 
-        width = 7, 
-        height = 5)
-        )
+    hourly_volume_plot, 
+    plot_hourly_volumes(hourly_volumes, start_time, end_time)
   ),
 
   # Create station summary with initial values

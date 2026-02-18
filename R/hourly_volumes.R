@@ -233,8 +233,7 @@ get_individual_station_data <- function(station, excel_files) {
 
         # Ensure the appropriate column names
         colnames(data) <- c(
-          'DATE', 'route', 'MP', 'lane',
-          as.character(0:23)
+          'date', 'route', 'MP', 'lane', as.character(0:23)
         )
       },
       error = function(e) {
@@ -261,44 +260,53 @@ get_individual_station_data <- function(station, excel_files) {
 #' 
 #' @param all_station_data tibble with all the stations' data
 #' @param start_date start date formatted as string "YYYY-MM-DD"
-#' @param end_date   end date formatted as string "YYYY-MM-DD"
+#' @param end_date   end date formatted as string "YYYY-MM-DD". 
+#' Defaults to start date.
 #' @return tibble with average volumes per hour within given dates
 get_hourly_volume <- function(
   all_station_data, start_date, end_date = start_date) {
   
-# Ensure the date column is in Date format
-all_station_data$DATE <- as.Date(df$DATE)
+  # Ensure all dates are in the appropriate format
+  all_station_data$date <- as.Date(all_station_data$date)
 
-# Filter down to only requested dates
-all_station_data <- all_station_data %>%
-  filter(DATE >= start_date & DATE <= end_date)
+  # Find the average hourly volumes for each site:
+  avg_hourly_volumes <- all_station_data %>%
 
-# Count the number of unique days
-days <- length(unique(df$DATE))
-
-#identify the first row with sd and last row with ed
-selected_rows <- df$DATE >= sd & df$DATE <= ed
+    # step 1: Filter down to only requested dates
+    filter(date >= start_date & date <= end_date) %>%
     
-#isolate just the volume data
-volume_data <- all_station_data %>%
-  # columns are named by 24-hr system (0 = midnight, 23 = 11PM)
-  # select all 24-hours of data
-  select("0":"23") %>%
-  # Make sure they are all integer values
-  mutate_all(as.integer)
-  
-#add all columns together into one vector
-hourly_volume <- colSums(vdata[selected_rows, ], na.rm = TRUE)  
-  
-#average the total using the total # of days
-y = rep(days, 24)
-hourly_volume <- hourly_volume / y 
+    # step 2: summarize the lanes to get total hourly volumes each day
+    # For each combination of station_number and date...
+    group_by(station_number, date) %>%
+    # Summarize the different lanes into a single row.
+    summarize(
+      # keep route and MP
+      route = first(route),
+      MP = first(MP),
+      # This is the part that actually sums the different lanes
+      # Preserves the hourly breakdown
+      across(
+        .cols = any_of(as.character(0:23)),
+        .fns = ~ sum(.x, na.rm = TRUE) 
+      ),
+      .groups = "drop"
+    ) %>%
+    
+    # step 3: average across all the days for each site
+    # for each station_number...
+    group_by(station_number) %>%
+    summarize(
+      # ...keep route and MP, and ...
+      route = first(route),
+      MP = first(MP),
+      # ...take the mean of all the days
+      across(
+        .cols = any_of(as.character(0:23)),
+        .fns = ~ mean(.x, na.rm = TRUE) 
+      ),
+      .groups = "drop"
+    )
 
-#rounds to whole #
-hourly_volume <- round(hourly_volume, 
-                       digits = 0) 
-                      
-return(hourly_volume)  
 }
 
 
