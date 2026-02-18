@@ -5,89 +5,120 @@
 library(tidyverse)
 library(readxl)
 
-##read in the data##########################################
-#data <- read_excel("/Users/gregmacfarlane/Library/CloudStorage/Box-Box/Macfarlane/research/tprs/data/spacing_data.xlsx")
+#' Read in test_spacing and prep it for plotting
+#' 
+#' @param file_path str pointing to the csv file
+#' @return tibble with the approriate info ready for plotting
+get_test_spacing <- function(file_path) {
+  test_spacing <- read_csv(file_path) %>%
+    select(specifications, speed, spacing) %>%
+    mutate_if(is.character, as.factor) %>%
+    filter(!specifications %in% c("Recommended"))
+}
 
-data1 <- read_csv("data/spacing_data.csv")
 
-data2 <- read_csv("data/test_spacing.csv")
+#' Read in state_spacing and prep it for plotting
+#' 
+#' @param file_path str pointing to the csv file
+#' @return tibble with the approriate info ready for plotting
+get_state_spacing <- function(file_path) {
+  state_spacing <- read_csv(file_path) %>%
+    select(state, speed, spacing) %>%
+    mutate_if(is.character, as.factor) %>% 
+    # including these states makes plot facetting awkward and don't show
+    # any different spacing strategy that isn't already represented
+    filter(!state %in% c("California", "North Dakota"))
+}
 
-data_for_chart <- read.csv("data/test_spacing_update_1.csv")
 
-###organize and mutate data#################################
-data1 <- data1 |> 
-  select(state, speed, spacing) |>
-  print()
+#' Plot test spacing data
+#' 
+#' @param state_spacing tibble with the state spacing specs
+#' @return ggplot object organizing all the state specifications
+plot_test_spacing <- function(state_spacing) {
 
-#Change chr to fct to better sort the states later
-data1 <- mutate_if(data1, is.character, as.factor) |>
-  print()
+  p <- ggplot(
+    state_spacing, 
+    aes(x = speed, y = spacing, color = specifications)
+    ) + 
+    geom_line() + 
+    labs(
+      x = "Speed [mph]",
+      y = "Strip spacing [ft]",
+      color = "Specifications"
+    ) + 
+    theme_minimal() +
+    theme(
+      text = element_text(
+        size = 14, 
+        family = "Times New Roman")
+    )
+    
+  p
+}
 
-data2 <- data2 |> 
-  select(specifications, speed, spacing) |>
-  print()
 
-#Change chr to fct to better sort the states later
-data2 <- mutate_if(data2, is.character, as.factor) |>
-  print()
-
-##test plot#################################################
-
-# Exclude certain specifications
-filtered_data2 <- data2 %>% 
-  filter(!specifications %in% c("Recommended"))
-
-ggplot(filtered_data2, aes(x = speed, y = spacing, 
-                  color = specifications)) + 
-  geom_line() + 
-  xlab("Speed [mph]") + 
-  ylab("Strip spacing [ft]") + 
-  theme_bw() +
-  theme(text = element_text(size = 14, 
-                            family = "Times New Roman")) +
-  guides(color = guide_legend(title = "Specificiations",))
-
-##test spacings, old ######################################
-
-# Create the line graph with updated title and font settings
-plot <- ggplot(data_for_chart, aes(x = speed, y = spacing, color = specifications)) +
-  geom_line() +
-  labs(title = "Spacing Specifications For Posted Speed Limits",
-       x = "Speed (mph)",
-       y = "Strip Spacing (ft)",
-       color = "Specifications") +
-  theme_minimal() +
-  theme(text = element_text(family = "Times New Roman", size = 20),
-        plot.title = element_text(hjust = 1.0, size = 20),
-        legend.title = element_text(size = 16),
-        legend.text = element_text(size = 16))
-
-##State plot################################################
-
-#exclude certain states
-filtered_data1 <- data1 %>% 
-  filter(!state %in% c("California", "North Dakota"))
-
-ggplot(filtered_data1, aes(x = speed, y = spacing)) + 
-  geom_line() + 
-  xlab("Speed [mph]") + 
-  ylab("Strip spacing [ft]") +
-  theme_bw() +  # white background, grey lines
+#' Plot state spacing specs faceted by state
+#' 
+#' @param state_spacing tibble with all the state spacing data
+#' @return ggplot object state spacing plot
+plot_state_spacing <- function(state_spacing) {
+  p <- ggplot(
+    state_spacing, 
+    aes(x = speed, y = spacing)
+    ) + 
+    geom_line() + 
+    xlab("Speed [mph]") + 
+    ylab("Strip spacing [ft]") +
+    theme_minimal() + 
+    #axis labels in 14 pt Times New Roman font
+    theme(
+      text = element_text(size = 14, 
+      family = "Times New Roman")
+    ) +
+    facet_wrap(
+      ~factor(state,
+        # These states are put into a very particular order
+        # The final plot shows clear patterns and the states are grouped
+        # to best show that pattern.
+        levels = c("Wisconsin",   "Florida",  "Colorado",
+                    "Maryland",    "Virginia", "Minnesota",
+                    "New York",    "Texas",    "Missouri", 
+                    "Recommended", "Utah",     "Linear Spacing")),
+        drop = TRUE, # removes any NA plots
+        ncol = 3 # sets number of columns
+    ) + 
+    #pane titles in 14 pt Times New Roman font
+    theme(
+      strip.text = element_text(size = 14,
+      family = "Times New Roman"))
   
-  #axis labels in 14 pt Times New Roman font
-  theme(text = element_text(size = 14, 
-                            family = "Times New Roman")) +
+  p
+}
+
+
+#' Plot old_test_spacing data
+#' 
+#' @param old_test_spacing tibble with the older version of the testing specs
+#' @return ggplot object displaying all the possible test specs
+plot_old_test_spacing <- function(old_test_spacing) {
+
+  p <- ggplot(
+    old_test_spacing, 
+    aes(x = speed, y = spacing, color = specifications)
+    ) +
+    geom_line() +
+    labs(
+      x = "Speed (mph)",
+      y = "Strip Spacing (ft)",
+      color = "Specifications") +
+    theme_minimal() +
+    theme(
+      text = element_text(family = "Times New Roman", size = 20),
+      plot.title = element_text(hjust = 1.0, size = 20),
+      legend.title = element_text(size = 16),
+      legend.text = element_text(size = 16)
+    )
   
-  facet_wrap(~factor(state,
-                     levels = c("Wisconsin",   "Florida",  "Colorado",
-                                "Maryland",    "Virginia", "Minnesota",
-                                "New York",    "Texas",    "Missouri", 
-                                "Recommended", "Utah",     "Linear Spacing")),
-                     #puts the states in a particular order
-             drop = TRUE, # removes any NA plots
-             ncol = 3) + #set column count
-  
-  #pane titles in 14 pt Times New Roman font
-  theme(strip.text = element_text(size = 14,
-                               family = "Times New Roman"))
-        
+  p
+}
