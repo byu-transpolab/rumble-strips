@@ -5,6 +5,7 @@
 
 # Load packages required to define the pipeline:
 library(targets)
+library(tarchetypes)
 library(tidyverse)
 library(rstatix)
 library(googledrive)
@@ -12,9 +13,7 @@ library(readxl)
 library(mlogit)
 library(modelsummary)
 library(svglite)
-# library(tarchetypes)
 # Load other packages as needed.
-# setwd("~/Documents/GitHub/rumble-strips")
 
 # Set target options:
 tar_option_set(
@@ -52,7 +51,13 @@ source("R/exposure.R")
 source("R/displacement_by_volume.R")
 source("R/displacement_by_momentum.R")
 
-
+# to skip hourly_volumes pipeline, set to TRUE
+# to execute hourly_volumes pipeline, set to FALSE
+skip <- FALSE
+# Downloading the UDOT data often runs into issues, requiring manual
+# intervention. If you're having issues, and just want to move on,
+# toggle to TRUE and move on.
+# No other parts of the pipeline are dependent on the skipped targets.
 
 list(
 
@@ -119,13 +124,6 @@ list(
   # were used to evaluate how long potential sites would
   # need to be observed to reach minimum observations.
 
-  # to skip hourly_volumes pipeline, set to TRUE
-  tar_target(skip, TRUE),
-  # Downloading the UDOT data often runs into issues, requiring manual
-  # intervention. If you're having issues, and just want to move on,
-  # toggle to TRUE and move on.
-  # No other parts of the pipeline are dependent on the skipped targets.
-
   # Statistical parameters
   tar_target(o, 3),        # dbl, standard deviation of miles per hour (mph)
   tar_target(z, 1.959964), # dbl, z-score 
@@ -150,53 +148,56 @@ list(
   # rather than read individual sheets online.
   # This target often throws download errors. The function dnld_google_sheet()
   # has an error message with instructions on how to handle it.
-  # You can also skip this and it's dependent targets by setting the target
-  # "skip", defined at the top of the Hourly Volumes section, to "TRUE".
+  # You can also skip this and it's dependent targets by setting the global
+  # variable "skip" to "TRUE". This variable is defined before the target list.
   tar_target(
     download_sheets, 
     dnld_google_sheet(),
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip)
   ),
 
   # Get the file paths to the downloaded excel files.
   tar_target(excel_files, 
     list_excel_files("data/hourly_volumes"), 
     format = "file",
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip)
   ),
 
   # Get a list of which stations are available in the excel workbooks
+  # Sometimes this target also errors when target(download_sheets) doesn't work
+  # properly. If necessary, you can set the globle variable "skip" to "TRUE"
+  # to skip this part of the pipeline.
   tar_target(
     available_stations, 
     get_available_stations(excel_files),
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip) 
   ),
 
   # Filter station_list to only include available_stations
   tar_target(cleaned_station_list,
     clean_stations(station_list, available_stations),
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip) 
   ),
 
   # Pull station data from local Excel files into one big tibble
   tar_target(
     all_station_data, 
     get_all_station_data(cleaned_station_list, excel_files),
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip) 
   ),
 
   # Summarize each station to their hourly volumes
   tar_target(
     hourly_volumes,
     get_hourly_volume(all_station_data, start_date, end_date),
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip) 
   ),
 
   # Plot all the stations in a faceted plot
   tar_target(
     hourly_volume_plot, 
     plot_hourly_volumes(hourly_volumes, start_time, end_time, n),
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip) 
   ),
 
   # Save the faceted plot to output
@@ -210,8 +211,7 @@ list(
       height = 8,
       units = "in"
     ),
-    format = "file",
-    cue = tar_cue(skip = tar_skip(skip)) # see tar_target(skip)
+    cue = tar_cue_skip(skip) 
   ),
 
   ## ===== ANALYSIS ===== ##
@@ -341,8 +341,7 @@ list(
       plot = confidence_bounds,
       width = 6,
       height = 4,
-      units = "in"),
-      format = "file"
+      units = "in")
   ),
 
   # t-test of 85th percentile speed by each unit alone
@@ -355,12 +354,10 @@ list(
 
   # plot confidence bounds for the single unit t-test results
   tar_target(single_unit_confidence_bounds_w1,
-    plot_single_unit_confidence_bounds(single_unit_t_test_w1, unit = "w1"),
-      format = "file"
+    plot_single_unit_confidence_bounds(single_unit_t_test_w1, unit = "w1")
   ),
   tar_target(single_unit_confidence_bounds_w2,
-    plot_single_unit_confidence_bounds(single_unit_t_test_w2, unit = "w2"),
-      format = "file"
+    plot_single_unit_confidence_bounds(single_unit_t_test_w2, unit = "w2")
   ),
 
   # Save the single unit confidence bounds plots
@@ -370,8 +367,7 @@ list(
       plot = single_unit_confidence_bounds_w1,
       width = 6,
       height = 4,
-      units = "in"),
-      format = "file"
+      units = "in")
   ),
   tar_target(single_unit_speed_w2_file,
     ggsave(
@@ -379,8 +375,7 @@ list(
       plot = single_unit_confidence_bounds_w2,
       width = 6,
       height = 4,
-      units = "in"),
-      format = "file"
+      units = "in")
   ),
 
   ### Driver Braking and TPRS Avoidance ######################################
@@ -404,8 +399,7 @@ list(
       plot = braking_plot,
       width = 5,
       height = 6,
-      units = "in"),
-      format = "file"
+      units = "in")
   ),
   tar_target(departure_plot_file,
     ggsave(
@@ -413,8 +407,7 @@ list(
       plot = departure_plot,
       width = 4,
       height = 6,
-      units = "in"),
-      format = "file"
+      units = "in")
   ),
 
   # models of braking and avoidance
@@ -457,8 +450,7 @@ list(
       output_dir = "output"
     ),
     # Pattern is what lets the target iterate over each site
-    pattern = map(site_names, displacement_by_class_plots),
-    format = "file"
+    pattern = map(site_names, displacement_by_class_plots)
   ),
 
   ### TPRS Displacement by momentum ##########################################
@@ -515,8 +507,7 @@ list(
       plot = momentum_per_transition_spacing,
       width = 6,
       height = 4,
-      units = "in"),
-      format = "file"
+      units = "in")
   ),
   tar_target(momentum_per_transition_site_file,
     ggsave(
@@ -524,8 +515,7 @@ list(
       plot = momentum_per_transition_site,
       width = 6,
       height = 4,
-      units = "in"),
-      format = "file"
+      units = "in")
   ),
 
   ### Worker Exposure Analysis ###############################################
@@ -564,8 +554,7 @@ list(
       device = svglite,
       width = 6,
       height = 4,
-      units = "in",
-      format = "file"
+      units = "in"
     )
   ),
   tar_target(
@@ -576,8 +565,7 @@ list(
       device = svglite,
       width = 6,
       height = 4,
-      units = "in",
-      format = "file"
+      units = "in"
     )
   )
 ) # closes list of targets
