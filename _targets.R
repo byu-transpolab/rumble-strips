@@ -120,7 +120,7 @@ list(
   # need to be observed to reach minimum observations.
 
   # to skip hourly_volumes pipeline, set to TRUE
-  tar_target(skip, FALSE),
+  tar_target(skip, TRUE),
   # Downloading the UDOT data often runs into issues, requiring manual
   # intervention. If you're having issues, and just want to move on,
   # toggle to TRUE and move on.
@@ -150,6 +150,8 @@ list(
   # rather than read individual sheets online.
   # This target often throws download errors. The function dnld_google_sheet()
   # has an error message with instructions on how to handle it.
+  # You can also skip this and it's dependent targets by setting the target
+  # "skip", defined at the top of the Hourly Volumes section, to "TRUE".
   tar_target(
     download_sheets, 
     dnld_google_sheet(),
