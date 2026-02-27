@@ -6,6 +6,13 @@
 # includes loading libraries that I always use, as well as options for 
 # displaying numbers and text.
 library(modelsummary)
+library(scales)
+
+signed_log10 <- trans_new(
+  name = "signed_log10",
+  transform = function(x) sign(x) * log10(abs(x)),
+  inverse = function(x) sign(x) * 10^abs(x)
+)
 ```
 
 ### Speeds
@@ -73,6 +80,13 @@ modelsummary(avoid_models,  stars = TRUE)
 #| tbl-cap: Multinomial Models of TPRS Braking
 tar_load(brake_models)
 modelsummary(brake_models, shape = term ~ response,  stars = TRUE)
+```
+
+```{r}
+#| label: tbl-avoidglm
+#| tbl-cap: Binomial Models of TPRS Avoidance
+tar_load(avoid_models)
+modelsummary(avoid_models,  stars = TRUE)
 ```
 
 
