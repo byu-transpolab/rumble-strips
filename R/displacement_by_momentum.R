@@ -15,9 +15,9 @@ library(ggplot2)
 #'   column) computed as sum(count * weight) / sum(count) for classes >= 4.
 calc_truck_weight <- function(bts_truck_counts) {
 
-  # Only include class 4 trucks and above (busses, dualies, semi's, etc.)
+  # Only include class 3 trucks and above (busses, dualies, semi's, etc.)
   bts_truck_counts <- bts_truck_counts %>%
-    filter(class >= 4)
+    filter(class >= 3) # Class 3 is weight range 10-14,000 lbs, roughly a dually
   
   # Get the total count of trucks
   total_count <- sum(bts_truck_counts$count)
