@@ -20,10 +20,14 @@ library(ggplot2)
 #'   Rows with missing `speed_85` or missing `spacing_type` are removed.
 prepare_speed_data <- function(wavetronix, observations) {
   wavetronix %>%
+    # exclude lane 2 found in I-70 data
     filter(lane == "01") %>%
+    #simplify the wavetronix data
     select(site, unit, date,time, speed_85) %>%
+    # unit = which wavetronix unit provided the data
     mutate(unit = as.factor(as.character(unit)),
            speed_85 = as.numeric(speed_85)) %>%
+    # add spacing type to each row
     left_join(observations %>% select(site, date, spacing_type), by = c("site", "date")) %>%
     filter(!is.na(speed_85), !is.na(spacing_type))
 }
