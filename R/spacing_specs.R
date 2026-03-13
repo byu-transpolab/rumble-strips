@@ -57,8 +57,9 @@ plot_test_spacing <- function(state_spacing) {
     theme_minimal() +
     theme(
       text = element_text(
-        size = 14, 
-        family = "Times New Roman")
+        size = 14 #, 
+        # family = "Times New Roman"
+      )
     )
     
   p
@@ -79,10 +80,10 @@ plot_state_spacing <- function(state_spacing) {
     ylab("Strip spacing [ft]") +
     theme_bw() + 
     #axis labels in 14 pt Times New Roman font
-    theme(
-      text = element_text(size = 14, 
-      family = "Times New Roman")
-    ) +
+    # theme(
+    #  text = element_text(size = 14, 
+    #  family = "Times New Roman")
+    #) +
     facet_wrap(
       ~factor(state,
         # These states are put into a very particular order
@@ -97,8 +98,9 @@ plot_state_spacing <- function(state_spacing) {
     ) + 
     #pane titles in 14 pt Times New Roman font
     theme(
-      strip.text = element_text(size = 14,
-      family = "Times New Roman"))
+      strip.text = element_text(size = 14) #,
+      # family = "Times New Roman")
+    )
   
   p
 }
@@ -121,7 +123,7 @@ plot_old_test_spacing <- function(old_test_spacing) {
       color = "Specifications") +
     theme_minimal() +
     theme(
-      text = element_text(family = "Times New Roman", size = 20),
+      text = element_text(size = 20), # family = "Times New Roman", 
       plot.title = element_text(hjust = 1.0, size = 20),
       legend.title = element_text(size = 16),
       legend.text = element_text(size = 16)
