@@ -140,8 +140,13 @@ list(
   tar_target(n, get_min_obs(o, z, U, E)),
 
   # Load list of counting stations we want to examine.
-  tar_target(station_list_file, "data/station_list.csv", format = "file"),
+  tar_target(station_list_file, "data/counting_stations.csv", format = "file"),
   tar_target(station_list, get_station_list(station_list_file)),
+  # create a tibble, not a list, of station numbers and site names.
+  # used to label the facets in the hourly volume plot.
+  # Easier to make a new function than change all the downstream code 
+  # that uses the target "station_list".
+  tar_target(station_sites, get_station_sites(station_list_file)),
 
   # Download UDOT's hourly counter data as Excel files. 
   # We found it more stable to download the whole workbook and process locally
@@ -189,7 +194,7 @@ list(
   # Summarize each station to their hourly volumes
   tar_target(
     hourly_volumes,
-    get_hourly_volume(all_station_data, start_date, end_date),
+    get_hourly_volume(all_station_data, station_sites, start_date, end_date),
     cue = tar_cue_skip(skip) 
   ),
 

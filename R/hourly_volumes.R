@@ -33,9 +33,10 @@ get_station_list <- function(file_path) {
     )
   )
 
+  # Check if the 'station_number' column exists and throw an error if not
   if (!"station_number" %in% names(df)) {
     stop("Column 'station_number' not found in the CSV.\n",
-    "Ensure the first line in station_list.csv is 'station_number'.")
+    "Ensure the first line in counting_stations.csv is 'station_number'.")
   }
 
   station_list <- df$station_number |> 
@@ -48,6 +49,46 @@ get_station_list <- function(file_path) {
     (\(x) str_pad(x, width = 4, side = "left", pad = "0"))()
 
   return(station_list)
+}
+
+#' Read a csv file that lists all the stations we want to examine, and return a 
+#' tibble with station numbers and site names.
+#' 
+#' @param file_path String path to the csv file listing the stations.
+#' @return tibble with columns "station_number" and "site_name"
+get_station_sites <- function(file_path) {
+  df <- read_csv(
+    file = file_path,
+    col_types = cols(
+      station_number = col_character(),
+      site = col_character()
+    )
+  )
+
+  # Check if the required columns exist and throw an error if not
+  required_cols <- c("station_number", "site")
+  missing_cols <- setdiff(required_cols, names(df))
+  if (length(missing_cols) > 0) {
+    stop("Missing columns in the CSV: ", paste(missing_cols, collapse = ", "), "\n",
+         "Ensure counting_stations.csv has columns 'station_number' and 'site'.")
+  }
+
+  # Clean the station_number column of 
+  # whitespace, non-digit characters, and zero-pad to 4 digits.
+  df <- df %>%
+    mutate(
+      station_number = station_number |> 
+        trimws() |>
+        # remove NA/empty rows
+        (\(x) x[!is.na(x) & nzchar(x)])() |>
+        # keep only digits
+        (\(x) gsub("\\D", "", x))() |>
+        # zero-pad to width 4
+        (\(x) str_pad(x, width = 4, side = "left", pad = "0"))()
+    ) %>%
+    filter(!is.na(station_number) & nzchar(station_number))
+
+  return(df)
 }
 
 #' Checks if hourly volume data has already been downloaded from UDOT
@@ -255,7 +296,7 @@ get_individual_station_data <- function(station, excel_files) {
 #' Defaults to start date.
 #' @return tibble with average volumes per hour within given dates
 get_hourly_volume <- function(
-  all_station_data, start_date, end_date = start_date) {
+  all_station_data, station_sites, start_date, end_date = start_date) {
   
   # Ensure all dates are in the appropriate format
   all_station_data$date <- as.Date(all_station_data$date)
@@ -297,7 +338,10 @@ get_hourly_volume <- function(
       ),
       .groups = "drop"
     )
-
+    
+  # Join station_list to avg_hourly_volumes to add the site names.
+  hourly_volumes <- station_sites %>%
+    left_join(avg_hourly_volumes, by = "station_number")
 }
 
 #' Plot hourly volumes of each site in a facted plot
@@ -375,13 +419,13 @@ plot_hourly_volumes <- function(hourly_volumes, start_time, end_time, n = 30) {
       caption = paste0("Reference line at n = ", n)
     ) +
     facet_wrap(
-      ~ station_number,
+      ~ site,
       scales = "free_y"
     ) +
     theme_minimal() +
     theme(
       plot.title = element_text(hjust = 0.5),
-      text = element_text(family = "Times New Roman", size = 14),
+      text = element_text(size = 14), # family = "Times New Roman", 
       panel.border = element_blank(),
       plot.caption = element_text(hjust = 0.5) # center the caption labeling n
     )
