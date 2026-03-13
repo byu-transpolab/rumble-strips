@@ -116,7 +116,7 @@ plot_confidence_bounds <- function(paired_t_test) {
       "LONG" = "#D81159" ),
       breaks = c("LONG", "1:2", "UDOT", "NO TPRS")) +
     labs(
-      x = "Speed Difference",
+      x = "Speed Difference [mph]",
       y = "Site",
       color = "Spacing Type"
     )  

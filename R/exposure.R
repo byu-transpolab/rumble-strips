@@ -307,7 +307,7 @@ plot_headway <- function(headway_data, critical_time, color_by) {
       expand = expansion(mult = c(0, 0.1))
     ) +
     labs(
-      x = "Headway (s)",
+      x = "Headway [s]",
       y = "Cumulative %",
       color = NULL
     ) +
@@ -315,8 +315,8 @@ plot_headway <- function(headway_data, critical_time, color_by) {
     theme(
       legend.position = "bottom",
       legend.text = element_text(size = 12),
-      panel.grid.minor = element_blank(),
-      axis.title = element_text(face = "bold")
+      panel.grid.minor = element_blank() #,
+      # axis.title = element_text(face = "bold")
     ) +
     # Add labels to intersecting cdf and vertical line with white boxes
     geom_label_repel(

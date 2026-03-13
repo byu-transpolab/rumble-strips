@@ -64,8 +64,8 @@
 <text x='236.18' y='228.54' text-anchor='middle' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='9.78px' lengthAdjust='spacingAndGlyphs'>50</text>
 <text x='322.70' y='228.54' text-anchor='middle' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='9.78px' lengthAdjust='spacingAndGlyphs'>75</text>
 <text x='409.22' y='228.54' text-anchor='middle' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='14.67px' lengthAdjust='spacingAndGlyphs'>100</text>
-<text x='236.18' y='241.00' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; font-family: "Arial";' textLength='64.22px' lengthAdjust='spacingAndGlyphs'>Headway (s)</text>
-<text transform='translate(13.36,111.39) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; font-family: "Arial";' textLength='72.16px' lengthAdjust='spacingAndGlyphs'>Cumulative %</text>
+<text x='236.18' y='241.00' text-anchor='middle' style='font-size: 11.00px; font-family: "Arial";' textLength='60.56px' lengthAdjust='spacingAndGlyphs'>Headway [s]</text>
+<text transform='translate(13.36,111.39) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-family: "Arial";' textLength='67.88px' lengthAdjust='spacingAndGlyphs'>Cumulative %</text>
 <line x1='115.28' y1='268.40' x2='129.11' y2='268.40' style='stroke-width: 2.13; stroke: #F8766D; stroke-linecap: butt;' />
 <line x1='196.63' y1='268.40' x2='210.45' y2='268.40' style='stroke-width: 2.13; stroke: #7CAE00; stroke-linecap: butt;' />
 <line x1='258.87' y1='268.40' x2='272.69' y2='268.40' style='stroke-width: 2.13; stroke: #00BFC4; stroke-linecap: butt;' />

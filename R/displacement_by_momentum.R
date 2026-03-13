@@ -356,7 +356,7 @@ plot_momentum <- function(plot_data, color_by_site = TRUE) {
     ) +
     labs(
       x = "Displacement",
-      y = "Cumulative Momentum (million kg*m/s)",
+      y = "Cumulative Momentum [million kg*m/s]",
       color = column_label
     ) +
     theme_minimal() +
