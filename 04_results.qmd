@@ -1,4 +1,6 @@
-## Results and Analysis
+# Results and Analysis {#sec-results}
+
+This section presents the results of the methodology in @sec-methodology.
 
 
 ```{r setup, file = "R/chapter_start.R", include = FALSE}
@@ -15,56 +17,17 @@ signed_log10 <- trans_new(
 )
 ```
 
-### Speeds
-Analysis question 1: does having rumble strips slow down traffic?
+## Speeds
 
-```{r wavetronix}
-# join observation information to the wavetonix data
-tar_load(wavetronix)
-tar_load(observations)
-
-wavetronix <- wavetronix |>
-  left_join(observations, by = c("site", "date")) 
-
-```
-
-```{r wgrp}
-wavetronix |>
-  group_by(site, strip_spacing, unit) |>
-  summarise(speed_85 = mean(speed_85))
-```
-
-This is a t-test of means for one road comparing 35 ft spacing with no rumble strips.
-```{r wtt}
-groups <- wavetronix |>
-  group_by(site, unit, strip_spacing) |> 
-  select(speed_85) |>
-  nest(-site, -unit, -strip_spacing) 
-
-t.test(groups$data[[5]], groups$data[[7]])
-t.test(groups$data[[9]], groups$data[[10]])
-```
-
-
-
-
-```{r wlm}
-# estimate a model of the effect of rumble strips on speed
-wlms <- wavetronix |>
-  group_by(site) |>
-  nest(data = -site) |>
-  mutate(
-    model = map(data, ~lm(speed_85 ~ unit, data = .x))
-  )
-
-list <- wlms$model |> setNames(wlms$site)
-```
+@fig-speed shows the change in speed between units, 95% confidence bound of different between 85th percentile speeds. The 95% confidence bound is the range of speeds that are likely to occur if the null hypothesis is true. The confidence bounds are calculated using the bootstrap method. The 95% confidence bound is calculated by taking the upper and lower bounds of the 95% confidence interval, and then taking the difference between them. This is a useful metric for understanding the effect of rumble strips on traffic flow.
 
 
 ```{r}
-modelsummary(list,  stars = TRUE)
+#| label: fig-speed
+#| fig-cap: Chnage in speed between units, 95% confidence bound of different between 85th percentile speeds.
+tar_load(confidence_bounds)
+confidence_bounds
 ```
-
 
 ## Braking and Avoidance
 
@@ -82,12 +45,6 @@ tar_load(brake_models)
 modelsummary(brake_models, shape = term ~ response,  stars = TRUE)
 ```
 
-```{r}
-#| label: tbl-avoidglm
-#| tbl-cap: Binomial Models of TPRS Avoidance
-tar_load(avoid_models)
-modelsummary(avoid_models,  stars = TRUE)
-```
 
 
 
