@@ -105,3 +105,5 @@ The research team observed driver behavior by analyzing the data collected from 
 ## TPRS Displacement and Worker Exposure
 
 ![](displacement-overlay.png){fig-align="center" width="672"}
+
+![](examples-of-displacement.png){fig-align="center" width="672"}
