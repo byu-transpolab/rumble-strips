@@ -86,3 +86,22 @@ The research team primarily focused on testing the space between individual TPRS
 tar_load(test_spacing_plot)
 test_spacing_plot
 ```
+
+```{r}
+#| label: tbl-wav-spacing
+#| tbl-cap: "Separation [ft] Between Wavetronix Units"
+# INCOMPLETE
+tar_load(observation_data)
+observation_data |>
+  as_tibble() |>
+  select(site, trailer_spacing, spacing_type) |>
+  kbl(booktabs = "true", format = "markdown" ) |> kable_styling()
+```
+
+## Driver Behavior - Change in Speed, Braking, and Lane Departures
+
+The research team observed driver behavior by analyzing the data collected from the Wavetronix radar detectors and StreetLogic Pro cameras. The Wavetronix units provided data on vehicle speed and braking patterns, while the cameras captured footage to identify lane departures and other driving behaviors. The team compared these behaviors across different spacing configurations to assess the effectiveness of TPRS in influencing driver behavior in work zones.
+
+## TPRS Displacement and Worker Exposure
+
+![](displacement-overlay.png){fig-align="center" width="672"}
