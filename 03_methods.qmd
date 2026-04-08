@@ -1,4 +1,4 @@
-# Methodology
+# Methodology {#sec-methodology}
 
 ```{r setup, file = "R/chapter_start.R", include=FALSE, cache = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
