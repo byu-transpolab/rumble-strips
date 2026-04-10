@@ -59,7 +59,18 @@ The research team used histograms of haverage hourly volumes on Utah roads to de
 #| label: fig-aadt
 #| fig-cap: "Histogram of average hourly volumes from counting stations near sites."
 tar_load(hourly_volume_plot)
-hourly_volume_plot
+tar_load(n)
+
+  # For how the plot is made, see plot_hourly_volumes() found in R/hourly_volumes.R
+hourly_volume_plot +
+  # color bars based on whether they are within the observation window
+scale_fill_manual(values = c("FALSE" = "grey", "TRUE" = "steelblue")) +
+  # add a horizontal line to mark the minimum required observations
+geom_hline(
+  yintercept = n,
+  linetype = "dashed", 
+  color = "firebrick", 
+  linewidth = 0.7)
 ```
 
 ## Layouts

@@ -31,7 +31,22 @@ theme_set(
 #| label: fig-speed
 #| fig-cap: Change in speed between units, 95% confidence bound of different between 85th percentile speeds.
 tar_load(confidence_bounds)
-confidence_bounds
+
+# see plot_confidence_bounds() in R/speed.R for how this plot is made
+confidence_bounds +    
+  geom_errorbar(
+    aes(xmin = conf_low, xmax = conf_high),
+    orientation = "y",
+    position = position_dodge(width = 0.6),
+    height = 0.4,
+    linewidth = 1.2
+  ) +
+  geom_point(position = position_dodge(width = 0.6), size = 2) +
+  labs(
+    x = "Speed Difference [mph]",
+    y = "Site",
+    color = "Spacing Type"
+  )
 ```
 
 ## Braking Behavior

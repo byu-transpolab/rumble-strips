@@ -391,24 +391,17 @@ plot_hourly_volumes <- function(hourly_volumes, start_time, end_time, n = 30) {
   # Mark hours within the window and set bar colors
   long <- long %>%
     dplyr::mutate(
-      in_window = in_window_vec(hour, start_time, end_time),
-      fill = ifelse(in_window, "steelblue", "grey")
+      in_window = in_window_vec(hour, start_time, end_time)
     )
 
   # Create plot
   p <- ggplot(
     long,
-    aes(x = factor(hour, levels = 0:23), y = volume, fill = fill)
+    aes(x = factor(hour, levels = 0:23), y = volume, fill = in_window)
     ) +
     geom_col() +
-    # Mark the minimum required observation with a horizontal line
-    geom_hline(
-      yintercept = n, 
-      linetype = "dashed", 
-      color = "firebrick", 
-      linewidth = 0.7
-    ) +
-    scale_fill_identity() +
+    # Mark the minimum required observation with a horizontal line (moved to quarto)
+    # geom_hline(yintercept = n) +
     # only label every few hours. Adjust frequency with the 'by = ' argument
     scale_x_discrete(
       breaks = as.character(seq(0, 23, by = 4))
@@ -421,13 +414,6 @@ plot_hourly_volumes <- function(hourly_volumes, start_time, end_time, n = 30) {
     facet_wrap(
       ~ site,
       scales = "free_y"
-    ) +
-    theme_minimal() +
-    theme(
-      plot.title = element_text(hjust = 0.5),
-      text = element_text(size = 14), # family = "Times New Roman", 
-      panel.border = element_blank(),
-      plot.caption = element_text(hjust = 0.5) # center the caption labeling n
     )
 
   return(p)
