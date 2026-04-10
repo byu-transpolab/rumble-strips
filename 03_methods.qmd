@@ -91,10 +91,10 @@ test_spacing_plot
 #| label: tbl-wav-spacing
 #| tbl-cap: "Separation [ft] Between Wavetronix Units"
 # INCOMPLETE
-tar_load(observation_data)
-observation_data |>
+tar_load(trailer_spacing)
+trailer_spacing |>
   as_tibble() |>
-  select(site, trailer_spacing, spacing_type) |>
+  select(site, UDOT, 'NO TPRS', '1:2', LONG) |>
   kbl(booktabs = "true", format = "markdown" ) |> kable_styling()
 ```
 
