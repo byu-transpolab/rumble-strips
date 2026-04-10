@@ -16,6 +16,7 @@ Non-adhesive TPRS, typically made of steel and rubber, have been used since 2009
 
 TPRS installations are effective at reducing vehicle speeds in work zones. Studies report speed reductions ranging from 3.5 to 13.8 mph,[@brown_effectiveness_2022, @sun_elevated-risk_2011, @wang_effects_2013, @yang_effectiveness_2015], with greater reductions observed near the first set of strips and when drivers can see a flagger or additional barriers [@wang_effects_2013]. @wang_effects_2013 shows the effect is highly localized, and speeds tend to increase once drivers pass the TPRS unless additional measures are present. 
 
+
 ## Driver Behavior
 
 TPRS increase driver attentiveness, often measured by the frequency of brake light activation as vehicles approach the strips. Studies show that TPRS prompt more drivers to brake and pay attention to changing road conditions, though the percentage varies from 11 perecnt to 55 percent based on site and conditions [@brown_effectiveness_2022; @sun_elevated-risk_2011; @wang_effects_2013; @yang_effectiveness_2015]. Commercial vehicles tend to respond more cautiously than passenger cars [@wang_effects_2013].

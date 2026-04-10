@@ -15,6 +15,11 @@ signed_log10 <- trans_new(
   transform = function(x) sign(x) * log10(abs(x)),
   inverse = function(x) sign(x) * 10^abs(x)
 )
+
+library(ggplot2)
+theme_set(
+  theme_minimal(base_family = "Times New Roman", base_size = 12)
+)
 ```
 
 ## Speeds
