@@ -53,13 +53,6 @@ plot_test_spacing <- function(state_spacing) {
       x = "Speed [mph]",
       y = "Strip spacing [ft]",
       color = "Spacing Type"
-    ) + 
-    theme_minimal() +
-    theme(
-      text = element_text(
-        size = 14 #, 
-        # family = "Times New Roman"
-      )
     )
     
   p
@@ -78,12 +71,6 @@ plot_state_spacing <- function(state_spacing) {
     geom_line() + 
     xlab("Speed [mph]") + 
     ylab("Strip spacing [ft]") +
-    theme_bw() + 
-    #axis labels in 14 pt Times New Roman font
-    # theme(
-    #  text = element_text(size = 14, 
-    #  family = "Times New Roman")
-    #) +
     facet_wrap(
       ~factor(state,
         # These states are put into a very particular order
@@ -95,11 +82,6 @@ plot_state_spacing <- function(state_spacing) {
                     "Recommended", "Utah",     "1:2 Spacing")),
         drop = TRUE, # removes any NA plots
         ncol = 3 # sets number of columns
-    ) + 
-    #pane titles in 14 pt Times New Roman font
-    theme(
-      strip.text = element_text(size = 14) #,
-      # family = "Times New Roman")
     )
   
   p
@@ -120,14 +102,7 @@ plot_old_test_spacing <- function(old_test_spacing) {
     labs(
       x = "Speed (mph)",
       y = "Strip Spacing (ft)",
-      color = "Specifications") +
-    theme_minimal() +
-    theme(
-      text = element_text(size = 20), # family = "Times New Roman", 
-      plot.title = element_text(hjust = 1.0, size = 20),
-      legend.title = element_text(size = 16),
-      legend.text = element_text(size = 16)
-    )
+      color = "Specifications")
   
   p
 }
