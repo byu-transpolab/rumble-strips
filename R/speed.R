@@ -104,7 +104,12 @@ plot_confidence_bounds <- function(paired_t_test) {
       y = site, 
       x = mean_diff, 
       color = spacing_type)
-    )
+    )  +
+  labs(
+    x = "Speed Difference [mph]",
+    y = "Site",
+    color = "Spacing Type"
+  )
   
   # return the plot object so it can be saved in a separate target
   p
