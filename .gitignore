@@ -27,3 +27,6 @@ data/temp_data/hourly_station_data
 /data/temp_data
 /rosm.cache/
 **/*.quarto_ipynb
+index.aux
+index.log
+index.tex
