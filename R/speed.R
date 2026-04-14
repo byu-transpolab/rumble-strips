@@ -98,18 +98,18 @@ plot_confidence_bounds <- function(paired_t_test) {
     filter(!is.na(conf_low), !is.na(conf_high))
 
   # Build plot
-  p <- ggplot(
-    plot_data, 
+  p <- ggplot(plot_data, 
     aes(
-      y = site, 
-      x = mean_diff, 
-      color = spacing_type)
-    )  +
-  labs(
-    x = "Speed Difference [mph]",
-    y = "Site",
-    color = "Spacing Type"
-  )
+      x = mean_diff, y = site, 
+      xmin = conf_low, xmax = conf_high, color = spacing_type)
+  )  +
+    geom_errorbar(
+      position = position_dodge(width = 0.6),
+      width = 0.4
+    ) +
+    geom_point(
+      position = position_dodge(width = 0.6)
+    )
   
   # return the plot object so it can be saved in a separate target
   p
