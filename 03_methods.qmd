@@ -67,6 +67,11 @@ tar_load(n)
 hourly_volume_plot +
   # color bars based on whether they are within the observation window
 scale_fill_manual(values = c("FALSE" = "grey", "TRUE" = "steelblue")) +
+  labs(
+    x = "Hour of Day",
+    y = "Average Volume",
+    fill = "Working Hours"
+  ) +
   # add a horizontal line to mark the minimum required observations
 geom_hline(
   yintercept = n,
