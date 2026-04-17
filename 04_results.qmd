@@ -1,10 +1,14 @@
-## Results and Analysis
+# Results and Analysis {#sec-results}
+
+This section presents the results of the methodology in @sec-methodology.
 
 
-```{r setup, file = "R/chapter_start.R", include = FALSE}
+```{r setup, include = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
 # includes loading libraries that I always use, as well as options for 
 # displaying numbers and text.
+source("R/chapter_start.R")
+
 library(modelsummary)
 library(scales)
 
@@ -13,101 +17,123 @@ signed_log10 <- trans_new(
   transform = function(x) sign(x) * log10(abs(x)),
   inverse = function(x) sign(x) * 10^abs(x)
 )
+
+spacing_palette <- c(
+  "NO TPRS" = "#2E4756",
+  "UDOT" = "#3C7A89",
+  "1:2" = "#F49D37",
+  "LONG" = "#D81159"
+)
+
+site_palette <- c(
+  "US-6" = "#3C7A89",
+  "US-191" = "#F49D37", 
+  "SR-12" = "#D81159",
+  "I-70" = "#2E4756"
+)
+
+cm <- c(
+  "classTruck" = "Trucks",
+  "classMotorcycle" = "Motorcycles",
+  "spacing_typeUDOT" = "UDOT Spacing",
+  "spacing_type1:2" = "1:2 Spacing",
+  "spacing_typeLONG" = "Long Spacing",
+  "siteSR-12" = "SR-12",
+  "siteUS-191" = "US-191",
+  "siteUS-6" = "US-6"
+)
+
+library(ggplot2)
+theme_set(
+  theme_minimal(base_family = "Times New Roman", base_size = 12)
+)
 ```
 
-### Speeds
-Analysis question 1: does having rumble strips slow down traffic?
+## Speeds
 
-```{r wavetronix}
-# join observation information to the wavetonix data
-tar_load(wavetronix)
-tar_load(observations)
-
-wavetronix <- wavetronix |>
-  left_join(observations, by = c("site", "date")) 
-
-```
-
-```{r wgrp}
-wavetronix |>
-  group_by(site, strip_spacing, unit) |>
-  summarise(speed_85 = mean(speed_85))
-```
-
-This is a t-test of means for one road comparing 35 ft spacing with no rumble strips.
-```{r wtt}
-groups <- wavetronix |>
-  group_by(site, unit, strip_spacing) |> 
-  select(speed_85) |>
-  nest(-site, -unit, -strip_spacing) 
-
-t.test(groups$data[[5]], groups$data[[7]])
-t.test(groups$data[[9]], groups$data[[10]])
-```
+@fig-speed shows the change in speed between units, 95% confidence bound of different between 85th percentile speeds. The 95% confidence bound is the range of speeds that are likely to occur if the null hypothesis is true. The confidence bounds are calculated using the bootstrap method. The 95% confidence bound is calculated by taking the upper and lower bounds of the 95% confidence interval, and then taking the difference between them. This is a useful metric for understanding the effect of rumble strips on traffic flow.
 
 
+```{r}
+#| label: fig-speed
+#| fig-cap: Change in speed between units, 95% confidence bound of different between 85th percentile speeds.
+tar_load(confidence_bounds)
 
-
-```{r wlm}
-# estimate a model of the effect of rumble strips on speed
-wlms <- wavetronix |>
-  group_by(site) |>
-  nest(data = -site) |>
-  mutate(
-    model = map(data, ~lm(speed_85 ~ unit, data = .x))
+# see plot_confidence_bounds() in R/speed.R for how this plot is made
+confidence_bounds +
+  scale_color_manual(values = spacing_palette) +
+  labs(
+    x = "Speed Difference [mph]",
+    y = "Site",
+    color = "Spacing Type"
   )
-
-list <- wlms$model |> setNames(wlms$site)
 ```
 
+## Braking Behavior
 
-```{r}
-modelsummary(list,  stars = TRUE)
+```{r eval=FALSE}
+## NOT going to include this in the paper
+#| label: fig-braking
+#| fig-cap: Braking behavior by spacing of TPRS and vehicle type.
+tar_load(braking_plot)
+braking_plot
 ```
 
-
-## Braking and Avoidance
-
-```{r}
-#| label: tbl-avoidglm
-#| tbl-cap: Binomial Models of TPRS Avoidance
-tar_load(avoid_models)
-modelsummary(avoid_models,  stars = TRUE)
-```
-
-```{r}
+```{r eval=FALSE}
 #| label: tbl-brakeglm
 #| tbl-cap: Multinomial Models of TPRS Braking
 tar_load(brake_models)
-modelsummary(brake_models, shape = term ~ response,  stars = TRUE)
+modelsummary(brake_models, shape = term ~ response,  stars = TRUE, coef_rename = cm)
+```
+
+## Avoidance Behavior
+
+```{r}
+#| label: fig-avoidance
+#| fig-cap: Avoidance behavior by spacing of TPRS and vehicle type.
+tar_load(departure_plot)
+departure_plot
 ```
 
 ```{r}
 #| label: tbl-avoidglm
 #| tbl-cap: Binomial Models of TPRS Avoidance
 tar_load(avoid_models)
-modelsummary(avoid_models,  stars = TRUE)
+modelsummary(avoid_models,  stars = TRUE, coef_rename = cm)
 ```
-
 
 
 ### Strip Displacement
 
 ```{r}
-#| label: fig-momentum
+#| label: fig-momentum-site
 #| fig-cap: Impact momentum for each transition, colored by site.
 tar_load(momentum_per_transition_site)
-
 momentum_per_transition_site
 ```
 
-@fig-momentum shows the impact momentum for each transition, colored by site. The impact momentum is the change in speed for a vehicle in a given transition. The change in speed is calculated by subtracting the speed at the beginning of the transition from the speed at the end of the transition. This is a useful metric for understanding the effect of rumble strips on traffic flow.
+```{r}
+#| label: fig-momentum-spacing
+#| fig-cap: Impact momentum for each transition, colored by spacing.
+tar_load(momentum_per_transition_spacing)
+momentum_per_transition_spacing
+```
+
+@fig-momentum-site shows the impact momentum for each transition, colored by site. The impact momentum is the change in speed for a vehicle in a given transition. The change in speed is calculated by subtracting the speed at the beginning of the transition from the speed at the end of the transition. This is a useful metric for understanding the effect of rumble strips on traffic flow.
 
 ### Worker Exposure
 
-```{r cdf-sites}
-
-tar_load(cdf_plots)
-
-cdf_plots$site_plot
+```{r}
+#| label: fig-cdf
+#| fig-cap: CDF of headways for each site.
+tar_load(headway_cdf_site_plot)
+headway_cdf_site_plot +
+    coord_cartesian(xlim = c(0, 100), ylim = c(0, 1.05)) +
+    scale_color_manual(values = site_palette) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(
+      x = "Headway (s)",
+      y = "Cumulative %",
+      color = "Site"
+    )
 ```

@@ -259,81 +259,16 @@ compute_headways <- function(camera_back_data, observations) {
 #' @return ggplot showing cdf curves of headway with critical time marked
 plot_headway <- function(headway_data, critical_time, color_by) {
   
-  # First, we compute where the critical time intersects with each CDF line
-  # This is used to label the intersections for easier reading.
-  ecdf_at_crit <- headway_data %>%
-    mutate(.grp = .data[[color_by]]) %>%
-    group_by(.grp) %>%
-    summarise(
-      # ECDF at x = critical_time
-      p = mean(headway_sec <= critical_time, na.rm = TRUE),  
-      .groups = "drop"
-    ) %>%
-    mutate(
-      label = scales::percent(p, accuracy = 0.1)  # one decimal place
-    )
 
   # Now we start building the plot.
   p <-ggplot(headway_data, aes(x=headway_sec, color = .data[[color_by]])) +
     # add cumulative distribution lines
-    stat_ecdf(linewidth = 1) +
+    stat_ecdf() +
     # Add a vertical line to mark the critical time
     geom_vline(
       xintercept = critical_time, 
-      linetype = "dashed", 
-      linewidth = 0.6,
-      color = "red"
-    ) +
-    # Add a label to the vertical line representing critical time
-    annotate(
-      "label",
-      x = critical_time,
-      y = 1.02,
-      label = paste0("Critical Time: ", round(critical_time, 1), " s"),
-      color = "red",
-      fill = "white",
-      vjust = -0.4,
-      hjust = 1,
-      size = 3.5,
-      label.r = unit(0.1, "lines"),
-      label.padding = unit(0.15, "lines")
-    ) +
-    # Fix the x_axis to 0-100 seconds without changing data
-    coord_cartesian(xlim = c(0, 100), ylim = c(0, 1), clip = "off") +
-    # Make the why scale show percentage points
-    scale_y_continuous(
-      labels = scales::percent,
-      # add a little headspace on the top for the critical time label
-      expand = expansion(mult = c(0, 0.1))
-    ) +
-    labs(
-      x = "Headway [s]",
-      y = "Cumulative %",
-      color = NULL
-    ) +
-    theme_minimal() +
-    theme(
-      legend.position = "bottom",
-      legend.text = element_text(size = 12),
-      panel.grid.minor = element_blank() #,
-      # axis.title = element_text(face = "bold")
-    ) +
-    # Add labels to intersecting cdf and vertical line with white boxes
-    geom_label_repel(
-      data = ecdf_at_crit,
-      aes(x = 0, y = p, label = label, color = .grp),
-      inherit.aes = FALSE,
-      direction = "y",            # only move vertically
-      nudge_x = 0.6,              # small horizontal offset from the y-axis
-      hjust = 0,                  # left-justify text inside the label
-      box.padding = 0.15,
-      point.padding = 0.1,
-      label.size = 0.2,                    # border around the label
-      label.r = unit(0.1, "lines"),        # slight rounded corners
-      fill = "white",                      # white boxes
-      show.legend = FALSE,
-      seed = 123                           # reproducible place
-    )
+      linetype = "dashed"
+    ) 
   
   return(p)
 }
