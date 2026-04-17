@@ -409,6 +409,7 @@ plot_hourly_volumes <- function(hourly_volumes, start_time, end_time, n = 30) {
     labs(
       x = "Hour of Day (0-23)",
       y = "Average Traffic Volume",
+      fill = "Working Hours",
       caption = paste0("Reference line at n = ", n)
     ) +
     facet_wrap(
