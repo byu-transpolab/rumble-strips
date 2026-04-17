@@ -23,7 +23,7 @@ spacing_palette <- c(
   "LONG" = "#D81159"
 )
 
-site_palelette <- c(
+site_palette <- c(
   "US-6" = "#3C7A89",
   "US-191" = "#F49D37", 
   "SR-12" = "#D81159",
