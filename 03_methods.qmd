@@ -1,9 +1,11 @@
 # Methodology {#sec-methodology}
 
-```{r setup, file = "R/chapter_start.R", include=FALSE, cache = FALSE}
+```{r setup, include=FALSE, cache = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
 # includes loading libraries that I always use, as well as options for 
 # displaying numbers and text.
+source("R/chapter_start.R")
+
 library(targets)
 library(tidyverse)
 library(ggspatial)

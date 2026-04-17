@@ -3,10 +3,12 @@
 This section presents the results of the methodology in @sec-methodology.
 
 
-```{r setup, file = "R/chapter_start.R", include = FALSE}
+```{r setup, include = FALSE}
 # a number of commands need to run at the beginning of each chapter. This
 # includes loading libraries that I always use, as well as options for 
 # displaying numbers and text.
+source("R/chapter_start.R")
+
 library(modelsummary)
 library(scales)
 
@@ -126,8 +128,8 @@ momentum_per_transition_spacing
 #| fig-cap: CDF of headways for each site.
 tar_load(headway_cdf_site_plot)
 headway_cdf_site_plot +
-    coord_cartesian(xlim = c(0, 100), ylim = c(0, 1)) + 
-    scale_color_manual(values = site_palelette) +
+    coord_cartesian(xlim = c(0, 100), ylim = c(0, 1.05)) +
+    scale_color_manual(values = site_palette) +
     scale_y_continuous(labels = scales::percent) +
     labs(
       x = "Headway (s)",
