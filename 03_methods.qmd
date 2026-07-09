@@ -5,7 +5,7 @@
 # includes loading libraries that I always use, as well as options for 
 # displaying numbers and text.
 source("R/chapter_start.R")
-
+library(tinytable)
 library(targets)
 library(tidyverse)
 library(ggspatial)
@@ -47,12 +47,11 @@ ggplot() +
 #| label: tbl-sites
 #| tbl-cap: Data Collection Sites
 #| 
-library(kableExtra)
 sites |>
   as_tibble() |>
-  select(site, Roadway, Location, Start, End) |>
+  select(Site = site, Roadway, Location, Start, End) |>
   sf::st_drop_geometry() |>
-  kbl(booktabs = "true", format = "markdown" ) |> kable_styling()
+  tt()
 ```
 
 The research team used histograms of haverage hourly volumes on Utah roads to determine which ones would make reliable sites to study to ensure statistical significance. @fig-aadt shows data from four counting stations near the sites selected for observation. Volume data from May 2023 to August 2023 was collected from the UDOT Traffic Data Portal, aggregated and averaged by hour, and plotted as histograms. The data shows that the sites selected for observation have a sufficient volume of traffic to support a reliable statistical analysis of the potential effect spacing would have on TPRS arrays.
@@ -112,8 +111,8 @@ test_spacing_plot
 tar_load(trailer_spacing)
 trailer_spacing |>
   as_tibble() |>
-  select(site, UDOT, 'NO TPRS', '1:2', LONG) |>
-  kbl(booktabs = "true", format = "markdown" ) |> kable_styling()
+  select(Site = site, UDOT, 'NO TPRS', '1:2', LONG) |>
+  tt()
 ```
 
 ## Driver Behavior - Change in Speed, Braking, and Lane Departures
