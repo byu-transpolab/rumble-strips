@@ -140,7 +140,10 @@
 
 % These are extra latex packages that the document depends on
 % 
+\usepackage[margin=1in]{geometry}
 \usepackage{siunitx}
+\usepackage{tabularray}
+\UseTblrLibrary{siunitx}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -156,14 +159,6 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
-\usepackage{tabularray}
-\usepackage[normalem]{ulem}
-\usepackage{graphicx}
-\usepackage{rotating}
-\UseTblrLibrary{siunitx}
-\NewTableCommand{\tinytableDefineColor}[3]{\definecolor{#1}{#2}{#3}}
-\newcommand{\tinytableTabularrayUnderline}[1]{\underline{#1}}
-\newcommand{\tinytableTabularrayStrikeout}[1]{\sout{#1}}
 \makeatletter
 \@ifpackageloaded{bookmark}{}{\usepackage{bookmark}}
 \makeatother
