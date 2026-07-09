@@ -28,20 +28,30 @@ book:
     - 05_conclusion.qmd
     - references.qmd
   abstract: |
-    The abstract is a crucial component of any scientific paper, as it 
-    provides a summary of the research and its main findings. This paper 
-    provides guidelines for writing an effective scientific abstract. 
-    The first step is to identify the key elements of the research, such 
-    as the research question, methods, results, and conclusions. Next, 
-    the abstract should be written in a clear and concise manner, using 
-    simple language and avoiding technical jargon. The abstract should 
-    also be structured, with a clear introduction, methods section, results 
-    section, and conclusion. Additionally, the abstract should accurately 
-    and succinctly convey the main findings of the research, highlighting the 
-    significance and implications of the work. By following these 
-    guidelines, researchers can ensure that their abstract effectively communicates 
-    the key aspects of their research and attracts the attention of potential 
-    readers. - Written by ChatGPT
+    This study evaluates the effectiveness and operational implications of
+    Temporary Portable Rumble Strips (TPRS) used by the Utah Department of
+    Transportation (UDOT) to alert drivers to upcoming work zones. While TPRS
+    are intended to capture driver attention and reduce crash risk, concerns
+    remain regarding their influence on driver behavior, avoidance maneuvers,
+    and maintenance requirements. A field experiment was conducted at four work
+    zones in Utah during the Summer 2025 construction season. Four deployment
+    conditions—no TPRS and three spacing configurations—were tested. Data
+    collection included speed measurements using mobile radar detectors and
+    video-based observations of vehicle classification, braking behavior,
+    avoidance maneuvers, and TPRS displacement. Results indicate that the effect
+    of TPRS on speed reduction is inconclusive. Drivers who braked in response
+    to TPRS typically did so before reaching the devices, suggesting that visual
+    cues may be as influential as tactile feedback. Avoidance behavior was
+    common among motorcycles and occurred occasionally among other vehicles.
+    Driver responses were more strongly influenced by site-specific factors—such
+    as roadway geometry and sight distance—than by TPRS spacing. TPRS
+    displacement occurred gradually under traffic but was not clearly related to
+    traffic volume or speed, suggesting that device age and condition play a
+    larger role. Maintenance requires traffic gaps of approximately 34 seconds,
+    which may not be feasible at higher-volume sites. These findings highlight
+    the need for further evaluation of TPRS effectiveness, standards for device
+    condition, consideration of alternative measures for long-term work zones,
+    and increased contractor discretion based on site conditions.
 
 bibliography: references.bib
 cite-method: citeproc
@@ -53,10 +63,10 @@ format:
   elsevier-pdf:
     include-in-header: 
       - packages.tex
+    fontsize: 12pt
     journal:
-      name: Transportation Research Part A
+      name: ASCE 2027
     keep-tex: true
     top-level-division: section
     toc: false
-
 
