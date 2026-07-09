@@ -30,3 +30,20 @@ data/temp_data/hourly_station_data
 index.aux
 index.log
 index.tex
+
+# LaTeX intermediates
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.spl
+*.synctex.gz
+*.toc
+*.xdv
