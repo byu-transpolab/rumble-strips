@@ -132,20 +132,16 @@ cumulate_class_volume <- function(class_volume, observation_data = NULL) {
     dplyr::select(site, time, session, class, cumulative, spacing_type)
 }
 
-#' Create and save displacement plots (cumulative volume with TPRS events)
+#' Create displacement plots of cumulative volume with TPRS events
 #'
 #' @param cumulated_volume data.frame or tibble. Output of cumulate_volume.
 #'   Expected columns include: `site`, `date`, `time` (HHMMSS or POSIX), `cumulative`,
 #'   `speed`, and `spacing_type`.
 #' @param camera_top_data data.frame or tibble. Camera top events containing at
 #'   minimum `site`, `time` (POSIXct), and `event` (factor/character).
-#' @param output_dir character. Directory where SVG files will be written
-#'   (defaults to "output"). The function will create one SVG per site.
-#' @return A named list of file paths (character) pointing to the saved SVGs,
-#'   names correspond to site values. Side effect: saves SVG files via ggsave.
+#' @return A named list of ggplot objects, with names corresponding to site values.
 make_displacement_plot_data <- function(cumulated_volume,
-                                        camera_top_data,
-                                        output_dir = "output") {
+                                        camera_top_data) {
 
   # Ensure datetime is properly formatted
   cumulated_volume <- cumulated_volume %>%
@@ -155,7 +151,7 @@ make_displacement_plot_data <- function(cumulated_volume,
 
   # Get unique sites
   sites <- unique(cumulated_volume$site)
-  output_paths <- list()
+  plots <- list()
 
   for (s in sites) {
     wv_site <- cumulated_volume %>% filter(site == s)
@@ -203,13 +199,10 @@ make_displacement_plot_data <- function(cumulated_volume,
       labs(x = "Time", y = "Cumulative Volume", color = "TPRS Status") +
       theme_minimal()
 
-    # Save plot
-    out_path <- file.path(output_dir, paste0("displacement_plot_", s, ".svg"))
-    ggsave(out_path, plot = p, width = 8, height = 4.5)
-    output_paths[[s]] <- out_path
+    plots[[s]] <- p
   }
 
-  return(output_paths)
+  return(plots)
 }
 
 #' Create displacement plot of cumulative class volumes with TPRS events
@@ -274,31 +267,4 @@ make_displacement_plot_class_data <- function(
 
   # return the plot object
   return(p)
-}
-
-#' Save a class-displacement plot to disk as SVG
-#'
-#' @param site_info character. Site identifier used to build the filename.
-#' @param plot ggplot. Plot object to save.
-#' @param output_dir character. Directory where the SVG will be written
-#'   (defaults to "output").
-#' @return Character. File path to the saved SVG.
-save_displacement_plots <- function(site_info, plot, output_dir = "output") {
-  
-  out_path <- file.path(
-    output_dir, 
-    paste0("displacement_plot_class_", 
-    site_info, 
-    ".svg")
-  )
-
-  ggsave(
-    out_path,
-    plot = plot,
-    width = 8,
-    height = 4.5,
-    device = "svg"
-  )
-
-  return(out_path)
 }

@@ -6,7 +6,6 @@ library(tidyr)
 library(purrr)
 library(ggplot2)
 library(ggrepel)   # for ggplot to position labels correctly
-library(svglite)   # for ggsave(..., device = svglite)
 library(readr)     # for reading observation_data.csv
 library(patchwork) # for combining plots
 library(targets)
@@ -391,9 +390,8 @@ create_combined_cdf_plot <- function(data_list, title, critical_time, colors = N
     ) +
     theme_minimal() +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+      plot.title = element_text(hjust = 0.5),
       legend.position = "bottom",
-      legend.text = element_text(size = 10),
       panel.grid.minor = element_blank()
     )
   
@@ -412,8 +410,6 @@ create_combined_cdf_plot <- function(data_list, title, critical_time, colors = N
         y = 0.98,
         label = sprintf("t_c = %.1f s", critical_time),
         color = "red",
-        size = 3.5,
-        fontface = "bold",
         hjust = ifelse(critical_time < x_limit * 0.5, -0.1, 1.1)
       )
     
@@ -431,8 +427,6 @@ create_combined_cdf_plot <- function(data_list, title, critical_time, colors = N
             y = label_y,
             label = sprintf("%.1f%%", cdf_val * 100),  # Changed to one decimal place
             color = colors[group_name],
-            size = 3,
-            fontface = "bold",
             hjust = 0,
             vjust = 0.5
           )
@@ -441,37 +435,4 @@ create_combined_cdf_plot <- function(data_list, title, critical_time, colors = N
   }
   
   return(p)
-}
-
-## functions to save the CDF plots #######################################
-
-## Save CDF plots to files
-##
-## @param cdf_results List containing CDF plots
-## @param output_dir Directory for saving plots
-## @return Character vector of file paths
-save_cdf_plots <- function(cdf_results, output_dir = "output") {
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir, recursive = TRUE)
-  }
-  
-  files <- c()
-  
-  # Save combined site plot
-  if (!is.null(cdf_results$site_plot)) {
-    site_path <- file.path(output_dir, "cdf_sites.svg")
-    ggsave(site_path, plot = cdf_results$site_plot, 
-           device = svglite, width = 6, height = 4)
-    files <- c(files, site_path)
-  }
-  
-  # Save combined spacing plot
-  if (!is.null(cdf_results$spacing_plot)) {
-    spacing_path <- file.path(output_dir, "cdf_spacing.svg")
-    ggsave(spacing_path, plot = cdf_results$spacing_plot, 
-           device = svglite, width = 6, height = 4)
-    files <- c(files, spacing_path)
-  }
-  
-  files
 }

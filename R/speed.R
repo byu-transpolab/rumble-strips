@@ -175,13 +175,9 @@ run_single_unit_t_test <- function(speed_data, unit = "w1") {
 #' @param unit character. Unit identifier used to create the file name and axis
 #'   label (e.g., "w1"). Default is "w1".
 #' @return A ggplot object showing mean speeds with 95% confidence intervals per
-#'   `site`, colored by `spacing_type`. The plot object is returned (and the
-#'   function also computes a filename but does not save the plot).
+#'   `site`, colored by `spacing_type`.
 plot_single_unit_confidence_bounds <- function(
   single_unit_t_test, unit = "w1") {
-
-  # create the file name now with the shortened unit label ie w1 or w2
-  file_name <- paste0("output/single-unit-speed-", unit, ".svg")
 
   # Prepare data
   plot_data <- single_unit_t_test %>%
@@ -205,7 +201,7 @@ plot_single_unit_confidence_bounds <- function(
                   height = 0.4,
                   linewidth = 1.2) +
     geom_point(position = position_dodge(width = 0.6), size = 2) +
-    theme_minimal(base_size = 14) +
+    theme_minimal() +
     scale_color_manual(values = c(
       "NO TPRS" = "#2E4756",
       "UDOT" = "#3C7A89",

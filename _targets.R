@@ -12,7 +12,6 @@ library(googledrive)
 library(readxl)
 library(mlogit)
 library(modelsummary)
-library(svglite)
 # Load other packages as needed.
 
 # Set target options:
@@ -84,37 +83,6 @@ list(
   tar_target(state_spacing_plot, plot_state_spacing(state_spacing)),
   tar_target(old_test_spacing_plot, plot_old_test_spacing(old_test_spacing)),
 
-  # Save each plot to output
-  tar_target(test_spacing_plot_file,
-    ggsave(
-      "output/test_spacing.svg",
-      plot = test_spacing_plot,
-      device = svglite,
-      width = 6,
-      height = 6,
-      units = "in"
-    )
-  ),
-  tar_target(state_spacing_plot_file,
-    ggsave(
-      "output/state_spacing.svg",
-      plot = state_spacing_plot,
-      device = svglite,
-      width = 6,
-      height = 8,
-      units = "in"
-    )
-  ),
-  tar_target(old_test_spacing_plot_file,
-    ggsave(
-      "output/old_test_spacing.svg",
-      plot = old_test_spacing_plot,
-      device = svglite,
-      width = 6,
-      height = 6,
-      units = "in"
-    )
-  ),
 
 
   ### Hourly Volumes ######################################################
@@ -205,19 +173,6 @@ list(
     cue = tar_cue_skip(skip) 
   ),
 
-  # Save the faceted plot to output
-  tar_target(
-    hourly_volume_plot_file,
-    ggsave(
-      "output/hourly_volume_plot.svg",
-      plot = hourly_volume_plot,
-      device = svglite,
-      width = 6,
-      height = 8,
-      units = "in"
-    ),
-    cue = tar_cue_skip(skip) 
-  ),
 
   ## ===== ANALYSIS ===== ##
   # these are the targets used in the data analysis
@@ -340,14 +295,6 @@ list(
     plot_confidence_bounds(paired_t_test)
   ),
 
-  tar_target(confidence_bounds_file,
-    ggsave(
-      "output/change-in-speeds.svg", 
-      plot = confidence_bounds,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
 
   # t-test of 85th percentile speed by each unit alone
   tar_target(single_unit_t_test_w1, 
@@ -365,24 +312,6 @@ list(
     plot_single_unit_confidence_bounds(single_unit_t_test_w2, unit = "w2")
   ),
 
-  # Save the single unit confidence bounds plots
-  tar_target(single_unit_speed_w1_file,
-    ggsave(
-      "output/single_unit_speed_w1.svg",
-      plot = single_unit_confidence_bounds_w1,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
-  tar_target(single_unit_speed_w2_file,
-    ggsave(
-      "output/single_unit_speed_w2.svg",
-      plot = single_unit_confidence_bounds_w2,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
-
   ### Driver Braking and TPRS Avoidance ######################################
   # Helper functions are listed in braking_and_departure.R
 
@@ -397,23 +326,6 @@ list(
   # # Plot departure response in a bar chart, faceted by spacing_type and class.
   tar_target(departure_plot, plot_departure(brake_and_departure)),
 
-  # Save the braking and departure plots
-  tar_target(braking_plot_file,
-    ggsave(
-      "output/braking_plot.svg",
-      plot = braking_plot,
-      width = 5,
-      height = 6,
-      units = "in")
-  ),
-  tar_target(departure_plot_file,
-    ggsave(
-      "output/departure_plot.svg",
-      plot = departure_plot,
-      width = 4,
-      height = 6,
-      units = "in")
-  ),
 
   # models of braking and avoidance
   tar_target(brake_models, estimate_brake_models(brake_and_departure)),
@@ -445,17 +357,6 @@ list(
       site_info = site_names),
     # Pattern here is what lets the target iterate over each site
     pattern = map(site_names)
-  ),
-
-  # Save each of the displacement by class plots
-  tar_target(displacement_by_class_plot_files,
-    save_displacement_plots(
-      site_info = site_names,
-      plot = displacement_by_class_plots,
-      output_dir = "output"
-    ),
-    # Pattern is what lets the target iterate over each site
-    pattern = map(site_names, displacement_by_class_plots)
   ),
 
   ### TPRS Displacement by momentum ##########################################
@@ -505,23 +406,6 @@ list(
     plot_momentum(disp_plot_data, TRUE)
   ),
 
-  # Save the momentum per transition plots
-  tar_target(momentum_per_transition_spacing_file,
-    ggsave(
-      "output/momentum_per_transition_spacing.svg",
-      plot = momentum_per_transition_spacing,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
-  tar_target(momentum_per_transition_site_file,
-    ggsave(
-      "output/momentum_per_transition_site.svg",
-      plot = momentum_per_transition_site,
-      width = 6,
-      height = 4,
-      units = "in")
-  ),
 
   ### Worker Exposure Analysis ###############################################
   # Helper functions located in R/exposure.R
@@ -548,29 +432,6 @@ list(
   tar_target(
     headway_cdf_spacing_plot,
     plot_headway(headway_data, critical_time, "spacing_type")
-  ),
-
-  # Save the CDF plots
-  tar_target(
-    headway_cdf_site_plot_file,
-    ggsave(
-      "output/cdf_sites.svg",
-      headway_cdf_site_plot,
-      device = svglite,
-      width = 6,
-      height = 4,
-      units = "in"
-    )
-  ),
-  tar_target(
-    headway_cdf_spacing_plot_file,
-    ggsave(
-      "output/cdf_spacing.svg",
-      headway_cdf_spacing_plot,
-      device = svglite,
-      width = 6,
-      height = 4,
-      units = "in"
-    )
   )
+
 ) # closes list of targets

@@ -44,9 +44,6 @@ cm <- c(
 )
 
 library(ggplot2)
-theme_set(
-  theme_minimal(base_family = "Times New Roman", base_size = 12)
-)
 ```
 
 ## Speeds
