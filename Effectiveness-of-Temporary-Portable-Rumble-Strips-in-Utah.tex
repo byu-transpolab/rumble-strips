@@ -5,6 +5,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
+  12pt,
   letterpaper,
   number]{elsarticle}
 \usepackage{xcolor}
@@ -92,39 +93,6 @@
 \makeatother
 
 
-% definitions for citeproc citations
-\NewDocumentCommand\citeproctext{}{}
-\NewDocumentCommand\citeproc{mm}{%
-  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
-\makeatletter
- % allow citations to break across lines
- \let\@cite@ofmt\@firstofone
- % avoid brackets around text for \cite:
- \def\@biblabel#1{}
- \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
-\makeatother
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
- {\begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
-  \fi
-  % set entry spacing
-  \setlength{\itemsep}{#2\baselineskip}}}
- {\end{list}}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 
 
@@ -144,6 +112,9 @@
 \usepackage{siunitx}
 \usepackage{tabularray}
 \UseTblrLibrary{siunitx}
+\usepackage{fontspec}
+
+\setmainfont{Times New Roman}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -203,7 +174,7 @@
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
-\journal{Transportation Research Part A}
+\journal{ASCE 2027}
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
@@ -226,16 +197,16 @@
 \author[1]{Gregory S. Macfarlane%
 %
 }
- \ead{gregmacfarlane@gmail.com} 
-\author[]{Tyler Carruth%
+ \ead{gregmacfarlane@byu.edu} 
+\author[1]{Tyler Carruth%
 %
 }
 
-\author[]{Benjamin Hailstone%
+\author[1]{Benjamin Hailstone%
 %
 }
 
-\author[]{Grant Schultz%
+\author[1]{Grant Schultz%
 %
 }
 
@@ -251,20 +222,32 @@ EB},city={Provo},postcode={84602},postcodesep={}}
 
         
 \begin{abstract}
-The abstract is a crucial component of any scientific paper, as it
-provides a summary of the research and its main findings. This paper
-provides guidelines for writing an effective scientific abstract. The
-first step is to identify the key elements of the research, such as the
-research question, methods, results, and conclusions. Next, the abstract
-should be written in a clear and concise manner, using simple language
-and avoiding technical jargon. The abstract should also be structured,
-with a clear introduction, methods section, results section, and
-conclusion. Additionally, the abstract should accurately and succinctly
-convey the main findings of the research, highlighting the significance
-and implications of the work. By following these guidelines, researchers
-can ensure that their abstract effectively communicates the key aspects
-of their research and attracts the attention of potential readers. -
-Written by ChatGPT
+This study evaluates the effectiveness and operational implications of
+Temporary Portable Rumble Strips (TPRS) used by the Utah Department of
+Transportation (UDOT) to alert drivers to upcoming work zones. While
+TPRS are intended to capture driver attention and reduce crash risk,
+concerns remain regarding their influence on driver behavior, avoidance
+maneuvers, and maintenance requirements. A field experiment was
+conducted at four work zones in Utah during the Summer 2025 construction
+season. Four deployment conditions---no TPRS and three spacing
+configurations---were tested. Data collection included speed
+measurements using mobile radar detectors and video-based observations
+of vehicle classification, braking behavior, avoidance maneuvers, and
+TPRS displacement. Results indicate that the effect of TPRS on speed
+reduction is inconclusive. Drivers who braked in response to TPRS
+typically did so before reaching the devices, suggesting that visual
+cues may be as influential as tactile feedback. Avoidance behavior was
+common among motorcycles and occurred occasionally among other vehicles.
+Driver responses were more strongly influenced by site-specific
+factors---such as roadway geometry and sight distance---than by TPRS
+spacing. TPRS displacement occurred gradually under traffic but was not
+clearly related to traffic volume or speed, suggesting that device age
+and condition play a larger role. Maintenance requires traffic gaps of
+approximately 34 seconds, which may not be feasible at higher-volume
+sites. These findings highlight the need for further evaluation of TPRS
+effectiveness, standards for device condition, consideration of
+alternative measures for long-term work zones, and increased contractor
+discretion based on site conditions.
 \end{abstract}
 
 
@@ -357,17 +340,18 @@ Non-adhesive TPRS, typically made of steel and rubber, have been used
 since 2009 to improve work zone safety (\textbf{pss\_best\_2018?}).
 Research consistently shows that TPRS can reduce traffic speed, increase
 driver attentiveness, and minimize erratic driving behaviors such as
-lane departures (Yang et al., 2015).
+lane departures (\textbf{yang\_effectiveness\_2015?}).
 
 \subsection{Speed Reduction}\label{speed-reduction}
 
 TPRS installations are effective at reducing vehicle speeds in work
 zones. Studies report speed reductions ranging from 3.5 to 13.8
-mph,(Yang et al., 2015), with greater reductions observed near the first
-set of strips and when drivers can see a flagger or additional barriers
-(\textbf{wang\_effects\_2013?}). (\textbf{wang\_effects\_2013?}) shows
-the effect is highly localized, and speeds tend to increase once drivers
-pass the TPRS unless additional measures are present.
+mph,(\textbf{yang\_effectiveness\_2015?}), with greater reductions
+observed near the first set of strips and when drivers can see a flagger
+or additional barriers (\textbf{wang\_effects\_2013?}).
+(\textbf{wang\_effects\_2013?}) shows the effect is highly localized,
+and speeds tend to increase once drivers pass the TPRS unless additional
+measures are present.
 
 \subsection{Driver Behavior}\label{driver-behavior}
 
@@ -375,10 +359,11 @@ TPRS increase driver attentiveness, often measured by the frequency of
 brake light activation as vehicles approach the strips. Studies show
 that TPRS prompt more drivers to brake and pay attention to changing
 road conditions, though the percentage varies from 11 perecnt to 55
-percent based on site and conditions (Yang et al., 2015;
-\textbf{brown\_effectiveness\_2022?};
-\textbf{sun\_elevated-risk\_2011?}; \textbf{wang\_effects\_2013?}).
-Commercial vehicles tend to respond more cautiously than passenger cars
+percent based on site and conditions
+(\textbf{brown\_effectiveness\_2022?};
+\textbf{sun\_elevated-risk\_2011?}; \textbf{wang\_effects\_2013?};
+\textbf{yang\_effectiveness\_2015?}). Commercial vehicles tend to
+respond more cautiously than passenger cars
 (\textbf{wang\_effects\_2013?}).
 
 Concerns about drivers evading TPRS by leaving their lane have been
@@ -775,14 +760,6 @@ practical relevance.
 \markboth{References}{References}
 
 \phantomsection\label{refs}
-\begin{CSLReferences}{1}{0}
-\bibitem[\citeproctext]{ref-yang_effectiveness_2015}
-Yang, H., Ozbay, K., \& Bartin, B. (2015). Effectiveness of temporary
-rumble strips in alerting motorists in short-term surveying work zones.
-\emph{Journal of Transportation Engineering}, \emph{141}(10), 05015003.
-\url{https://doi.org/10.1061/(ASCE)TE.1943-5436.0000789}
-
-\end{CSLReferences}
 
 
 
