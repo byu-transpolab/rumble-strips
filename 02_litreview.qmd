@@ -6,7 +6,9 @@
 # displaying numbers and text.
 ```
 
-Effectiveness of Temporary Portable Rumble Strips (TPRS)
+At the end of the 1990s, the Kansas DOT sought an alternative to temporary cold-mix asphalt rumble strips it used to alert drivers to upcoming work zones [@meyerEvaluationOrangeRemovable2000]. About ten years of product development led from adhesive strips pasted to the roadway to non-adhesive steel and rubber pads heavy enough to resist movement but light enough to be handled by workers [@mazeRemovableOrangeRumble2000; @meyerDesignPortableRumble2006; @brownEffectivenessTemporaryRumble2022].
+
+Meyer et al. (2006) developed specifications for a non-adhesive rumble strip addressing limitations identified for adhesive strips. In December 2008, Plastic Safety Systems (PSS) released the RoadQuake, a non-adhesive strip 3/4 in. thick, made of rubber and steel (PSS, 2018). Studies using both track and field tests demonstrated that RoadQuake and similar non-adhesive TPRS generated more noise feedback than adhesive TPRS and remained in place when properly installed (Schrock et al., 2010; Schrock et al., 2016; Sun et al., 2011). Research on adhesive TPRS since the development of non-adhesive TPRS is lacking, indicating a strong industry shift. Unless stated otherwise, all mentions of TPRS in the remainder of this report refer to the non-adhesive variety.
 
 ## Overview
 
@@ -29,7 +31,7 @@ A key challenge with non-adhesive TPRS is their tendency to shift or become disp
 
 ## Spacing Specifications
 
-There are three main groups of spacing specifications. Some states, such as Wisconsion, Florida, and Colorado, specify a single spacing independent of speed[@citation]. Some states such as Maryland, Viriginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on the posted speed limit[@citation]. New York, Texas, and Missouri specify spacing from 10 to 35 ft. based on the postedn speed limit[@citation]. The manufacturer also recommends spacing of 10 to 35 ft. based on the posted speed limit[@citation]. The various specifications are shown in Figure @fig-state-specs.
+There are three main groups of spacing specifications. Some states, such as Wisconsin, Florida, and Colorado, specify a single spacing independent of speed [e.g., @wisconsindotWisconsinDepartmentTransportation2022]. Some states such as Maryland, Viriginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on the posted speed limit [@minnesotadot38278186LongTerm2024]. New York, Texas, and Missouri specify spacing from 10 to 35 ft. based on the posted speed limit[@citation]. The manufacturer also recommends spacing of 10 to 35 ft. based on the posted speed limit[@citation]. The various specifications are shown in Figure @fig-state-specs.
 
 
 ```{r}
@@ -41,4 +43,6 @@ state_spacing_plot
 
 ## Summary
 
-TPRS are effective at reducing speeds, increasing driver attentiveness, and minimizing erratic driving in work zones. Displacement under traffic remains a practical concern, especially for non-adhesive products, and more research is needed on long-term performance and optimal deployment strategies.
+TPRS are effective at reducing speeds, increasing driver attentiveness, and minimizing erratic driving in work zones. Displacement under traffic remains a practical concern, especially for non-adhesive products, and more research is needed on long-term performance and optimal deployment strategiesState DOT’s increasingly use TPRS to alert drivers to upcoming work zones. Specifications for installing and deploying TPRS vary widely between states. Existing research overwhelmingly suggests that TPRS effectively gain drivers attention, improving speed limit compliance and reducing crash rates. The magnitude of these effects, however, vary widely among the studies considered in this review. This variance in effect may be a result of the variance in deployment practice, particularly in the spacing of strips in a TPRS array. The spacing of TPRS may also affect the rate of strip displacement, and the associated need for workers to enter the roadway. 
+More research is needed to observe the actual rate of displacement of TPRS under high-volume, high-speed traffic in a real-world setting. No research identified in this review has addressed the spacing between strips within an array and how such spacing affects driver behavior in terms of speed reduction, braking behavior, or driver avoidance. Additionally, the research considered in this review did not generally observe driver behavior on mountainous, rural roads with high traffic speeds of the kind prevalent in Utah. These observations shaped the design of an experiment that will be the focus of the remainder of this report.
+.
