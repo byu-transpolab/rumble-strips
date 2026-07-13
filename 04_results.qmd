@@ -1,6 +1,4 @@
-# Results and Analysis {#sec-results}
-
-This section presents the results of the methodology in @sec-methodology.
+# Results {#sec-results}
 
 
 ```{r setup, include = FALSE}
@@ -43,22 +41,39 @@ cm <- c(
   "siteUS-6" = "US-6"
 )
 
+gm <- c()
+
 library(ggplot2)
+theme_set(theme_minimal())
 ```
 
 ## Speeds
 
-@fig-speed shows the change in speed between units, 95% confidence bound of different between 85th percentile speeds. The 95% confidence bound is the range of speeds that are likely to occur if the null hypothesis is true. The confidence bounds are calculated using the bootstrap method. The 95% confidence bound is calculated by taking the upper and lower bounds of the 95% confidence interval, and then taking the difference between them. This is a useful metric for understanding the effect of rumble strips on traffic flow.
-
+The Wavetronix radar devices record the mean and 85th percentile speeds for
+vehicles passing the detectors aggregated to 15-minute bins, meaning that in an
+8-hour observation period, 48 85th-percentile speeds are recorded at each
+detector.   
+@fig-speed shows the difference in 85th percentile speeds between Wavetronix 1
+and Wavetronix 2 and the 95% confidence interval of this difference. A positive difference implies that 
+the 85th percentile speed *increased* between Wavetronix 1 and Wavetronix 2. 
+The results of this analysis do not show any clear correlation between change in
+speed and TPRS spacing, though in many conditions there is a reduction in speed. If the TPRS spacing had a consistent impact on speed,
+the relative position between the spacing types would be consistent between
+sites. The data do not show this pattern; rather, the impact of TPRS presence or
+spacing varies inconsistently between sites. Notably, there are cases on US-191
+where vehicle speeds increased after drivers traversed the array of TPRS. While
+this might seem to contradict the current consensus found in the literature,
+some studies did acknowledge that TPRS influence on speed is highly localized [@mcavoyEvaluationTemporaryRemovable2009; @shahinEffectsHighwayWork2023]
 
 ```{r}
 #| label: fig-speed
-#| fig-cap: Change in speed between units, 95% confidence bound of different between 85th percentile speeds.
+#| fig-cap: Change in 85th percentile speed between radar speed units with 95% confidence interval on difference in speeds.
 tar_load(confidence_bounds)
 
 # see plot_confidence_bounds() in R/speed.R for how this plot is made
 confidence_bounds +
   scale_color_manual(values = spacing_palette) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
   labs(
     x = "Speed Difference [mph]",
     y = "Site",
@@ -68,6 +83,18 @@ confidence_bounds +
 
 ## Braking Behavior
 
+Using Camera 1, the research team tracked drivers’ braking response to TPRS as
+another proxy measure of driver awareness. @tbl-brakeglm shows a multinomial
+logit model of braking behavior independently estimated for each site. In this
+model, significant positive numbers are correlated with an increase in the
+associated behavior relative to the not-braking reference. Vehicle type is not
+consistently and significantly correlated with braking behavior. Motorcycles and
+trucks are both more likely than passenger cars to brake before the strips at
+I-70, trucks more likely at US-191, and motorcycles at US-6. There is no
+correlation between vehicle type and after-strip braking at any site.
+TPRS spacing is also not consistently and significantly correlated with braking behavior. Relative to the no-TPRS condition, before-strip braking is more likely at SR-12, US-6, and I-70 at all spacing types. Before-strip braking at US-191 is oddly somewhat less likely with strips installed than without strips in place. After-strip braking is more likely with strips installed on I-70, and with UDOT spacing on US-6. But after-strip braking is less common with strips installed on SR-12 than without strips installed. 
+The fact that many vehicles brake before TPRS may suggest that the influence of TPRS is primarily visual rather than tactile for most road users. If drivers are reacting to TPRS on sight rather than striking the strips, this could explain why motorcycle drivers seemed to brake more when TPRS are not present. Motorcycle drivers may be braking before they enter the camera’s field of view when they see the TPRS installed, and thus not being counted. But when TPRS are not installed, motorcycle drivers may be braking later in response to seeing the lane closure rather than the TPRS. This interpretation is speculative and more research is needed. 
+
 ```{r eval=FALSE}
 ## NOT going to include this in the paper
 #| label: fig-braking
@@ -76,11 +103,11 @@ tar_load(braking_plot)
 braking_plot
 ```
 
-```{r eval=FALSE}
+```{r }
 #| label: tbl-brakeglm
 #| tbl-cap: Multinomial Models of TPRS Braking
 tar_load(brake_models)
-modelsummary(brake_models, shape = term ~ response,  stars = TRUE, coef_rename = cm)
+modelsummary(brake_models[-1], shape = term ~ response,  stars = TRUE, coef_rename = cm, gof_omit = "AIC|BIC|R2")
 ```
 
 ## Avoidance Behavior
@@ -125,12 +152,12 @@ momentum_per_transition_spacing
 #| fig-cap: CDF of headways for each site.
 tar_load(headway_cdf_site_plot)
 headway_cdf_site_plot +
-    coord_cartesian(xlim = c(0, 100), ylim = c(0, 1.05)) +
+    coord_cartesian(xlim = c(0, 60), ylim = c(0, 1.05)) +
     scale_color_manual(values = site_palette) +
     scale_y_continuous(labels = scales::percent) +
     labs(
       x = "Headway (s)",
       y = "Cumulative %",
       color = "Site"
-    )
+    ) + theme_bw()
 ```
