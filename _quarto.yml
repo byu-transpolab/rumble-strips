@@ -29,8 +29,6 @@ book:
   date: "8/1/2026"
   chapters:
     - index.qmd
-    - 01_introduction.qmd
-    - 02_litreview.qmd
     - 03_methods.qmd
     - 04_results.qmd
     - 05_conclusion.qmd
