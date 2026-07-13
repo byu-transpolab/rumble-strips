@@ -121,7 +121,15 @@ mcfadden_rho2 <- function(model) {
 
 brake_gof <- data.frame(
   raw = c("nobs", "rmse", "mcfadden_rho2"),
-  clean = c("Num.Obs.", "RMSE", "McFadden $rho^2$"),
+  clean = c(
+    "Num.Obs.",
+    "RMSE",
+    if (knitr::is_latex_output()) {
+      "McFadden $\\rho^2$"
+    } else {
+      "McFadden &rho;<sup>2</sup>"
+    }
+  ),
   fmt = c(0, 3, 3)
 )
 
@@ -131,7 +139,8 @@ modelsummary(
   stars = TRUE,
   coef_rename = cm,
   gof_function = mcfadden_rho2,
-  gof_map = brake_gof
+  gof_map = brake_gof,
+  escape = FALSE
 )
 ```
 
