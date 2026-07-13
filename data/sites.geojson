@@ -13,7 +13,10 @@
                 "Roadway": "SR-12",
                 "Start": "2025-07-07",
                 "End": "2025-07-11",
-                "site": 1
+                "site": 1,
+                "Speed Limit": 55,
+                "Work Zone Limit": 35,
+                "Closure Type": "Full lane"
             },
             "type": "Feature"
         },
@@ -26,11 +29,14 @@
                 "type": "Point"
             },
             "properties": {
-                "Location": "20 miles W of Wellington",
+                "Location": "20 miles East of Wellington",
                 "Roadway": "US-6",
                 "Start": "2025-07-15",
                 "End": "2025-07-18",
-                "site": 2
+                "site": 2,
+                "Speed Limit": 65,
+                "Work Zone Limit": "Not recorded",
+                "Closure Type": "Full lane"
             },
             "type": "Feature"
         },
@@ -47,7 +53,10 @@
                 "Roadway": "I-70",
                 "Start": "2025-07-29",
                 "End": "2025-08-01",
-                "site": 3
+                "site": 3,
+                "Speed Limit": 80,
+                "Closure Type": "Passing lane",
+                "Work Zone Limit": 60
             },
             "type": "Feature"
         },
@@ -64,7 +73,10 @@
                 "Roadway": "US-191",
                 "Start": "2025-08-05",
                 "End": "2025-08-08",
-                "site": 4
+                "site": 4,
+                "Speed Limit": 60,
+                "Work Zone Limit": 40,
+                "Closure Type": "Full lane"
             },
             "type": "Feature"
         }
