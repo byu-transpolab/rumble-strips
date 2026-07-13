@@ -30,6 +30,8 @@ sufficient samples to conduct statistical analysis were available.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-map
 #| fig-cap: Map of Utah with study locations.
+#| out-width: 80%
+#| 
 utah <- tigris::states(progress_bar = FALSE) |> dplyr::filter(STUSPS == "UT")
 sites <- sf::read_sf("data/sites.geojson")
 ggplot() + 
@@ -55,7 +57,7 @@ sites |>
   as_tibble() |>
   select(Site = site, Roadway, Location, Start, End, `Speed Limit`, `Work Zone Limit`, `Closure Type`) |>
   sf::st_drop_geometry() |>
-  tt()
+  tt(width = 1)
 ```
 
 The research team decided on four layouts for the arrays of TPRS to observe the impact of TPRS on driver behavior and strip displacement. The layouts are as follows: 
@@ -76,7 +78,7 @@ roadway was available. @tbl-wav-spacing provides the actual distance separating
 Wavetronix 1 and Wavetronix 2 at each site on each day. Observations at SR-12
 were divided into two days, resulting in two different measures.
 
-![Instrumentation plan at lane closure and passing lane closure.](methodology-diagram.png){#fig-diagram fig-align="center"}
+![Instrumentation plan at lane closure and passing lane closure.](methodology-diagram.png){#fig-diagram fig-align="center" width="50%"}
 
 ```{r eval=FALSE}
 #| label: fig-test-spacing
@@ -115,12 +117,12 @@ The researchers classified each vehicle traversing TPRS. Vehicles with fewer tha
 The research team classified vehicles as braking before TPRS, after TPRS, or not braking at all. Vehicles driving on the shoulder or crossing the center dividing line ahead of TPRS –- either partially or completely –- were identified as avoiding the TPRS. Vehicles engaged in passing the vehicle in front of them were not considered to be avoiding the strips.
 
 ## TPRS Displacement and Worker Exposure
-Camera 2 was mounted to the same mast as Wavetronix 1 and had a top-down view of the TPRS array, centered on the middle strip of the array. This perspective allowed the team to see how much the center strip of the TPRS array was displaced over time and how much time workers spent adjusting the TPRS.
+Camera 2 was mounted to the same point as Wavetronix 1 and had a top-down view of the TPRS array, centered on the middle strip of the array. This perspective allowed the team to see how much the center strip of the TPRS array was displaced over time and how much time workers spent adjusting the TPRS.
 
 The research team used a transparent overlay to track TPRS displacement over time. The overlay was based on PSS standards as outlined in their product guide, namely that the strips can move up to 5 ft. forward or back, 2 ft. to either side, and can rotate up to a 3 ft. differential between ends or roughly 15° [@pssBestPracticesOptimal2018]. To provide more nuanced description of displacement, the researchers developed five categories of displacement based on these overall specifications: reset (no movement), some, moderate, significant, and out of specification. @fig-overlay shows the overlay with dimensions for each area marked. The overlay was warped to approximate the perspective of the camera as shown in @fig-examples.
 
 
-![TPRS displacement overlay.](displacement_overlay.png){#fig-overlay fig-align="center"}
+![TPRS displacement overlay.](displacement_overlay.png){#fig-overlay fig-align="center" width="60%" fig-pos='t'}
 
 ![TPRS displacement examples.](examples-of-displacement.png){#fig-examples fig-align="center"}
 
