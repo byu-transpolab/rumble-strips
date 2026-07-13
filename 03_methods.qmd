@@ -15,17 +15,21 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 
-This chapter describes the methodology designed by the research team to evaluate the effectiveness, durability, and stability of TPRS systems on high-speed roadways in Utah. The experiment will observe driver behavior and TPRS displacement under traffic load. Cameras and Wavetronix units will be used to collect the desired data. The designed experiment will observe the results that occur in the absence of TPRS and in layouts that vary the spacing between the individual strips in arrays. The experiment will be designed to maximize observation time and minimize how often contractors will need to adjust the TPRS. Work sites were selected for observation based on traffic volume, availability, and location.
-
 
 
 ## Site Selection
 
-The team selected work sites available during the summer of 2025 based on their driving distance from Provo. The research team used 2023 AADT data to estimate how many vehicles typically traveled on each road segment associated with a work site being considered for observation. This estimate ensured that the roads chosen for observation had enough traffic to support a reliable statistical analysis of the potential effect spacing would have on TPRS arrays.
+The research team identified four sites at UDOT work zones in the Summer 2025 construction season compatible with the goals of this research. 
+These sites are at the locations shown in @fig-map and data collection dates described in @tbl-sites. 
+Site selection criteria included sequencing of researcher travel, planned construction
+schedules, variety of site speeds and roadway types, and expected traffic
+volume. 
+Nearby traffic counting stations provided volume data to confirm that
+sufficient samples to conduct statistical analysis were available.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-map
-#| fig-cap: Map of sites
+#| fig-cap: Map of Utah with study locations.
 utah <- tigris::states(progress_bar = FALSE) |> dplyr::filter(STUSPS == "UT")
 sites <- sf::read_sf("data/sites.geojson")
 ggplot() + 
@@ -49,55 +53,32 @@ ggplot() +
 #| 
 sites |>
   as_tibble() |>
-  select(Site = site, Roadway, Location, Start, End) |>
+  select(Site = site, Roadway, Location, Start, End, `Speed Limit`, `Work Zone Limit`, `Closure Type`) |>
   sf::st_drop_geometry() |>
   tt()
 ```
 
-The research team used histograms of haverage hourly volumes on Utah roads to determine which ones would make reliable sites to study to ensure statistical significance. @fig-aadt shows data from four counting stations near the sites selected for observation. Volume data from May 2023 to August 2023 was collected from the UDOT Traffic Data Portal, aggregated and averaged by hour, and plotted as histograms. The data shows that the sites selected for observation have a sufficient volume of traffic to support a reliable statistical analysis of the potential effect spacing would have on TPRS arrays.
+The research team decided on four layouts for the arrays of TPRS to observe the impact of TPRS on driver behavior and strip displacement. The layouts are as follows: 
 
-```{r}
-#| label: fig-aadt
-#| fig-cap: "Histogram of average hourly volumes from counting stations near sites."
-tar_load(hourly_volume_plot)
-tar_load(n)
+  - **No TPRS** TPRS are not installed.
+  - **UDOT** The current recommended specifications in Region 4, which are 10 ft. for roads with a posted speed limit up to 45 mph, and 20 ft. for roads with a posted speed limit of 50 mph or higher.
+  - **1:2** TPRS spaced in feet at half the value of the posted speed limit in miles per hour (e.g. a 60 mph road will have spacing of 30 ft.).
+  - **Long** TPRS spaced between five to twenty feet longer than the 1:2 spacing specification.
 
-  # For how the plot is made, see plot_hourly_volumes() found in R/hourly_volumes.R
-hourly_volume_plot +
-  # color bars based on whether they are within the observation window
-scale_fill_manual(values = c("FALSE" = "grey", "TRUE" = "steelblue")) +
-  labs(
-    x = "Hour of Day",
-    y = "Average Volume",
-    fill = "Working Hours"
-  ) +
-  # add a horizontal line to mark the minimum required observations
-geom_hline(
-  yintercept = n,
-  linetype = "dashed", 
-  color = "firebrick", 
-  linewidth = 0.7)
-```
+@fig-diagram illustrates the overall instrumentation plan applied at each site.
+The instrumentation plan consists of two video cameras, Camera 1 and Camera 2,
+located upstream of the first TPRS array and at the TPRS array, respectively.
+There are also two trailer-mounted radar speed detection devices manufactured by
+Wavetronix. These are called Wavetronix 1 and Wavetronix 2 and are located at
+the first TPRS array and downstream of the first TPRS array, respectively.
+Camera 1 and Wavetronix 2 were both installed where space on the shoulder of the
+roadway was available. @tbl-wav-spacing provides the actual distance separating
+Wavetronix 1 and Wavetronix 2 at each site on each day. Observations at SR-12
+were divided into two days, resulting in two different measures.
 
-## Layouts
+![Instrumentation plan at lane closure and passing lane closure.](methodology-diagram.png){#fig-diagram fig-align="center"}
 
-The team designed layouts to test the effectiveness of TPRS at work sites. These layouts were set up at the arrays of TPRS positioned in front of each work site preceding the tapering line of cones that marked the beginning of the work zone. Each layout consisted of two Wavetronix radar detectors and two countCAM4 cameras from StreetLogic Pro. These devices were mounted on trailers and tripods stationed on the side of the road. The layouts are depicted below, showing the set-ups designed for both single-lane and passing-lane configurations.
-
-<!--
-These images don't exist yet. The diagram we included in the report is only a png file.
-![](MethodologydiagramPassingLaneClosure-4.svg){fig-align="center" width="672"}
-
-![](MethodologydiagramPassingLaneClosure-5.svg){fig-align="center" width="672"}
-
-![](MethodologydiagramPassingLaneClosure-6.svg){fig-align="center" width="681"}
--->
-
-![](methodology-diagram.png){fig-align="center" width="672"}
-
-The research team primarily focused on testing the space between individual TPRS to observe its effect on driver speed and behavior. They also examined whether the strips could remain in place without requiring frequent readjustments. The team developed a spacing system for contractors to use during observation days, tailored to the posted speed limit at each site. The different spacing specifications, shown in @fig-test-spacing were derived from current UDOT standards for TPRS spacing and an unofficial rule of thumb from Plastic Safety Systems (PSS) for their RoadQuake TPRS system.
-
-<!-- ![](SpacingFigure.svg){fig-align="center" width="560"} -->
-```{r}
+```{r eval=FALSE}
 #| label: fig-test-spacing
 #| fig-cap: "Spacing specifications used in testing."
 tar_load(test_spacing_plot)
@@ -111,16 +92,36 @@ test_spacing_plot
 tar_load(trailer_spacing)
 trailer_spacing |>
   as_tibble() |>
-  select(Site = site, UDOT, 'NO TPRS', '1:2', LONG) |>
+  mutate(Site = 1:4) |>
+  select(Site, Roadway = site, UDOT, 'NO TPRS', '1:2', LONG) |>
   tt()
 ```
 
-## Driver Behavior - Change in Speed, Braking, and Lane Departures
+The research team placed the quantifiable metrics of this study into two basic categories. The first is driver behavior as observed through change in speed, braking response, and avoidance behavior. The second consists of measured quantities related to TPRS movement, including individual strip displacement and worker exposure during adjustment. The subsections below describe the setup used in this observational study to measure these variables.
 
-The research team observed driver behavior by analyzing the data collected from the Wavetronix radar detectors and StreetLogic Pro cameras. The Wavetronix units provided data on vehicle speed and braking patterns, while the cameras captured footage to identify lane departures and other driving behaviors. The team compared these behaviors across different spacing configurations to assess the effectiveness of TPRS in influencing driver behavior in work zones.
+## Driver Behavior - Change in Speed, Braking, and Lane Departures
+TPRS are designed principally to gain and increase driver attentiveness and not
+primarily to reduce speeds; however, measuring driver attentiveness in the general population at an
+active worksite presents technical and safety challenges. Change in speed,
+braking response, and TPRS avoidance have been used in previous studies as
+appropriate proxy measures [@brownEffectivenessTemporaryRumble2022; @fontaineEvaluationSpeedDisplays2001; @sunElevatedRiskWorkZone2011]
+
+Wavetronix units use radar to measure the speed of vehicles within their area of effect based on programmed lane location information adjusted for each site on each day. Accompanying software provides vehicle counts, average speeds, and 85th percentile speed measurements for the vehicles passing the units in bins specified by the user; this study used 15-minute bins. By taking the difference in the 85th percentile speed captured in the same 15-minute bin between Wavetronix 1 and Wavetronix 2, it is possible to measure the change in 85th percentile speed.
+
+Camera 1 was placed roughly 100 ft. upstream from the first TPRS array and provided a view of the rear of vehicles as they encountered the strips. The research team watched the Camera 1 video and marked vehicle classification and relevant behavior using software developed by the research team for this purpose. The researchers recorded when each vehicle crossed the TPRS; classified each vehicle as either a motorcycle, passenger vehicle, or truck; identified whether a vehicle illuminated its brake lights before or after encountering TPRS; and identified whether the vehicle avoided the strips.
+
+The researchers classified each vehicle traversing TPRS. Vehicles with fewer than four wheels were classified as motorcycles. Vehicles with two axles and four wheels were classified as passenger vehicles. Vehicles with more than four wheels or more than two axles (exclusive of trailers) were classified as trucks. This aligns with the FHWA’s 13 vehicle category classification with Class 1 as motorcycles, Classes 2 and 3 as passenger vehicles, and Classes 4 through 13 as trucks [@fhwaOfficeHighwayPolicy2014], and is consistent with the definition of truck used in calculating annual average daily truck traffic [@fhwaTrafficDataPocket2018]. 
+
+The research team classified vehicles as braking before TPRS, after TPRS, or not braking at all. Vehicles driving on the shoulder or crossing the center dividing line ahead of TPRS –- either partially or completely –- were identified as avoiding the TPRS. Vehicles engaged in passing the vehicle in front of them were not considered to be avoiding the strips.
 
 ## TPRS Displacement and Worker Exposure
+Camera 2 was mounted to the same mast as Wavetronix 1 and had a top-down view of the TPRS array, centered on the middle strip of the array. This perspective allowed the team to see how much the center strip of the TPRS array was displaced over time and how much time workers spent adjusting the TPRS.
 
-![](displacement_overlay.png){fig-align="center" width="672"}
+The research team used a transparent overlay to track TPRS displacement over time. The overlay was based on PSS standards as outlined in their product guide, namely that the strips can move up to 5 ft. forward or back, 2 ft. to either side, and can rotate up to a 3 ft. differential between ends or roughly 15° (PSS, 2018). To provide more nuanced description of displacement, the researchers developed five categories of displacement based on these overall specifications: reset (no movement), some, moderate, significant, and out of specification. Figure 3.5 shows the overlay with dimensions for each area marked. The overlay was warped to approximate the perspective of the camera, allowing for errors derived from lens distortion. While errors from lens distortions were minimized, they could not be fully accounted for, making the five displacement categories subjective. The research team did not observe workers measuring the displacement or readjustment of the TPRS with notable precision, so a more precise scale was unnecessary. The inner most section and outer border of the image were scaled in size to match the dimensions of the strips and the allowed movement specified by PSS. The borders between the green and orange zones, and between the orange and red zones are approximations.
 
-![](examples-of-displacement.png){fig-align="center" width="672"}
+![TPRS displacement overlay.](displacement_overlay.png){#fig-overlay fig-align="center"}
+
+![TPRS displacement examples.](examples-of-displacement.png){#fig-examples fig-align="center"}
+
+Camera 2 footage allowed researchers to evaluate worker exposure to traffic when correcting the strip alignment. The research team recorded when workers arrived on site to move TPRS, when vehicles passed while workers were on site, when workers started looking for a gap in traffic, when workers entered the road to adjust TPRS and exited the road, and when the workers left the site. The time when workers were actively engaged in seeking to enter the road was subject to a critical gap analysis [@cite] to identify the length of headway workers will accept for this task.
+ 

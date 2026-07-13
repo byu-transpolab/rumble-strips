@@ -93,6 +93,39 @@
 \makeatother
 
 
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 
 
@@ -259,80 +292,33 @@ discretion based on site conditions.
 
 \bookmarksetup{startatroot}
 
-\section*{Preface}\label{preface}
-\addcontentsline{toc}{section}{Preface}
+\section{Introduction}\label{sec-intro}
 
-\markboth{Preface}{Preface}
+Temporary portable rumble strips (TPRS) have been used since at least
+the early 2000s to alert drivers to upcoming work zones. These devices
+are made of steel and rubber and are placed transverse across the
+roadway in arrays of strips (Meyer et al., 2006; PSS, 2018).
 
-This is a template repository that I and my students can use to start
-projects that will implement the workflow presented in my
-\href{https://gregmacfarlane.github.io/lab/workflow.html}{lab
-documentation}. It also serves as an instruction manual in this
-workflow, a template article, and a sandbox for me to practice and
-learn. I encourage students to use the
-\href{https://quarto.org/docs/guide/}{Quarto Guide} as their primary
-reference.
+At the same time, TPRS introduces additional complication in work zones.
+Workers must enter the roadway to install the strips and adjust them
+when they become displaced. Anecdotal evidence suggests that some
+drivers may avoid TPRS, creating a safety hazard. And as drivers become
+accustomed to strips, they may become desensitized to them, making them
+less effective.
 
-The document in this template renders to two\footnote{I hope to make it
-  possible to render the article to a BYU Engineering thesis as well.
-  Give me a bit of time.} outputs:
+In this research, we report a field experiment to evaluate driver
+reaction to TPRS and observe
 
-\begin{itemize}
-\item
-  A website
-\item
-  An Elsevier journal article
-\end{itemize}
-
-To render this document, use the command \texttt{quarto\ render} in your
-terminal pointed at the working directory. This will create a website
-available locally in a \texttt{\_book} folder and a PDF of the article
-stored in that folder.
-
-To render your website \emph{and} push its content to a live website,
-use the command \texttt{quarto\ publish\ gh-pages}. Details of this
-process are available on the
-\href{https://quarto.org/docs/publishing/github-pages.html\#publish-command}{Quarto
-guide}.
-
-You can change the article to a different publisher by following the
-directions at the \href{https://github.com/quarto-journals}{Quarto
-Journal Templates GitHub} repository.
-
-\bookmarksetup{startatroot}
-
-\section{Introduction}\label{introduction}
-
-The introduction of your report is not simply an ``introduction'', but
-rather a \textbf{motivation} of why your project matters. What is the
-cost of not solving this problem? What have been previous attempts to
-solve this problem? The \emph{why} is more important than the
-\emph{what}. Why is this article worthy of archiving?
-
-The introduction to an article is usually three or so paragraphs long.
-First, state the overall context of the problem, with citations to basic
-statistics and previous major findings. Then, Discuss the specific
-context of your research; why have previous methods or research not
-addressed your specific issue? You also need to have citations here.
-
-In the third paragraph, you can introduce the purpose of your research
-and the new method or data you bring to the issue. This paragraph often
-begins with a statement similar to ``In this paper, we present\ldots{}''
-
-An outline of the article is then usually a good idea, even though the
-outline might change little from article to article. A Literature Review
-details prior research in this area, and discusses its strengths and
-limitations. A Methodology section identifies the data, models, and
-other elements you use, while a Results section presents the outcomes of
-your methodology with tables and figures and a comprehensive discussion
-of their meanings. Discussions, and Conclusions sections may present
-your interpretations of your findings for future research, policy, etc.
+This paper is organized as follows: First, a Literature Review section
+briefly outlines previous research results in TPRS. A Methodology
+sections describes the experimental design and methods used to collect
+data, with a subsequent Results section presenting the results of the
+experiment. A final Conclusion section discusses the implications of the
+findings for practice and future research.
 
 \bookmarksetup{startatroot}
 
 \section{Literature Review}\label{literature-review}
-
-Effectiveness of Temporary Portable Rumble Strips (TPRS)
 
 \subsection{Overview}\label{overview}
 
@@ -390,11 +376,11 @@ understood and requires further research.
 \subsection{Spacing Specifications}\label{spacing-specifications}
 
 There are three main groups of spacing specifications. Some states, such
-as Wisconsion, Florida, and Colorado, specify a single spacing
-independent of speed(\textbf{citation?}). Some states such as Maryland,
+as Wisconsin, Florida, and Colorado, specify a single spacing
+independent of speed (e.g., W. DOT, 2022). Some states such as Maryland,
 Viriginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on
-the posted speed limit(\textbf{citation?}). New York, Texas, and
-Missouri specify spacing from 10 to 35 ft. based on the postedn speed
+the posted speed limit (M. DOT, 2024). New York, Texas, and Missouri
+specify spacing from 10 to 35 ft. based on the posted speed
 limit(\textbf{citation?}). The manufacturer also recommends spacing of
 10 to 35 ft. based on the posted speed limit(\textbf{citation?}). The
 various specifications are shown in Figure Figure~\ref{fig-state-specs}.
@@ -760,6 +746,26 @@ practical relevance.
 \markboth{References}{References}
 
 \phantomsection\label{refs}
+\begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-minnesotadot38278186LongTerm2024}
+DOT, M. (2024). \emph{38278186 - {Long Term TTC Layout} for {Two-Lane},
+{Two-Way}}.
+https://edocs-public.dot.state.mn.us/edocs\_public/DMResultSet/Urlsearch?columns=docnumber,docname\&folderid=38278186\&currSortFieldName=docname\&sortOrder=d.
+
+\bibitem[\citeproctext]{ref-wisconsindotWisconsinDepartmentTransportation2022}
+DOT, W. (2022). Wisconsin {Department} of {Transportation Standard
+Detail Drawings} ({SDDs}). In \emph{Wisconsin.gov}.
+https://wisconsindot.gov/Pages/doing-bus/eng-consultants/cnslt-rsrces/rdwy/sdd.aspx.
+
+\bibitem[\citeproctext]{ref-meyerDesignPortableRumble2006}
+Meyer, E., Hale, R., Taghavi, R., Olafsen, J., \& Mathur, G. (2006).
+\emph{Design of {Portable Rumble Strips}, {Phase} 2}. InTrans.
+
+\bibitem[\citeproctext]{ref-pssBestPracticesOptimal2018}
+PSS. (2018). \emph{{Best Practices for Optimal Use 2nd Edition -
+RoadQuake Temporary Portable Rumble Strip}}.
+
+\end{CSLReferences}
 
 
 
