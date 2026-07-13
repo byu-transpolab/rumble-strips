@@ -15,5 +15,5 @@ Workers must periodically enter the roadway to install the strips and adjust the
 
 This paper reports a field experiment to evaluate driver reaction to TPRS and observe strip displacement under traffic. Four sites in Utah were instrumented with cameras and speed-detecting radar units, allowing researchers to evaluate change in speed, braking behavior, avoidance, displacement, and worker exposure. Four TPRS spacings were applied to each site, including a no-TPRS control. 
 This paper is organized as follows: 
-A Methodology section describes the experimental design and methods used to collect data on driver behavior and TPRS displacement. A  subsequent Results section presents the results of the experiment. 
+A Methodology section describes the experimental design and methods used to collect data on driver behavior and TPRS displacement. A  subsequent Results section presents the results of the experiment, with a following Discussion and Limitations of the findings.
 A final Conclusion section discusses the implications of the findings for practice and future research.
