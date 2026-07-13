@@ -146,7 +146,12 @@ modelsummary(
 
 ## Avoidance Behavior
 
-```{r}
+The research team observed lane departures where vehicles appeared to avoid TPRS. It is the opinion of the researchers who watched the camera footage that most vehicles that departed their lane to avoid TPRS did so in an orderly manner similar to passing another vehicle, as opposed to a chaotic adjustment. There was no differentiation in the observations between partial lane departures, where only one side of tires crossed the center line or right-side line, and full lane departures, where all tires crossed either edge of the lane. On I-70, where TPRS were laid across both lanes, there were approximately 10 vehicles that drove fully in the shoulder to avoid the TPRS, but these were not classified separately. 
+
+@tbl-avoidglm presents a series of binomial logit models estimating the probability of lane departure at each site. In this model, significant positive coefficients indicate that vehicles are more likely to avoid TPRS. Motorcycles have a consistent and dramatically higher rate of lane departure than either passenger vehicles or trucks, but trucks and passenger vehicles avoid at the same rate. This finding confirms prior literature that motorcycles, as vulnerable road users and more agile vehicles, are both motivated and capable of avoiding the TPRS. While some passenger vehicles and trucks do leave their lane to avoid the TPRS, the vast majority do not. 
+The significance of the model coefficients showing TPRS avoidance at most TPRS layouts is a feature of TPRS avoidance being impossible when they are not deployed, which is the reference alternative in the model, and not a finding of importance. What is more important is that the estimated coefficients associated with TPRS spacing are not significantly different from each other at each site, indicating that the spacing does not incite or discourage TPRS avoidance.
+
+```{r eval=FALSE}
 #| label: fig-avoidance
 #| fig-cap: Avoidance behavior by spacing of TPRS and vehicle type.
 tar_load(departure_plot)
@@ -157,7 +162,16 @@ departure_plot
 #| label: tbl-avoidglm
 #| tbl-cap: Binomial Models of TPRS Avoidance
 tar_load(avoid_models)
-modelsummary(avoid_models,  stars = TRUE, coef_rename = cm)
+avoid_gof <- data.frame(
+  raw = c("nobs", "rmse", "logLik"),
+  clean = c(
+    "Num.Obs.",
+    "RMSE",
+    "Log Likelihood"
+  ),
+  fmt = c(0, 3, 3)
+)
+modelsummary(avoid_models[-1],  stars = TRUE, coef_rename = cm, gof_map = avoid_gof)
 ```
 
 
