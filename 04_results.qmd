@@ -45,6 +45,7 @@ gm <- c()
 
 library(ggplot2)
 theme_set(theme_minimal())
+knitr::opts_chunk$set(fig.pos='t')
 ```
 
 ## Speeds
@@ -68,6 +69,8 @@ some studies did acknowledge that TPRS influence on speed is highly localized [@
 ```{r}
 #| label: fig-speed
 #| fig-cap: Change in 85th percentile speed between radar speed units with 95% confidence interval on difference in speeds.
+#| dev: tikz
+#| fig-pos: t
 tar_load(confidence_bounds)
 
 # see plot_confidence_bounds() in R/speed.R for how this plot is made
@@ -103,6 +106,7 @@ tar_load(braking_plot)
 braking_plot
 ```
 
+::: {.landscape}
 ```{r }
 #| label: tbl-brakeglm
 #| tbl-cap: Multinomial Models of TPRS Braking
@@ -133,6 +137,7 @@ brake_gof <- data.frame(
   fmt = c(0, 3, 3)
 )
 
+
 modelsummary(
   brake_models[-1],
   shape = term ~ response,
@@ -140,9 +145,11 @@ modelsummary(
   coef_rename = cm,
   gof_function = mcfadden_rho2,
   gof_map = brake_gof,
-  escape = FALSE
-)
+  escape = FALSE,
+) 
 ```
+
+:::
 
 ## Avoidance Behavior
 
@@ -183,7 +190,8 @@ modelsummary(avoid_models[-1],  stars = TRUE, coef_rename = cm, gof_map = avoid_
 #| fig-subcap:
 #|   - "By site"
 #|   - "By spacing"
-#| layout-ncol: 2
+#| layout-nrow: 2
+#| dev: tikz
 tar_load(momentum_per_transition_site)
 tar_load(momentum_per_transition_spacing)
 
@@ -200,6 +208,7 @@ momentum_per_transition_spacing +
 ```{r}
 #| label: fig-cdf
 #| fig-cap: Cumulative distribution of headways at each site, with critical headway marked as a vertical line.
+#| fig-pos: t
 tar_load(headway_cdf_site_plot)
 headway_cdf_site_plot +
     coord_cartesian(xlim = c(0, 60), ylim = c(0, 1.05)) +
@@ -207,7 +216,7 @@ headway_cdf_site_plot +
     scale_y_continuous(labels = scales::percent) +
     labs(
       x = "Headway (s)",
-      y = "Cumulative %",
+      y = "Cumulative \\%",
       color = "Site"
     ) + theme_bw()
 ```
