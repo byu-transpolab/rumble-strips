@@ -107,7 +107,32 @@ braking_plot
 #| label: tbl-brakeglm
 #| tbl-cap: Multinomial Models of TPRS Braking
 tar_load(brake_models)
-modelsummary(brake_models[-1], shape = term ~ response,  stars = TRUE, coef_rename = cm, gof_omit = "AIC|BIC|R2")
+
+mcfadden_rho2 <- function(model) {
+  observed <- model$residuals + model$fitted.values
+  counts <- colSums(observed)
+  counts <- counts[counts > 0]
+  null_loglik <- sum(counts * log(counts / sum(counts)))
+
+  data.frame(
+    mcfadden_rho2 = 1 - as.numeric(logLik(model)) / null_loglik
+  )
+}
+
+brake_gof <- data.frame(
+  raw = c("nobs", "rmse", "mcfadden_rho2"),
+  clean = c("Num.Obs.", "RMSE", "McFadden $rho^2$"),
+  fmt = c(0, 3, 3)
+)
+
+modelsummary(
+  brake_models[-1],
+  shape = term ~ response,
+  stars = TRUE,
+  coef_rename = cm,
+  gof_function = mcfadden_rho2,
+  gof_map = brake_gof
+)
 ```
 
 ## Avoidance Behavior
