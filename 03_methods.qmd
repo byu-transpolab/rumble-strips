@@ -196,4 +196,3 @@ as measured by Wavetronix 1.
 
 
 Camera 2 footage allowed researchers to evaluate worker exposure to traffic when correcting the strip alignment. The research team recorded when workers arrived on site to move TPRS, when vehicles passed while workers were on site, when workers started looking for a gap in traffic, when workers entered the road to adjust TPRS and exited the road, and when the workers left the site. The time when workers were actively engaged in seeking to enter the road was subject to a critical gap analysis [@cite] to identify the length of headway workers will accept for this task.
- 

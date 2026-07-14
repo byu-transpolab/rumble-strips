@@ -209,11 +209,14 @@ momentum_per_transition_spacing +
 #| label: fig-cdf
 #| fig-cap: Cumulative distribution of headways at each site, with critical headway marked as a vertical line.
 #| fig-pos: t
+#| dev: tikz
 tar_load(headway_cdf_site_plot)
 headway_cdf_site_plot +
     coord_cartesian(xlim = c(0, 60), ylim = c(0, 1.05)) +
     scale_color_manual(values = site_palette) +
-    scale_y_continuous(labels = scales::percent) +
+    scale_y_continuous(
+      labels = scales::label_percent(suffix = "\\%")
+    ) +
     labs(
       x = "Headway (s)",
       y = "Cumulative \\%",
@@ -221,4 +224,4 @@ headway_cdf_site_plot +
     ) + theme_bw()
 ```
 
-The researchers observed six instances of workers entering the roadway to adjust TPRS. In each case, the workers were able to find a gap in traffic that allowed them to enter the roadway and adjust the strips without incident; the critical gap accepted by the workers was calculated as 33.5 seconds. @fig-cdf shows the cumulative distribution of headways for each site, with the critical gap marked as a vertical line. The analysis suggests that at all roadways, a gap of at least 33.5 seconds occurs between at least 20% of all headways. On roads with higher volumes and therefore shorter headway distributions, the availability of critical headways may eliminate the possibility for workers to enter the roadway without stopping traffic. 
+The researchers observed six instances of workers entering the roadway to adjust TPRS. In each case, the workers were able to find a gap in traffic that allowed them to enter the roadway and adjust the strips without incident; the critical gap accepted by the workers was calculated as 33.5 seconds. @fig-cdf shows the cumulative distribution of headways for each site, with the critical gap marked as a vertical line. The analysis suggests that at all roadways, a gap of at least 33.5 seconds occurs between at least 20% of all headways. On roads with higher volumes and therefore shorter headway distributions, the availability of critical headways may eliminate the possibility for workers to enter the roadway without stopping traffic.
