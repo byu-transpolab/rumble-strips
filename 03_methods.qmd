@@ -31,6 +31,7 @@ sufficient samples to conduct statistical analysis were available.
 #| label: fig-map
 #| fig-cap: Map of Utah with study locations.
 #| out-width: 80%
+#| dev: tikz
 #| 
 utah <- tigris::states(progress_bar = FALSE) |> dplyr::filter(STUSPS == "UT")
 sites <- sf::read_sf("data/sites.geojson")
@@ -44,7 +45,7 @@ site_callouts <- sites |>
     label = paste0("Site ", site, ": ", Roadway),
     label_x = case_when(
       site == 1 ~ -111.65, site == 2 ~ -110.10,
-      site == 3 ~ -113.15, site == 4 ~ -111.45
+      site == 3 ~ -113.15, site == 4 ~ -110.45
     ),
     label_y = case_when(
       site == 1 ~ 37.45, site == 2 ~ 39.25,
@@ -52,7 +53,7 @@ site_callouts <- sites |>
     ),
     arrow_x = case_when(
       site == 1 ~ -111.92, site == 2 ~ -110.27,
-      site == 3 ~ -112.88, site == 4 ~ -111.17
+      site == 3 ~ -112.88, site == 4 ~ -110.17
     ),
     arrow_y = case_when(
       site == 1 ~ 37.57, site == 2 ~ 39.33,
@@ -90,10 +91,7 @@ ggplot() +
   geom_sf(data = sites, color = "#B22222", size = 2.5) +
   geom_sf(
     data = arrow_lines,
-    arrow = grid::arrow(
-      length = grid::unit(0.12, "inches"), type = "closed"
-    ),
-    color = "#f1c3c3",
+    color = "#b22222",
     linewidth = 0.6
   ) +
   geom_sf_label(
@@ -101,7 +99,7 @@ ggplot() +
     aes(label = label),
     color = "#B22222",
     fill = "white",
-    size = 3.5,
+    size = 2.4,
     linewidth = 0.3
   ) +
   coord_sf(crs = sf::st_crs(3857)) +
