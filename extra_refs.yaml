@@ -1,0 +1,128 @@
+references:
+  - id: volpe2021
+    type: report
+    title: "National Transportation Statistics 2021 [50th Anniversary Edition]"
+    author:
+      - literal: "John A. Volpe National Transportation Systems Center (U.S.)"
+    issued:
+      date-parts:
+        - [2021]
+    publisher: Bureau of Transportation Statistics
+    DOI: 10.21949/1523389
+    accessed:
+      date-parts:
+        - [2026, 3, 13]
+    language: en
+  - id: brown22
+    type: report
+    title: "Effectiveness of Temporary Rumble Strips in Work Zones"
+
+    author:
+      - family: Brown
+        given: Henry
+      - family: Edara
+        given: Praveen
+      - family: Sun
+        given: Carlos
+      - family: Kim
+        given: Sungyop
+      - family: Bracy
+        given: Jill Bernard
+      - family: Zeng
+        given: Qingzhong
+      - family: Baek
+        given: Ho Jun
+      - family: Ndungu
+        given: Gladwell
+
+    issued:
+      date-parts:
+        - [2022, 2]
+    url: https://rosap.ntl.bts.gov/view/dot/63367
+    publisher: Missouri Department of Transportation
+    publisher-place: Missouri
+    number: CMR 22-004
+
+    accessed:
+      date-parts:
+        - [2024, 10, 24]
+
+    language: en
+    call-number: dot:63367
+
+  - id: wdotSDD15C12
+    type: webpage
+    title: "Wisconsin Department of Transportation Standard Detail Drawings (SDDs) 15C12"
+    author:
+      - literal: "Wisconsin DOT"
+    issued:
+      date-parts:
+        - [2022, 5]
+    container-title: Wisconsin.gov
+    URL: https://wisconsindot.gov/Pages/doing-bus/eng-consultants/cnslt-rsrces/rdwy/sdd.aspx
+    accessed:
+      date-parts:
+        - [2025, 1, 30]
+    note: "SDD 15C12"
+
+  - id: minndot2024
+    type: webpage
+    title: "38278186 – Long Term TTC Layout for Two-Lane, Two-Way"
+    author:
+      - literal: "Minnesota DOT"
+    issued:
+      date-parts:
+        - [2024, 5]
+    URL: "https://edocs-public.dot.state.mn.us/edocs_public/DMResultSet/Urlsearch?columns=docnumber,docname&folderid=38278186&currSortFieldName=docname&sortOrder=d"
+    accessed:
+      date-parts:
+        - [2025, 1, 30]
+  - id: fhwa2014
+    type: webpage
+    title: "Traffic Monitoring Guide Appendix C: Vehicle Types"
+    author:
+      - literal: "FHWA"
+    issued:
+      date-parts:
+        - [2014, 11]
+    URL: "https://www.fhwa.dot.gov/policyinformation/tmguide/tmg_2013/vehicle-types.cfm"
+    accessed:
+      date-parts:
+        - [2026, 07, 01]
+  - id: fhwa2018
+    type: report
+    title: "Traffic Data Pocket Guide"
+    author:
+      - literal: "FHWA"
+    number: FHWA-PL-18-027
+    issued:
+      date-parts:
+        - [2018, 8]
+    URL: "https://www.fhwa.dot.gov/policyinformation/pubs/pl18027_traffic_data_pocket_guide.pdf"
+    accessed:
+      date-parts:
+        - [2026, 07, 01]
+  - id: mcavoyEvaluationTemporaryRemovable2009
+    type: paper-conference
+    title: "Evaluation of Temporary Removable Rumble Strips for Speed Reduction"
+    author:
+      - family: McAvoy
+        given: Deborah
+      - family: Savolainen
+        given: Peter Tarmo
+      - family: Reddy
+        given: Vivek
+      - family: Santos
+        given: Joseph B.
+      - family: Datta
+        given: Tapan K.
+    url: https://pubsindex.trb.org/view.aspx?id=881475
+    issued:
+      date-parts:
+        - [2009, 1]
+    container-title: "Transportation Research Board 88th Annual Meeting"
+    number: "09-1970"
+    page: "13"
+    accessed:
+      date-parts:
+        - [2024, 10, 31]

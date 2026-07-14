@@ -106,6 +106,12 @@
                 <text variable="number"/>
               </group>
             </if>
+            <else-if type="report" match="any">
+              <group delimiter=", ">
+                <text variable="genre"/>
+                <text variable="number"/>
+              </group>
+            </else-if>
             <else-if variable="genre">
               <text variable="genre"/>
             </else-if>
@@ -179,7 +185,7 @@
       <else-if type="article-journal" match="any">
         <text variable="DOI" prefix="https://doi.org/"/>
       </else-if>
-      <else-if type="thesis" match="any">
+      <else-if type="report thesis" match="any">
         <choose>
           <if variable="DOI">
             <text variable="DOI" prefix="https://doi.org/"/>

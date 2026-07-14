@@ -169,13 +169,13 @@ TPRS are designed principally to gain and increase driver attentiveness and not
 primarily to reduce speeds; however, measuring driver attentiveness in the general population at an
 active worksite presents technical and safety challenges. Change in speed,
 braking response, and TPRS avoidance have been used in previous studies as
-appropriate proxy measures [@brownEffectivenessTemporaryRumble2022; @fontaineEvaluationSpeedDisplays2001; @sunElevatedRiskWorkZone2011]
+appropriate proxy measures [@brown22; @fontaineEvaluationSpeedDisplays2001; @sunElevatedRiskWorkZone2011]
 
 Wavetronix units use radar to measure the speed of vehicles within their area of effect based on programmed lane location information adjusted for each site on each day. Accompanying software provides vehicle counts, average speeds, and 85th percentile speed measurements for the vehicles passing the units in bins specified by the user; this study used 15-minute bins. By taking the difference in the 85th percentile speed captured in the same 15-minute bin between Wavetronix 1 and Wavetronix 2, it is possible to measure the change in 85th percentile speed.
 
 Camera 1 was placed roughly 100 ft. upstream from the first TPRS array and provided a view of the rear of vehicles as they encountered the strips. The research team watched the Camera 1 video and marked vehicle classification and relevant behavior using software developed by the research team for this purpose. The researchers recorded when each vehicle crossed the TPRS; classified each vehicle as either a motorcycle, passenger vehicle, or truck; identified whether a vehicle illuminated its brake lights before or after encountering TPRS; and identified whether the vehicle avoided the strips.
 
-The researchers classified each vehicle traversing TPRS. Vehicles with fewer than four wheels were classified as motorcycles. Vehicles with two axles and four wheels were classified as passenger vehicles. Vehicles with more than four wheels or more than two axles (exclusive of trailers) were classified as trucks. This aligns with the FHWA’s 13 vehicle category classification with Class 1 as motorcycles, Classes 2 and 3 as passenger vehicles, and Classes 4 through 13 as trucks [@fhwaOfficeHighwayPolicy2014], and is consistent with the definition of truck used in calculating annual average daily truck traffic [@fhwaTrafficDataPocket2018]. 
+The researchers classified each vehicle traversing TPRS. Vehicles with fewer than four wheels were classified as motorcycles. Vehicles with two axles and four wheels were classified as passenger vehicles. Vehicles with more than four wheels or more than two axles (exclusive of trailers) were classified as trucks. This aligns with the FHWA’s 13 vehicle category classification with Class 1 as motorcycles, Classes 2 and 3 as passenger vehicles, and Classes 4 through 13 as trucks [@fhwa2014], and is consistent with the definition of truck used in calculating annual average daily truck traffic [@fhwa2018]. 
 
 The research team classified vehicles as braking before TPRS, after TPRS, or not braking at all. Vehicles driving on the shoulder or crossing the center dividing line ahead of TPRS –- either partially or completely –- were identified as avoiding the TPRS. Vehicles engaged in passing the vehicle in front of them were not considered to be avoiding the strips.
 
@@ -189,7 +189,7 @@ The research team used a transparent overlay to track TPRS displacement over tim
 
 ![TPRS displacement examples.](examples-of-displacement.png){#fig-examples fig-align="center"}
 
-To quantify and normalize the vehicle impact force to displace a strip, the research team estimated the cumulative momentum --- speed multiplied by mass --- applied to TRPS. The weight of each vehicle was assumed based on the vehicle classification and a mean class weight derived from national data [@volpecenterNationalTransportationStatistics2021]. Each vehicle's speed was assumed to be the mean speed of its 15-minute time bin
+To quantify and normalize the vehicle impact force to displace a strip, the research team estimated the cumulative momentum --- speed multiplied by mass --- applied to TRPS. The weight of each vehicle was assumed based on the vehicle classification and a mean class weight derived from national data [@volpe2021]. Each vehicle's speed was assumed to be the mean speed of its 15-minute time bin
 as measured by Wavetronix 1.
 
 

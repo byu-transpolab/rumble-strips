@@ -62,7 +62,9 @@ keywords:
   - Driver Attention
 
 
-bibliography: references.bib
+bibliography: 
+  - references.bib
+  - extra_refs.yaml
 cite-method: citeproc
 csl: american-society-of-civil-engineers.csl
 
