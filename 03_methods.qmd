@@ -34,12 +34,77 @@ sufficient samples to conduct statistical analysis were available.
 #| 
 utah <- tigris::states(progress_bar = FALSE) |> dplyr::filter(STUSPS == "UT")
 sites <- sf::read_sf("data/sites.geojson")
+
+site_coordinates <- sf::st_coordinates(sites)
+site_callouts <- sites |>
+  sf::st_drop_geometry() |>
+  transmute(
+    site_x = site_coordinates[, "X"],
+    site_y = site_coordinates[, "Y"],
+    label = paste0("Site ", site, ": ", Roadway),
+    label_x = case_when(
+      site == 1 ~ -111.65, site == 2 ~ -110.10,
+      site == 3 ~ -113.15, site == 4 ~ -111.45
+    ),
+    label_y = case_when(
+      site == 1 ~ 37.45, site == 2 ~ 39.25,
+      site == 3 ~ 38.75, site == 4 ~ 40.30
+    ),
+    arrow_x = case_when(
+      site == 1 ~ -111.92, site == 2 ~ -110.27,
+      site == 3 ~ -112.88, site == 4 ~ -111.17
+    ),
+    arrow_y = case_when(
+      site == 1 ~ 37.57, site == 2 ~ 39.33,
+      site == 3 ~ 38.68, site == 4 ~ 40.19
+    )
+  )
+
+label_points <- sf::st_as_sf(
+  site_callouts,
+  coords = c("label_x", "label_y"),
+  crs = 4326,
+  remove = FALSE
+)
+
+arrow_lines <- sf::st_sf(
+  label = site_callouts$label,
+  geometry = sf::st_sfc(
+    lapply(seq_len(nrow(site_callouts)), function(i) {
+      sf::st_linestring(matrix(c(
+        site_callouts$site_x[i], site_callouts$site_y[i],
+        site_callouts$arrow_x[i], site_callouts$arrow_y[i]
+      ), ncol = 2, byrow = TRUE))
+    }),
+    crs = 4326
+  )
+)
+
 ggplot() + 
-  ggspatial::annotation_map_tile("osm", zoom = 8) + 
-  ggspatial::annotation_north_arrow(style = ggspatial::north_arrow_minimal, 
-  location = "tr") + ggspatial::annotation_scale(location = "br") +
+  ggspatial::annotation_map_tile(
+    "osm", zoom = 7, cachedir = "rosm.cache/utah", progress = "none"
+  ) +
+  ggspatial::annotation_north_arrow(style = ggspatial::north_arrow_minimal, location = "tr") + 
+  ggspatial::annotation_scale(location = "br") +
   geom_sf(data = utah, fill = NA, color = "black") +
-  geom_sf_text(data = sites, aes(label = site), color = "red", size = 10) +
+  geom_sf(data = sites, color = "#B22222", size = 2.5) +
+  geom_sf(
+    data = arrow_lines,
+    arrow = grid::arrow(
+      length = grid::unit(0.12, "inches"), type = "closed"
+    ),
+    color = "#f1c3c3",
+    linewidth = 0.6
+  ) +
+  geom_sf_label(
+    data = label_points,
+    aes(label = label),
+    color = "#B22222",
+    fill = "white",
+    size = 3.5,
+    linewidth = 0.3
+  ) +
+  coord_sf(crs = sf::st_crs(3857)) +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
         axis.text.y = element_blank(),
@@ -78,7 +143,7 @@ roadway was available. @tbl-wav-spacing provides the actual distance separating
 Wavetronix 1 and Wavetronix 2 at each site on each day. Observations at SR-12
 were divided into two days, resulting in two different measures.
 
-![Instrumentation plan at lane closure and passing lane closure.](methodology-diagram.png){#fig-diagram fig-align="center" width="50%"}
+![Instrumentation plan at lane closure and passing lane closure.](methodology-diagram.png){#fig-diagram fig-align="center" width="70%"}
 
 ```{r eval=FALSE}
 #| label: fig-test-spacing
