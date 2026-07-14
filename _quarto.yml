@@ -64,7 +64,7 @@ keywords:
 
 bibliography: references.bib
 cite-method: citeproc
-csl: apa.csl
+csl: american-society-of-civil-engineers.csl
 
 format:
   html:
