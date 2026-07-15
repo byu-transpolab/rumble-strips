@@ -16,14 +16,14 @@ book:
           state: UT
           postal-code: 84602
     # to add additional authors, simply add another -name: tag 
+    - name: Grant G. Schultz
+      orcid: 0000-0002-0675-2970
+      affiliations:
+        - ref: byu
     - name: Tyler Carruth
       affiliations:
         - ref: byu
     - name: Benjamin Hailstone
-      affiliations:
-        - ref: byu
-    - name: Grant G. Schultz
-      orcid: 0000-0002-0675-2970
       affiliations:
         - ref: byu
   date: "8/1/2026"
