@@ -57,11 +57,6 @@ book:
     condition, consideration of alternative measures for long-term work zones,
     and increased contractor discretion based on site conditions.
 acknowledgements: |
-    This research was funded by the Utah Department of Transportation 
-    The authors alone are responsible for the preparation and accuracy of the
-    information, data, analysis, discussions, recommendations, and conclusions
-    presented herein. The contents do not necessarily reflect the views,
-    opinions, endorsements, or policies of UDOT or the U.S. Department of Transportation. 
 keywords: 
   - Temporary Portable Rumble Strips
   - Work Zone Safety
@@ -70,6 +65,7 @@ keywords:
 
 bibliography: 
   - references.bib
+  - packages.bib
   - extra_refs.yaml
 cite-method: citeproc
 csl: american-society-of-civil-engineers.csl
