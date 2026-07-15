@@ -16,7 +16,6 @@ references:
   - id: brown22
     type: report
     title: "Effectiveness of Temporary Rumble Strips in Work Zones"
-
     author:
       - family: Brown
         given: Henry
@@ -34,7 +33,6 @@ references:
         given: Ho Jun
       - family: Ndungu
         given: Gladwell
-
     issued:
       date-parts:
         - [2022, 2]
@@ -42,14 +40,11 @@ references:
     publisher: Missouri Department of Transportation
     publisher-place: Missouri
     number: CMR 22-004
-
     accessed:
       date-parts:
         - [2024, 10, 24]
-
     language: en
     call-number: dot:63367
-
   - id: wdotSDD15C12
     type: webpage
     title: "Wisconsin Department of Transportation Standard Detail Drawings (SDDs) 15C12"
@@ -58,7 +53,6 @@ references:
     issued:
       date-parts:
         - [2022, 5]
-    container-title: Wisconsin.gov
     URL: https://wisconsindot.gov/Pages/doing-bus/eng-consultants/cnslt-rsrces/rdwy/sdd.aspx
     accessed:
       date-parts:
@@ -122,7 +116,98 @@ references:
         - [2009, 1]
     container-title: "Transportation Research Board 88th Annual Meeting"
     number: "09-1970"
-    page: "13"
     accessed:
       date-parts:
         - [2024, 10, 31]
+  - id: meyer2005
+    type: report
+    title: "Design of Portable Rumble Strips – Phase 1"
+    author:
+      - family: Meyer
+        given: Eric
+      - family: Hale
+        given: Rick
+      - family: Taghavi
+        given: Ray
+      - family: Olafsen
+        given: Jeff
+      - family: Mathur
+        given: Gaurav
+    publisher: Smart Work Zone Deployment Initiative
+    issued:
+      date-parts:
+        - [2005, 8]
+    URL: "https://intrans.iastate.edu/research/completed/design-of-portable-rumble-strips-phase-1/"
+    accessed:
+      date-parts:
+        - [2024, 11, 19]
+  - id: meyer2006
+    type: report
+    title: "Design of Portable Rumble Strips, Phase 2"
+    author:
+      - family: Meyer
+        given: Eric
+      - family: Hale
+        given: Rick
+      - family: Taghavi
+        given: Ray
+      - family: Olafsen
+        given: Jeff
+      - family: Mathur
+        given: Gaurav
+    publisher: Institute for Transportation (InTrans), Iowa State University
+    url: https://intrans.iastate.edu/research/completed/design-of-portable-rumble-strips-phase-2/
+    issued:
+      date-parts:
+        - [2006, 8]
+    accessed:
+      date-parts:
+        - [2024, 11, 19]
+  - id: maze2000
+    type: report
+    title: "Removable Orange Rumble Strips"
+    author:
+      - family: Maze
+        given: Tom
+    issued:
+      date-parts:
+        - [2000]
+    publisher: "Institute for Transportation (InTrans), Iowa State University"
+    accessed:
+      date-parts:
+        - [2025, 1, 28]
+    language: en
+    url: https://swzdi.intrans.iastate.edu/research/completed/removable-orange-rumble-strips-iowa/
+  - id: pss2018
+
+    type: webpage
+    issued:
+      date-parts:
+        - [2018]
+    title: "RoadQuake: Best Practices for Optimal Use, 2nd Edition"
+    author:
+      - literal: "Plastic Safety Systems (PSS)"
+    URL: "https://www.pss-innovations.com/training-products/roadquake-best-practice-guide"
+    accessed:
+      date-parts:
+        - [2026, 7, 1]
+  - id: schrock2016
+    type: report
+    title: "Development of Temporary Rumble Strip Specifications"
+    author:
+      - family: Schrock
+        given: Steven D.
+      - family: Sarikonda
+        given: Vishal R. 
+      - family: Fitzsimmons
+        given: Eric J.
+    issued:
+      date-parts:
+        - [2016, 2]
+    publisher: "Kansas DOT"
+    number: "K-TRAN: KU-14-6"
+    accessed:
+      date-parts:
+        - [2025, 1, 28]
+    language: en
+    url: https://rosap.ntl.bts.gov/view/dot/35891

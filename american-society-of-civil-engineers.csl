@@ -185,7 +185,7 @@
       <else-if type="article-journal" match="any">
         <text variable="DOI" prefix="https://doi.org/"/>
       </else-if>
-      <else-if type="report thesis" match="any">
+      <else-if type="paper-conference report thesis" match="any">
         <choose>
           <if variable="DOI">
             <text variable="DOI" prefix="https://doi.org/"/>
