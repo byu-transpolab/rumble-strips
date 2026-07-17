@@ -647,7 +647,13 @@
 
 %% ORCID
 % Make Orcid icon
-\newcommand{\orcidicon}{\includegraphics[width=0.32cm]{pics/logo-orcid.pdf}}
+\newcommand{\orcidicon}{%
+	\IfFileExists{pics/logo-orcid.pdf}{%
+		\includegraphics[width=0.32cm]{pics/logo-orcid.pdf}%
+	}{%
+		\textsuperscript{\tiny ORCID}%
+	}%
+}
 
 % Define link and button for each author
 \foreach \x in {A, ..., Z}{%
@@ -757,7 +763,11 @@
 			\OR \equal{\@arttype}{Monograph}}{}{%
 				\ifthenelse{\equal{\@status}{submit}}{%	
 					\hfill \href{https://www.mdpi.com}{%
-					\includegraphics[height=1cm]{pics/logo-mdpi.eps}}%
+					\IfFileExists{pics/logo-mdpi.eps}{%
+						\includegraphics[height=1cm]{pics/logo-mdpi.eps}%
+					}{%
+						\textsf{\bfseries MDPI}%
+					}}%
 					}{
 					\href{https://www.mdpi.com/journal/\@journal}{
 					\includegraphics[height=1.2cm]{\@journal-logo.eps}}%

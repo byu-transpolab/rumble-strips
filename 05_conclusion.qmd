@@ -40,11 +40,3 @@ Workers enter live traffic streams to correct the installation of displaced stri
 The findings of this research suggest that driver responses to TPRS and the performance of the TPRS themselves are highly variable and strongly dependent on site-specific conditions rather than layout spacing, traffic speeds, or traffic volumes. Changes in vehicle speed showed no consistent relationship with the varied spacing of the TPRS layouts. Likely influences on speed data include uncontrolled differences across work zones and limitations in the setup and equipment used in the field research. Braking and avoidance behaviors were similarly inconsistent and difficult to interpret due to challenges in detecting brake activation and limited visibility. The data suggests that only a minority of drivers respond to TPRS, and of those that do most brake on the approach. Strip displacement also varies widely by site and does not correlate with spacing or estimated traffic momentum, suggesting influence from factors not observed in this study such as pavement condition, age and condition of the individual TPRS devices, and limitations in the method used to estimate momentum. While sufficient headways were present at the observed work zones, the results for worker exposure were based on only six instances when workers were observed to enter the roadway to adjust the TPRS. These limitations underscore the potential of future research implementing more precise measurements, expanded site sampling, and improved methods for assessing driver attention, braking, and TPRS condition.
 
 
-## Contributions {.unnumbered}
-
-```{r credit, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
-library(CRediTas)
-
-# CRediTas::template_create(authors = c("Gregory Macfarlane", "Grant Schultz", "Tyler Carruth", "Benjamin Hailstone"), file = "credit.csv")
-crt <- readr::read_csv("credit.csv", show_col_types = FALSE)
-```

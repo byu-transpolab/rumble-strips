@@ -1,29 +1,29 @@
 % Options for packages loaded elsewhere
-% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-  12pt,
-  letterpaper,
-  number]{elsarticle}
-\usepackage{xcolor}
+    journal,
+    article,
+    submit,
+moreauthors
+]{mdpi}
+
 \usepackage{amsmath,amssymb}
-\setcounter{secnumdepth}{5}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
+  \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
-\ifPDFTeX\else
-  % xetex/luatex font selection
+\ifPDFTeX\else  
+    % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -41,6 +41,9 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{5}
 % Make \paragraph and \subparagraph free-standing
 \makeatletter
 \ifx\paragraph\undefined\else
@@ -64,7 +67,6 @@
   \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
 \makeatother
-
 
 \usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
@@ -139,15 +141,12 @@
  
 
 
+% TODO: Add custom LaTeX header directives here
 % These are extra latex packages that the document depends on
 % 
-\usepackage[margin=1in]{geometry}
 \usepackage{siunitx}
 \usepackage{tabularray}
 \UseTblrLibrary{siunitx}
-\usepackage{fontspec}
-
-\setmainfont{Times New Roman}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -210,62 +209,120 @@
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
-\journal{ASCE 2027}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
 \usepackage{bookmark}
+
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same}
+\urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
   pdftitle={Effectiveness of Temporary Portable Rumble Strips in Utah},
   pdfauthor={Gregory S. Macfarlane; Grant G. Schultz; Tyler Carruth; Benjamin Hailstone},
   pdfkeywords={Temporary Portable Rumble Strips, Work Zone
 Safety, Driver Attention},
-  colorlinks=true,
-  linkcolor={blue},
-  filecolor={Maroon},
-  citecolor={Blue},
-  urlcolor={Blue},
-  pdfcreator={LaTeX via pandoc}}
+  pdfcreator={LaTeX via pandoc},
+  unicode=true,
+	bookmarksopen={true},
+	pdffitwindow=true, 
+	colorlinks=true, 
+	linkcolor=bluecite, 
+	citecolor=bluecite, 
+	urlcolor=bluecite, 
+	hyperfootnotes=true, 
+	pdfstartview={FitH},
+	pdfpagemode= UseNone}
+
+\firstpage{1} 
+\makeatletter 
+\setcounter{page}{\@firstpage} 
+\makeatother
+\pubvolume{1}
+\issuenum{1}
+\articlenumber{0}
+\pubyear{\the\year{}}
+\copyrightyear{\the\year{}}
+%\externaleditor{Academic Editor: Firstname Lastname}
+\datereceived{ } 
+\daterevised{ } % Comment out if no revised date
+\dateaccepted{ } 
+\datepublished{ } 
+%\datecorrected{} % For corrected papers: "Corrected: XXX" date in the original paper.
+%\dateretracted{} % For corrected papers: "Retracted: XXX" date in the original paper.
+\hreflink{https://doi.org/} % If needed use \linebreak
+%\doinum{}
+%\pdfoutput=1 % Uncommented for upload to arXiv.org
+%\CorrStatement{yes}  % For updates
+
+\Title{ Effectiveness of Temporary Portable Rumble Strips in Utah }
+
+% MDPI internal command: Title for citation in the left column
+\TitleCitation{ Effectiveness of Temporary Portable Rumble Strips in
+Utah }
 
 
-\setlength{\parindent}{6pt}
-\begin{document}
 
-\begin{frontmatter}
-\title{Effectiveness of Temporary Portable Rumble Strips in Utah}
-\author[1]{Gregory S. Macfarlane%
-%
+% Author Orchid ID: enter ID or remove command
+%\newcommand{\orcidauthorA}{0000-0000-0000-000X} % Add \orcidA{} behind the author's name
+%\newcommand{\orcidauthorB}{0000-0000-0000-000X} % Add \orcidB{} behind the author's name
+\newcommand{\orcidauthorA}{0000-0003-3999-7584} 
+\newcommand{\orcidauthorB}{0000-0002-0675-2970} 
+
+
+% Authors, for the paper (add full first names)
+%\Author{Firstname Lastname $^{1,\dagger,\ddagger}$\orcidA{}, Firstname Lastname $^{2,\ddagger}$ and Firstname Lastname $^{2,}$*}
+
+\Author{Gregory S. Macfarlane$^{a}$\orcidA{}, 
+Grant G. Schultz$^{a}$\orcidB{}, 
+Tyler Carruth$^{a}$~and~Benjamin Hailstone$^{a}$
 }
- \ead{gregmacfarlane@byu.edu} 
-\author[1]{Grant G. Schultz%
-%
+%\longauthorlist{yes}
+
+% MDPI internal command: Authors, for metadata in PDF
+\AuthorNames{
+  Gregory S. Macfarlane,
+  Grant G. Schultz,
+  Tyler Carruth,
+  Benjamin Hailstone}
+
+% MDPI internal command: Authors, for citation in the left column
+%\AuthorCitation{Lastname, F.; Lastname, F.; Lastname, F.}
+%\usepackage{xstring}
+\newcommand\getfirst[1]{\getfirstaux#1\relax} \def\getfirstaux#1#2\relax{#1}
+\newcommand{\authorformatted}{Macfarlane, \getfirst{Gregory S.}.; Schultz, \getfirst{Grant G.}.; Carruth, \getfirst{Tyler}.; Hailstone, \getfirst{Benjamin}.}
+\AuthorCitation{\authorformatted}
+
+% If this is a Chicago style journal: Lastname, Firstname, Firstname Lastname, and Firstname Lastname.
+
+% Affiliations / Addresses (Add [1] after \address if there is only one affiliation.)
+\address[1]{%
+$^{a}$ \quad , Civil and Construction Engineering Department, Brigham
+Young University\\
 }
 
-\author[1]{Tyler Carruth%
-%
-}
+%\address{
+%$^{1}$ \quad Affiliation 1; e-mail@e-mail.com\\
+%$^{2}$ \quad Affiliation 2; e-mail@e-mail.com}
 
-\author[1]{Benjamin Hailstone%
-%
-}
+% Contact information of the corresponding author
+%% see: https://quarto.org/docs/journals/authors.html
 
+% Current address and/or shared authorship
+%\firstnote{Current address: Affiliation.}  % Current address should not be the same as any items in the Affiliation section.
+%\secondnote{These authors contributed equally to this work.}
+% The commands \thirdnote{} till \eighthnote{} are available for further notes
 
-\affiliation[1]{organization={Civil and Construction Engineering
-Department, Brigham Young University},addressline={430
-EB},city={Provo},postcode={84602},postcodesep={}}
+%\simplesumm{} % Simple summary
 
-\cortext[cor1]{Corresponding author}
+%\conference{} % An extended version of a conference paper
 
-
-
-
-        
-\begin{abstract}
-Transportation agencies regularly use Temporary portable rumble strips
-(TPRS) to alert drivers to upcoming work zones or other changing traffic
-conditions, based on previous research showing TPRS to effectively
-reduce traffic speed and increase driver attentiveness. However,
-questions persist regarding the continued effectiveness of TPRS as
-drivers become accustomed to them, the preferred spacing of TPRS, and
+% Abstract (Do not insert blank lines, i.e. \\) 
+\abstract{ Transportation agencies regularly use Temporary portable
+rumble strips (TPRS) to alert drivers to upcoming work zones or other
+changing traffic conditions, based on previous research showing TPRS to
+effectively reduce traffic speed and increase driver attentiveness.
+However, questions persist regarding the continued effectiveness of TPRS
+as drivers become accustomed to them, the preferred spacing of TPRS, and
 the need for workers to periodically enter the roadway and adjust the
 TPRS when they become displaced. This research presents the results of a
 field experiment at four sites in Utah with varying deployment
@@ -286,19 +343,13 @@ play a larger role. Maintenance requires traffic gaps of approximately
 findings highlight the need for further evaluation of TPRS
 effectiveness, standards for device condition, consideration of
 alternative measures for long-term work zones, and increased contractor
-discretion based on site conditions.
-\end{abstract}
+discretion based on site conditions. }
 
+% Keywords
+\keyword{Temporary Portable Rumble Strips; Work Zone Safety; Driver
+Attention}
 
-
-
-
-\begin{keyword}
-    Temporary Portable Rumble Strips \sep Work Zone Safety \sep 
-    Driver Attention
-\end{keyword}
-\end{frontmatter}
-    
+\begin{document}
 
 \bookmarksetup{startatroot}
 
@@ -1053,34 +1104,10 @@ potential of future research implementing more precise measurements,
 expanded site sampling, and improved methods for assessing driver
 attention, braking, and TPRS condition.
 
-\subsection*{Acknowledgments}\label{acknowledgments}
-\addcontentsline{toc}{subsection}{Acknowledgments}
-
-\markright{Acknowledgments}
-
-This research was funded by the Utah Department of Transportation The
-authors alone are responsible for the preparation and accuracy of the
-information, data, analysis, discussions, recommendations, and
-conclusions presented herein. The contents do not necessarily reflect
-the views, opinions, endorsements, or policies of UDOT or the U.S.
-Department of Transportation.
-
-Graphics in this report use several open-source software packages
-(Arel-Bundock 2022; Dunnington 2025; Wickham 2016).
-
 \subsection*{Contributions}\label{contributions}
 \addcontentsline{toc}{subsection}{Contributions}
 
 \markright{Contributions}
-
-\textbf{Gregory Macfarlane:} Conceptualization, Methodology, Writing -
-review \& editing, Visualization, Supervision, Funding acquisition.
-\textbf{Grant Schultz:} Methodology, Writing - review \& editing,
-Supervision, Funding acquisition. \textbf{Tyler Carruth:} Methodology,
-Software, Validation, Formal analysis, Investigation, Data curation,
-Writing - original draft, Visualization. \textbf{Benjamin Hailstone:}
-Methodology, Validation, Formal analysis, Investigation, Data curation,
-Writing - original draft, Visualization.
 
 \bookmarksetup{startatroot}
 
@@ -1229,7 +1256,55 @@ Zones}.''} \emph{Journal of Transportation Engineering}, 141 (10):
 
 \end{CSLReferences}
 
+%\authorcontributions{For research articles with several authors, a short paragraph specifying their individual contributions must be provided. The following statements should be used ``Conceptualization, X.X. and Y.Y.; methodology, X.X.; software, X.X.; validation, X.X., Y.Y. and Z.Z.; formal analysis, X.X.; investigation, X.X.; resources, X.X.; data curation, X.X.; writing---original draft preparation, X.X.; writing---review and editing, X.X.; visualization, X.X.; supervision, X.X.; project administration, X.X.; funding acquisition, Y.Y. All authors have read and agreed to the published version of the manuscript.'', please turn to the  \href{http://img.mdpi.org/data/contributor-role-instruction.pdf}{CRediT taxonomy} for the term explanation. Authorship must be limited to those who have contributed substantially to the work~reported.}
+
+\authorcontributions{Conceptualization, G.S.M. and G.G.S.; Data
+curation, T.C. and B.H.; Formal analysis, T.C. and B.H.; Funding
+acquisition, G.S.M. and G.G.S.; Investigation, T.C. and B.H.;
+Methodology, G.S.M., T.C. and B.H.; Software, T.C.; Supervision, G.S.M.;
+Validation, T.C. and B.H.; Visualization, G.S.M. and T.C.; Writing -
+original draft, T.C. and B.H.; Writing - review \& editing, G.S.M. and
+G.G.S.. All authors have read and agreed to the published version of the
+manuscript.}
+
+
+%\funding{Please add: ``This research received no external funding'' or ``This research was funded by NAME OF FUNDER grant number XXX.'' and  and ``The APC was funded by XXX''. Check carefully that the details given are accurate and use the standard spelling of funding agency names at \url{https://search.crossref.org/funding}, any errors may affect your future funding.}
+
+\funding{This research was funded by the Utah Department of
+Transportation.}
+
+%\institutionalreview{In this section, you should add the Institutional Review Board Statement and approval number, if relevant to your study. You might choose to exclude this statement if the study did not require ethical approval. Please note that the Editorial Office might ask you for further information. Please add “The study was conducted in accordance with the Declaration of Helsinki, and approved by the Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies involving humans. OR “The animal study protocol was approved by the Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies involving animals. OR “Ethical review and approval were waived for this study due to REASON (please provide a detailed justification).” OR “Not applicable” for studies not involving humans or animals.}
+
+\institutionalreview{Not applicable.}
+
+%\informedconsent{Any research article describing a study involving humans should contain this statement. Please add ``Informed consent was obtained from all subjects involved in the study.'' OR ``Patient consent was waived due to REASON (please provide a detailed justification).'' OR ``Not applicable'' for studies not involving humans. You might also choose to exclude this statement if the study did not involve humans. Written informed consent for publication must be obtained from participating patients who can be identified (including by the patients themselves). Please state ``Written informed consent has been obtained from the patient(s) to publish this paper'' if applicable.}
+
+\informedconsent{Not applicable.}
+
+%\dataavailability{We encourage all authors of articles published in MDPI journals to share their research data. In this section, please provide details regarding where data supporting reported results can be found, including links to publicly archived datasets analyzed or generated during the study. Where no new data were created, or where data is unavailable due to privacy or ethical restrictions, a statement is still required. Suggested Data Availability Statements are available in section ``MDPI Research Data Policies'' at \url{https://www.mdpi.com/ethics}.} 
+
+\dataavailability{Datasets for this project are available on Zenodo and
+complete project code on GitHub.}
+
+% Only for journal Nursing Reports
+%\publicinvolvement{Please describe how the public (patients, consumers, carers) were involved in the research. Consider reporting against the GRIPP2 (Guidance for Reporting Involvement of Patients and the Public) checklist. If the public were not involved in any aspect of the research add: ``No public involvement in any aspect of this research''.}
+
+% Only for journal Nursing Reports
+%\guidelinesstandards{Please add a statement indicating which reporting guideline was used when drafting the report. For example, ``This manuscript was drafted against the XXX (the full name of reporting guidelines and citation) for XXX (type of research) research''. A complete list of reporting guidelines can be accessed via the equator network: \url{https://www.equator-network.org/}.}
+
+%\acknowledgments{In this section you can acknowledge any support given which is not covered by the author contribution or funding sections. This may include administrative and technical support, or donations in kind (e.g., materials used for experiments).}
 
 
 
-\end{document}
+%\conflictsofinterest{Declare conflicts of interest or state ``The authors declare no conflicts of interest.'' Authors must identify and declare any personal circumstances or interest that may be perceived as inappropriately influencing the representation or interpretation of reported research results. Any role of the funders in the design of the study; in the collection, analyses or interpretation of data; in the writing of the manuscript; or in the decision to publish the results must be declared in this section. If there is no role, please state ``The funders had no role in the design of the study; in the collection, analyses, or interpretation of data; in the writing of the manuscript; or in the decision to publish the results''.} 
+
+\conflictsofinterest{The authors declare no conflict of interest.}
+
+\begin{adjustwidth}{-\extralength}{0cm}
+%\printendnotes[custom] % Un-comment to print a list of endnotes
+
+\reftitle{References}
+
+
+\PublishersNote{}
+\end{adjustwidth}\end{document}

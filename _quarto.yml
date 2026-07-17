@@ -52,7 +52,7 @@ book:
         - Data curation
         - Writing - original draft
       affiliations:
-        - ref: byu
+        - ref: a
   date: "8/1/2026"
   chapters:
     - index.qmd
@@ -88,13 +88,18 @@ keywords:
   - Work Zone Safety
   - Driver Attention
 
-fundingstatement: This research was funded by the Utah Department of Transportation.
-institutionalreview: Not applicable.
-informedconsent: Not applicable.
-dataavailability: Datasets for this project are available on Zenodo and complete project code on GitHub.
-acknowledgements:  Graphics in this report use several open-source software packages [@ggplot22016; @modelsummary2022; @R-ggspatial].
-conflictsofinterest: None.
-
+fundingstatement: |
+  This research was funded by the Utah Department of Transportation.
+institutionalreview: |
+  Not applicable.
+informedconsent: |
+  Not applicable.
+dataavailability: |
+  Datasets for this project are available on Zenodo and complete project code on GitHub.
+acknowledgements:  |
+  Graphics in this report use several open-source software packages [@ggplot22016; @modelsummary2022; @R-ggspatial].
+conflictsofinterest: |
+  The authors declare no conflict of interest.
 
 bibliography: 
   - references.bib
@@ -107,10 +112,12 @@ format:
   html:
     theme: cosmo
   mdpi-pdf:
+    include-in-header: packages.tex
     article_status: submit
     article_type: article
-    mdpi-journal: futuretransp
     keep-tex: true
     top-level-division: section
     toc: false
+
+mdpi-journal: futuretransp
 
