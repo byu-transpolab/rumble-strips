@@ -14,7 +14,7 @@ library(prettymapr)
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
-This chapter describes the methods and procedures used to collect data on driver behavior and TPRS displacement. More details on the reasoning behind these decisions are available in an associated research report [@macfarlaneEffectivenessTemporaryPortable2026].
+This section describes the methods and procedures used to select sites and collect data on driver behavior and TPRS displacement. More details on the reasoning behind the methodological decisions are available in an associated research report [@macfarlaneEffectivenessTemporaryPortable2026].
 
 
 ## Site Selection
@@ -120,28 +120,31 @@ sites |>
   as_tibble() |>
   select(Site = site, Roadway, Location, Start, End, `Speed Limit`, `Work Zone Limit`, `Closure Type`) |>
   sf::st_drop_geometry() |>
-  tt(width = 1)
+  tt() |>
+  group_tt(j = list("Collection Dates" = 4:5)) |>
+  theme_latex(resize_direction = "down", placement = "T")
+
 ```
 
 The research team decided on four layouts for the arrays of TPRS to observe the impact of TPRS on driver behavior and strip displacement. The layouts are as follows: 
 
-  - **No TPRS** TPRS are not installed.
-  - **UDOT** The current recommended specifications in Region 4, which are 10 ft. for roads with a posted speed limit up to 45 mph, and 20 ft. for roads with a posted speed limit of 50 mph or higher.
-  - **1:2** TPRS spaced in feet at half the value of the posted speed limit in miles per hour (e.g. a 60 mph road will have spacing of 30 ft.).
-  - **Long** TPRS spaced between five to twenty feet longer than the 1:2 spacing specification.
+  1. **No TPRS**: TPRS are not installed.
+  2.  **UDOT**:  The current recommended specifications in Region 4, which are 10 ft. for roads with a posted speed limit up to 45 mph, and 20 ft. for roads with a posted speed limit of 50 mph or higher.
+  3. **1:2**: TPRS spaced in feet at half the value of the posted speed limit in miles per hour (e.g. a 60 mph road will have spacing of 30 ft.).
+  4. - **Long**: TPRS spaced between five to twenty ft. longer than the 1:2 spacing specification, depending on the posted speed limit.
 
 @fig-diagram illustrates the overall instrumentation plan applied at each site.
 The instrumentation plan consists of two video cameras, Camera 1 and Camera 2,
 located upstream of the first TPRS array and at the TPRS array, respectively.
 There are also two trailer-mounted radar speed detection devices manufactured by
-Wavetronix. These are called Wavetronix 1 and Wavetronix 2 and are located at
+Wavetronix. These are called Radar 1 and Radar 2 and are located at
 the first TPRS array and downstream of the first TPRS array, respectively.
-Camera 1 and Wavetronix 2 were both installed where space on the shoulder of the
+Camera 1 and Radar 2 were each installed where space on the shoulder of the
 roadway was available. @tbl-wav-spacing provides the actual distance separating
-Wavetronix 1 and Wavetronix 2 at each site on each day. Observations at SR-12
+Radar 1 and Radar 2 at each site on each day. Observations at SR-12
 were divided into two days, resulting in two different measures.
 
-![Instrumentation plan at lane closure and passing lane closure.](methodology-diagram.png){#fig-diagram fig-align="center" width="70%"}
+![Instrumentation plan at lane closure and passing lane closure.](methodology-diagram.png){#fig-diagram fig-align="center" width="70%" fig-pos="t"}
 
 ```{r eval=FALSE}
 #| label: fig-test-spacing
@@ -152,7 +155,7 @@ test_spacing_plot
 
 ```{r}
 #| label: tbl-wav-spacing
-#| tbl-cap: "Separation [ft] Between Wavetronix Units"
+#| tbl-cap: "Separation [ft] Between Radar Units"
 # INCOMPLETE
 tar_load(trailer_spacing)
 trailer_spacing |>
@@ -171,7 +174,7 @@ active worksite presents technical and safety challenges. Change in speed,
 braking response, and TPRS avoidance have been used in previous studies as
 appropriate proxy measures [@brown22; @fontaineEvaluationSpeedDisplays2001; @sunElevatedRiskWorkZone2011]
 
-Wavetronix units use radar to measure the speed of vehicles within their area of effect based on programmed lane location information adjusted for each site on each day. Accompanying software provides vehicle counts, average speeds, and 85th percentile speed measurements for the vehicles passing the units in bins specified by the user; this study used 15-minute bins. By taking the difference in the 85th percentile speed captured in the same 15-minute bin between Wavetronix 1 and Wavetronix 2, it is possible to measure the change in 85th percentile speed.
+Wavetronix units use radar to measure the speed of vehicles within their area of effect based on programmed lane location information adjusted for each site on each day. Accompanying software provides vehicle counts, average speeds, and 85th percentile speed measurements for the vehicles passing the units in bins specified by the user; this study used 15-minute bins. By taking the difference in the 85th percentile speed captured in the same 15-minute bin between Radar 1 and Radar 2, it is possible to measure the change in 85th percentile speed.
 
 Camera 1 was placed roughly 100 ft. upstream from the first TPRS array and provided a view of the rear of vehicles as they encountered the strips. The research team watched the Camera 1 video and marked vehicle classification and relevant behavior using software developed by the research team for this purpose. The researchers recorded when each vehicle crossed the TPRS; classified each vehicle as either a motorcycle, passenger vehicle, or truck; identified whether a vehicle illuminated its brake lights before or after encountering TPRS; and identified whether the vehicle avoided the strips.
 
@@ -180,7 +183,7 @@ The researchers classified each vehicle traversing TPRS. Vehicles with fewer tha
 The research team classified vehicles as braking before TPRS, after TPRS, or not braking at all. Vehicles driving on the shoulder or crossing the center dividing line ahead of TPRS –- either partially or completely –- were identified as avoiding the TPRS. Vehicles engaged in passing the vehicle in front of them were not considered to be avoiding the strips.
 
 ## TPRS Displacement and Worker Exposure
-Camera 2 was mounted to the same point as Wavetronix 1 and had a top-down view of the TPRS array, centered on the middle strip of the array. This perspective allowed the team to see how much the center strip of the TPRS array was displaced over time and how much time workers spent adjusting the TPRS.
+Camera 2 was mounted to the same point as Radar 1 and had a top-down view of the TPRS array, centered on the middle strip of the array. This perspective allowed the team to see how much the center strip of the TPRS array was displaced over time and how much time workers spent adjusting the TPRS.
 
 The research team used a transparent overlay to track TPRS displacement over time. The overlay was based on PSS standards as outlined in their product guide, namely that the strips can move up to 5 ft. forward or back, 2 ft. to either side, and can rotate up to a 3 ft. differential between ends or roughly 15° [@pss2018]. To provide more nuanced description of displacement, the researchers developed five categories of displacement based on these overall specifications: reset (no movement), some, moderate, significant, and out of specification. @fig-overlay shows the overlay with dimensions for each area marked. The overlay was warped to approximate the perspective of the camera as shown in @fig-examples.
 
@@ -190,7 +193,7 @@ The research team used a transparent overlay to track TPRS displacement over tim
 ![TPRS displacement examples.](examples-of-displacement.png){#fig-examples fig-align="center"}
 
 To quantify and normalize the vehicle impact force to displace a strip, the research team estimated the cumulative momentum --- speed multiplied by mass --- applied to TRPS. The weight of each vehicle was assumed based on the vehicle classification and a mean class weight derived from national data [@volpe2021]. Each vehicle's speed was assumed to be the mean speed of its 15-minute time bin
-as measured by Wavetronix 1.
+as measured by Radar 1.
 
 
 Camera 2 footage allowed researchers to evaluate worker exposure to traffic when correcting the strip alignment. The research team recorded when workers arrived on site to move TPRS, when vehicles passed while workers were on site, when workers started looking for a gap in traffic, when workers entered the road to adjust TPRS and exited the road, and when the workers left the site. The time when workers were actively engaged in seeking to enter the road was subject to a probabilistic critical gap analysis [@hewittMeasuringCriticalGap1983] to identify the length of headway workers will accept for this task.

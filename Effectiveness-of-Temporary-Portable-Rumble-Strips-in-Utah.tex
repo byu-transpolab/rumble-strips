@@ -202,6 +202,9 @@
 \newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
 \makeatother
 \makeatletter
+\usepackage{pdflscape}
+\makeatother
+\makeatletter
 \makeatother
 \makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
@@ -213,7 +216,9 @@
 \urlstyle{same}
 \hypersetup{
   pdftitle={Effectiveness of Temporary Portable Rumble Strips in Utah},
-  pdfauthor={Gregory S. Macfarlane; Tyler Carruth; Benjamin Hailstone; Grant Schultz},
+  pdfauthor={Gregory S. Macfarlane; Grant G. Schultz; Tyler Carruth; Benjamin Hailstone},
+  pdfkeywords={Temporary Portable Rumble Strips, Work Zone
+Safety, Driver Attention},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -231,15 +236,15 @@
 %
 }
  \ead{gregmacfarlane@byu.edu} 
+\author[1]{Grant G. Schultz%
+%
+}
+
 \author[1]{Tyler Carruth%
 %
 }
 
 \author[1]{Benjamin Hailstone%
-%
-}
-
-\author[1]{Grant Schultz%
 %
 }
 
@@ -255,29 +260,30 @@ EB},city={Provo},postcode={84602},postcodesep={}}
 
         
 \begin{abstract}
-This study evaluates the effectiveness and operational implications of
-Temporary Portable Rumble Strips (TPRS) used by the Utah Department of
-Transportation (UDOT) to alert drivers to upcoming work zones. While
-TPRS are intended to capture driver attention and reduce crash risk,
-concerns remain regarding their influence on driver behavior, avoidance
-maneuvers, and maintenance requirements. A field experiment was
-conducted at four work zones in Utah during the Summer 2025 construction
-season. Four deployment conditions---no TPRS and three spacing
-configurations---were tested. Data collection included speed
-measurements using mobile radar detectors and video-based observations
-of vehicle classification, braking behavior, avoidance maneuvers, and
-TPRS displacement. Results indicate that the effect of TPRS on speed
-reduction is inconclusive. Drivers who braked in response to TPRS
-typically did so before reaching the devices, suggesting that visual
-cues may be as influential as tactile feedback. Avoidance behavior was
-common among motorcycles and occurred occasionally among other vehicles.
-Driver responses were more strongly influenced by site-specific
-factors---such as roadway geometry and sight distance---than by TPRS
-spacing. TPRS displacement occurred gradually under traffic but was not
-clearly related to traffic volume or speed, suggesting that device age
-and condition play a larger role. Maintenance requires traffic gaps of
-approximately 34 seconds, which may not be feasible at higher-volume
-sites. These findings highlight the need for further evaluation of TPRS
+Transportation agencies regularly use Temporary portable rumble strips
+(TPRS) to alert drivers to upcoming work zones or other changing traffic
+conditions, based on previous research showing TPRS to effectively
+reduce traffic speed and increase driver attentiveness. However,
+questions persist regarding the continued effectiveness of TPRS as
+drivers become accustomed to them, the preferred spacing of TPRS, and
+the need for workers to periodically enter the roadway and adjust the
+TPRS when they become displaced. This research presents the results of a
+field experiment at four sites in Utah with varying deployment
+conditions and TPRS spacings. The sites were instrumented with radar
+speed detectors and video cameras to capture change in speed, braking
+behavior, avoidance, strip displacement, and worker exposure. Results
+indicate that the effect of TPRS on speed reduction is inconclusive.
+Drivers who braked in response to TPRS typically did so before reaching
+the devices, suggesting that visual cues may be as influential as
+tactile feedback for most drivers. Avoidance behavior was common among
+motorcycles and occurred occasionally among other vehicles. Driver
+responses were more strongly influenced by site-specific factors---such
+as roadway geometry and sight distance---than by TPRS spacing. TPRS
+displacement occurred gradually under traffic but was not clearly
+related to traffic volume or speed, suggesting that device condition
+play a larger role. Maintenance requires traffic gaps of approximately
+34 seconds, which may not be feasible at higher-volume sites. These
+findings highlight the need for further evaluation of TPRS
 effectiveness, standards for device condition, consideration of
 alternative measures for long-term work zones, and increased contractor
 discretion based on site conditions.
@@ -287,6 +293,10 @@ discretion based on site conditions.
 
 
 
+\begin{keyword}
+    Temporary Portable Rumble Strips \sep Work Zone Safety \sep 
+    Driver Attention
+\end{keyword}
 \end{frontmatter}
     
 
@@ -295,152 +305,82 @@ discretion based on site conditions.
 \section{Introduction}\label{sec-intro}
 
 Temporary portable rumble strips (TPRS) have been used since at least
-the early 2000s to alert drivers to upcoming work zones. These devices
-are made of steel and rubber and are placed transverse across the
-roadway in arrays of strips (Meyer et al., 2006; PSS, 2018).
+the early 2000's to alert drivers to upcoming work zones. Early adhesive
+strips have been largely replaced by non-adhesive steel and rubber pads
+heavy enough to resist movement but light enough to be handled by
+workers (Brown et al. 2022; Maze 2000; Meyer et al. 2006). Prior
+research has generally shown that TPRS reduce traffic speed and increase
+driver attentiveness (Sun et al. 2011; Yang et al. 2015), with the
+effect being most pronounced near the first set of strips and when
+drivers can see a flagger or additional barriers (Wang et al. 2013).
+There is also some evidence that TPRS reduce crash rates (Ullman et al.
+2018). These findings have led to the wide adoption of TPRS in work
+zones across many states.
 
-At the same time, TPRS introduces additional complication in work zones.
-Workers must enter the roadway to install the strips and adjust them
-when they become displaced. Anecdotal evidence suggests that some
-drivers may avoid TPRS, creating a safety hazard. And as drivers become
-accustomed to strips, they may become desensitized to them, making them
-less effective.
+In spite of their common use, there are several unanswered questions
+related to TPRS deployments. First, some studies on the effectiveness of
+TPRS have been conducted on closed courses with instrumented vehicles
+(Schrock et al. 2010; Schrock et al. 2016); it is unknown whether this
+is a generalizable finding for work zones with open-road conditions.
+Similarly, as drivers become accustomed to TPRS, they may become
+desensitized to them or avoid them (Brown et al. 2022), making them less
+effective safety measures. Second, a review of state specifications for
+TPRS spacing shows that there is little evidence to support standards
+related to the spacing of strips within a TPRS array, and that desired
+specifications vary widely across states. Some states, such as
+Wisconsin, Florida, and Colorado, specify a single spacing independent
+of speed (e.g., Wisconsin DOT 2022). Some states such as Maryland,
+Virginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on
+the posted speed limit (e.g., Minnesota DOT 2024). Finally, TPRS can
+become displaced with traffic, limiting their effectiveness or creating
+a potential hazard for drivers (Heaslip et al. 2010; Schrock et al.
+2010; Sun et al. 2011). Workers must therefore periodically enter the
+roadway to install the strips and adjust them when they become
+displaced.
 
-In this research, we report a field experiment to evaluate driver
-reaction to TPRS and observe
-
-This paper is organized as follows: First, a Literature Review section
-briefly outlines previous research results in TPRS. A Methodology
-sections describes the experimental design and methods used to collect
-data, with a subsequent Results section presenting the results of the
-experiment. A final Conclusion section discusses the implications of the
-findings for practice and future research.
-
-\bookmarksetup{startatroot}
-
-\section{Literature Review}\label{literature-review}
-
-\subsection{Overview}\label{overview}
-
-Non-adhesive TPRS, typically made of steel and rubber, have been used
-since 2009 to improve work zone safety (\textbf{pss\_best\_2018?}).
-Research consistently shows that TPRS can reduce traffic speed, increase
-driver attentiveness, and minimize erratic driving behaviors such as
-lane departures (\textbf{yang\_effectiveness\_2015?}).
-
-\subsection{Speed Reduction}\label{speed-reduction}
-
-TPRS installations are effective at reducing vehicle speeds in work
-zones. Studies report speed reductions ranging from 3.5 to 13.8
-mph,(\textbf{yang\_effectiveness\_2015?}), with greater reductions
-observed near the first set of strips and when drivers can see a flagger
-or additional barriers (\textbf{wang\_effects\_2013?}).
-(\textbf{wang\_effects\_2013?}) shows the effect is highly localized,
-and speeds tend to increase once drivers pass the TPRS unless additional
-measures are present.
-
-\subsection{Driver Behavior}\label{driver-behavior}
-
-TPRS increase driver attentiveness, often measured by the frequency of
-brake light activation as vehicles approach the strips. Studies show
-that TPRS prompt more drivers to brake and pay attention to changing
-road conditions, though the percentage varies from 11 perecnt to 55
-percent based on site and conditions
-(\textbf{brown\_effectiveness\_2022?};
-\textbf{sun\_elevated-risk\_2011?}; \textbf{wang\_effects\_2013?};
-\textbf{yang\_effectiveness\_2015?}). Commercial vehicles tend to
-respond more cautiously than passenger cars
-(\textbf{wang\_effects\_2013?}).
-
-Concerns about drivers evading TPRS by leaving their lane have been
-largely unfounded. Most studies report minimal lane departures,
-especially when TPRS are installed across the full width of the road
-(\textbf{sun\_elevated-risk\_2011?}; \textbf{wang\_effects\_2013?};
-\textbf{brown\_effectiveness\_2022?}). Lane departures are more likely
-on narrow roads or near the end of a TPRS array, but overall rates are
-low (\textbf{sun\_elevated-risk\_2011?}).
-
-\subsection{TPRS Displacement}\label{tprs-displacement}
-
-A key challenge with non-adhesive TPRS is their tendency to shift or
-become displaced under traffic. Displacement increases with heavier
-vehicles, higher speeds, and higher traffic volume
-(\textbf{sun\_elevated-risk\_2011?}). Placement angle also
-matters---strips that rotate away from perpendicular to traffic tend to
-move more(\textbf{sun\_elevated-risk\_2011?}). Real-world studies show
-that while displacement is generally manageable, it can require periodic
-adjustment, which may increase worker exposure to traffic. The effect of
-strip wear and long-term durability under heavy use is not well
-understood and requires further research.
-
-\subsection{Spacing Specifications}\label{spacing-specifications}
-
-There are three main groups of spacing specifications. Some states, such
-as Wisconsin, Florida, and Colorado, specify a single spacing
-independent of speed (e.g., W. DOT, 2022). Some states such as Maryland,
-Viriginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on
-the posted speed limit (M. DOT, 2024). New York, Texas, and Missouri
-specify spacing from 10 to 35 ft. based on the posted speed
-limit(\textbf{citation?}). The manufacturer also recommends spacing of
-10 to 35 ft. based on the posted speed limit(\textbf{citation?}). The
-various specifications are shown in Figure Figure~\ref{fig-state-specs}.
-
-\begin{figure}
-
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{02_litreview_files/figure-pdf/fig-state-specs-1.pdf}}
-
-}
-
-\caption{\label{fig-state-specs}Various specifications for TPRS
-spacing.}
-
-\end{figure}%
-
-\subsection{Summary}\label{summary}
-
-TPRS are effective at reducing speeds, increasing driver attentiveness,
-and minimizing erratic driving in work zones. Displacement under traffic
-remains a practical concern, especially for non-adhesive products, and
-more research is needed on long-term performance and optimal deployment
-strategies.
+This paper reports a field experiment to evaluate driver reaction to
+TPRS and observe strip displacement under traffic. Four sites in Utah
+were instrumented with cameras and speed-detecting radar units, allowing
+researchers to evaluate change in speed, braking behavior, avoidance,
+displacement, and worker exposure. Four TPRS spacings were applied to
+each site, including a no-TPRS control. This paper is organized as
+follows: A methodology section describes the experimental design and
+methods used to collect data on driver behavior and TPRS displacement. A
+subsequent results section presents the results of the experiment,
+followed by a discussion of the findings with associated limitations of
+this research. A final concluding section discusses the implications of
+the findings for practice and future research.
 
 \bookmarksetup{startatroot}
 
 \section{Methodology}\label{sec-methodology}
 
-This chapter describes the methodology designed by the research team to
-evaluate the effectiveness, durability, and stability of TPRS systems on
-high-speed roadways in Utah. The experiment will observe driver behavior
-and TPRS displacement under traffic load. Cameras and Wavetronix units
-will be used to collect the desired data. The designed experiment will
-observe the results that occur in the absence of TPRS and in layouts
-that vary the spacing between the individual strips in arrays. The
-experiment will be designed to maximize observation time and minimize
-how often contractors will need to adjust the TPRS. Work sites were
-selected for observation based on traffic volume, availability, and
-location.
+This section describes the methods and procedures used to select sites
+and collect data on driver behavior and TPRS displacement. More details
+on the reasoning behind the methodological decisions are available in an
+associated research report (Macfarlane et al. 2026).
 
 \subsection{Site Selection}\label{site-selection}
 
-The team selected work sites available during the summer of 2025 based
-on their driving distance from Provo. The research team used 2023 AADT
-data to estimate how many vehicles typically traveled on each road
-segment associated with a work site being considered for observation.
-This estimate ensured that the roads chosen for observation had enough
-traffic to support a reliable statistical analysis of the potential
-effect spacing would have on TPRS arrays.
+The research team identified four sites at UDOT work zones in the Summer
+2025 construction season compatible with the goals of this research.
+These sites are at the locations shown in Figure~\ref{fig-map} and data
+collection dates described in Table~\ref{tbl-sites}. Site selection
+criteria included sequencing of researcher travel, planned construction
+schedules, variety of site speeds and roadway types, and expected
+traffic volume. Nearby traffic counting stations provided volume data to
+confirm that sufficient samples to conduct statistical analysis were
+available.
 
 \begin{figure}
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{03_methods_files/figure-pdf/fig-map-1.pdf}}
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{03_methods_files/figure-pdf/fig-map-1.pdf}
 
 }
 
-\caption{\label{fig-map}Map of sites}
+\caption{\label{fig-map}Map of Utah with study locations.}
 
 \end{figure}%
 
@@ -451,90 +391,92 @@ effect spacing would have on TPRS arrays.
 \centering{
 
 \centering
+\resizebox{\ifdim\width>\linewidth 1\linewidth\else\width\fi}{!}{
 \begin{tblr}[         %% tabularray outer open
 ]                     %% tabularray outer close
 {                     %% tabularray inner open
-colspec={Q[]Q[]Q[]Q[]Q[]},
-hline{2}={1-5}{solid, black, 0.05em},
-hline{1}={1-5}{solid, black, 0.08em},
-hline{6}={1-5}{solid, black, 0.08em},
+colspec={Q[]Q[]Q[]Q[]Q[]Q[]Q[]Q[]},
+hline{2}={4}{solid, black, 0.03em, l=-0.5},
+hline{2}={5}{solid, black, 0.03em, r=-0.5},
+hline{3}={1-8}{solid, black, 0.05em},
+hline{1}={1-8}{solid, black, 0.08em},
+hline{7}={1-8}{solid, black, 0.08em},
+cell{1}{1}={}{halign=c},
+cell{1}{2}={}{halign=c},
+cell{1}{3}={}{halign=c},
+cell{1}{4}={c=2}{halign=c},
+cell{1}{5}={}{halign=c},
+cell{1}{6}={}{halign=c},
+cell{1}{7}={}{halign=c},
+cell{1}{8}={}{halign=c},
 }                     %% tabularray inner close
-Site & Roadway & Location & Start & End \\
-1 & SR-12 & Mile marker 6.5 & 2025-07-07 & 2025-07-11 \\
-2 & US-6 & 20 miles W of Wellington & 2025-07-15 & 2025-07-18 \\
-3 & I-70 & Clear Creek Summit & 2025-07-29 & 2025-08-01 \\
-4 & US-191 & North of summit & 2025-08-05 & 2025-08-08 \\
+&  &  & Collection Dates &  &  &  &  \\
+Site & Roadway & Location & Start & End & Speed Limit & Work Zone Limit & Closure Type \\
+1 & SR-12 & Mile marker 6.5 & 2025-07-07 & 2025-07-11 & 55 & 35 & Full lane \\
+2 & US-6 & 20 miles East of Wellington & 2025-07-15 & 2025-07-18 & 65 & Not recorded & Full lane \\
+3 & I-70 & Clear Creek Summit & 2025-07-29 & 2025-08-01 & 80 & 60 & Passing lane \\
+4 & US-191 & North of summit & 2025-08-05 & 2025-08-08 & 60 & 40 & Full lane \\
 \end{tblr}
+}
 
 }
 
 \end{table}%
 
-The research team used histograms of haverage hourly volumes on Utah
-roads to determine which ones would make reliable sites to study to
-ensure statistical significance. Figure~\ref{fig-aadt} shows data from
-four counting stations near the sites selected for observation. Volume
-data from May 2023 to August 2023 was collected from the UDOT Traffic
-Data Portal, aggregated and averaged by hour, and plotted as histograms.
-The data shows that the sites selected for observation have a sufficient
-volume of traffic to support a reliable statistical analysis of the
-potential effect spacing would have on TPRS arrays.
+The research team decided on four layouts for the arrays of TPRS to
+observe the impact of TPRS on driver behavior and strip displacement.
+The layouts are as follows:
 
-\begin{figure}
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{No TPRS}: TPRS are not installed.
+\item
+  \textbf{UDOT}: The current recommended specifications in Region 4,
+  which are 10 ft. for roads with a posted speed limit up to 45 mph, and
+  20 ft. for roads with a posted speed limit of 50 mph or higher.
+\item
+  \textbf{1:2}: TPRS spaced in feet at half the value of the posted
+  speed limit in miles per hour (e.g.~a 60 mph road will have spacing of
+  30 ft.).
+\item
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Long}: TPRS spaced between five to twenty ft. longer than
+    the 1:2 spacing specification, depending on the posted speed limit.
+  \end{itemize}
+\end{enumerate}
 
-\centering{
+Figure~\ref{fig-diagram} illustrates the overall instrumentation plan
+applied at each site. The instrumentation plan consists of two video
+cameras, Camera 1 and Camera 2, located upstream of the first TPRS array
+and at the TPRS array, respectively. There are also two trailer-mounted
+radar speed detection devices manufactured by Wavetronix. These are
+called Radar 1 and Radar 2 and are located at the first TPRS array and
+downstream of the first TPRS array, respectively. Camera 1 and Radar 2
+were each installed where space on the shoulder of the roadway was
+available. Table~\ref{tbl-wav-spacing} provides the actual distance
+separating Radar 1 and Radar 2 at each site on each day. Observations at
+SR-12 were divided into two days, resulting in two different measures.
 
-\pandocbounded{\includegraphics[keepaspectratio]{03_methods_files/figure-pdf/fig-aadt-1.pdf}}
-
-}
-
-\caption{\label{fig-aadt}Histogram of average hourly volumes from
-counting stations near sites.}
-
-\end{figure}%
-
-\subsection{Layouts}\label{layouts}
-
-The team designed layouts to test the effectiveness of TPRS at work
-sites. These layouts were set up at the arrays of TPRS positioned in
-front of each work site preceding the tapering line of cones that marked
-the beginning of the work zone. Each layout consisted of two Wavetronix
-radar detectors and two countCAM4 cameras from StreetLogic Pro. These
-devices were mounted on trailers and tripods stationed on the side of
-the road. The layouts are depicted below, showing the set-ups designed
-for both single-lane and passing-lane configurations.
-
-\begin{center}
-\includegraphics[width=7in,height=\textheight,keepaspectratio]{methodology-diagram.png}
-\end{center}
-
-The research team primarily focused on testing the space between
-individual TPRS to observe its effect on driver speed and behavior. They
-also examined whether the strips could remain in place without requiring
-frequent readjustments. The team developed a spacing system for
-contractors to use during observation days, tailored to the posted speed
-limit at each site. The different spacing specifications, shown in
-Figure~\ref{fig-test-spacing} were derived from current UDOT standards
-for TPRS spacing and an unofficial rule of thumb from Plastic Safety
-Systems (PSS) for their RoadQuake TPRS system.
-
-\begin{figure}
+\begin{figure}[t]
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{03_methods_files/figure-pdf/fig-test-spacing-1.pdf}}
+\includegraphics[width=0.7\linewidth,height=\textheight,keepaspectratio]{methodology-diagram.png}
 
 }
 
-\caption{\label{fig-test-spacing}Spacing specifications used in
-testing.}
+\caption{\label{fig-diagram}Instrumentation plan at lane closure and
+passing lane closure.}
 
 \end{figure}%
 
 \begin{table}
 
-\caption{\label{tbl-wav-spacing}Separation {[}ft{]} Between Wavetronix
-Units}
+\caption{\label{tbl-wav-spacing}Separation {[}ft{]} Between Radar Units}
 
 \centering{
 
@@ -542,63 +484,170 @@ Units}
 \begin{tblr}[         %% tabularray outer open
 ]                     %% tabularray outer close
 {                     %% tabularray inner open
-colspec={Q[]Q[]Q[]Q[]Q[]},
-hline{2}={1-5}{solid, black, 0.05em},
-hline{1}={1-5}{solid, black, 0.08em},
-hline{6}={1-5}{solid, black, 0.08em},
+colspec={Q[]Q[]Q[]Q[]Q[]Q[]},
+hline{2}={1-6}{solid, black, 0.05em},
+hline{1}={1-6}{solid, black, 0.08em},
+hline{6}={1-6}{solid, black, 0.08em},
 }                     %% tabularray inner close
-Site & UDOT & NO TPRS & 1:2 & LONG \\
-SR-12 & 762/875 & 851 & 878 & 898 \\
-US-6 & 516 & 516 & 516 & 516 \\
-I-70 & 800 & 804 & 782 & 765 \\
-US-191 & 782 & 748 & 781 & 759 \\
+Site & Roadway & UDOT & NO TPRS & 1:2 & LONG \\
+1 & SR-12 & 762/875 & 851 & 878 & 898 \\
+2 & US-6 & 516 & 516 & 516 & 516 \\
+3 & I-70 & 800 & 804 & 782 & 765 \\
+4 & US-191 & 782 & 748 & 781 & 759 \\
 \end{tblr}
 
 }
 
 \end{table}%
 
+The research team placed the quantifiable metrics of this study into two
+basic categories. The first is driver behavior as observed through
+change in speed, braking response, and avoidance behavior. The second
+consists of measured quantities related to TPRS movement, including
+individual strip displacement and worker exposure during adjustment. The
+subsections below describe the setup used in this observational study to
+measure these variables.
+
 \subsection{Driver Behavior - Change in Speed, Braking, and Lane
 Departures}\label{driver-behavior---change-in-speed-braking-and-lane-departures}
 
-The research team observed driver behavior by analyzing the data
-collected from the Wavetronix radar detectors and StreetLogic Pro
-cameras. The Wavetronix units provided data on vehicle speed and braking
-patterns, while the cameras captured footage to identify lane departures
-and other driving behaviors. The team compared these behaviors across
-different spacing configurations to assess the effectiveness of TPRS in
-influencing driver behavior in work zones.
+TPRS are designed principally to gain and increase driver attentiveness
+and not primarily to reduce speeds; however, measuring driver
+attentiveness in the general population at an active worksite presents
+technical and safety challenges. Change in speed, braking response, and
+TPRS avoidance have been used in previous studies as appropriate proxy
+measures (Brown et al. 2022; Fontaine and Carlson 2001; Sun et al. 2011)
+
+Wavetronix units use radar to measure the speed of vehicles within their
+area of effect based on programmed lane location information adjusted
+for each site on each day. Accompanying software provides vehicle
+counts, average speeds, and 85th percentile speed measurements for the
+vehicles passing the units in bins specified by the user; this study
+used 15-minute bins. By taking the difference in the 85th percentile
+speed captured in the same 15-minute bin between Radar 1 and Radar 2, it
+is possible to measure the change in 85th percentile speed.
+
+Camera 1 was placed roughly 100 ft. upstream from the first TPRS array
+and provided a view of the rear of vehicles as they encountered the
+strips. The research team watched the Camera 1 video and marked vehicle
+classification and relevant behavior using software developed by the
+research team for this purpose. The researchers recorded when each
+vehicle crossed the TPRS; classified each vehicle as either a
+motorcycle, passenger vehicle, or truck; identified whether a vehicle
+illuminated its brake lights before or after encountering TPRS; and
+identified whether the vehicle avoided the strips.
+
+The researchers classified each vehicle traversing TPRS. Vehicles with
+fewer than four wheels were classified as motorcycles. Vehicles with two
+axles and four wheels were classified as passenger vehicles. Vehicles
+with more than four wheels or more than two axles (exclusive of
+trailers) were classified as trucks. This aligns with the FHWA's 13
+vehicle category classification with Class 1 as motorcycles, Classes 2
+and 3 as passenger vehicles, and Classes 4 through 13 as trucks (Federal
+Highway Administration (FHWA) 2014), and is consistent with the
+definition of truck used in calculating annual average daily truck
+traffic (Federal Highway Administration (FHWA) 2018).
+
+The research team classified vehicles as braking before TPRS, after
+TPRS, or not braking at all. Vehicles driving on the shoulder or
+crossing the center dividing line ahead of TPRS --- either partially or
+completely --- were identified as avoiding the TPRS. Vehicles engaged in
+passing the vehicle in front of them were not considered to be avoiding
+the strips.
 
 \subsection{TPRS Displacement and Worker
 Exposure}\label{tprs-displacement-and-worker-exposure}
 
-\begin{center}
-\includegraphics[width=7in,height=\textheight,keepaspectratio]{displacement_overlay.png}
-\end{center}
+Camera 2 was mounted to the same point as Radar 1 and had a top-down
+view of the TPRS array, centered on the middle strip of the array. This
+perspective allowed the team to see how much the center strip of the
+TPRS array was displaced over time and how much time workers spent
+adjusting the TPRS.
 
-\begin{center}
-\includegraphics[width=7in,height=\textheight,keepaspectratio]{examples-of-displacement.png}
-\end{center}
+The research team used a transparent overlay to track TPRS displacement
+over time. The overlay was based on PSS standards as outlined in their
+product guide, namely that the strips can move up to 5 ft. forward or
+back, 2 ft. to either side, and can rotate up to a 3 ft. differential
+between ends or roughly 15° (Plastic Safety Systems (PSS) 2018). To
+provide more nuanced description of displacement, the researchers
+developed five categories of displacement based on these overall
+specifications: reset (no movement), some, moderate, significant, and
+out of specification. Figure~\ref{fig-overlay} shows the overlay with
+dimensions for each area marked. The overlay was warped to approximate
+the perspective of the camera as shown in Figure~\ref{fig-examples}.
+
+\begin{figure}[t]
+
+\centering{
+
+\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{displacement_overlay.png}
+
+}
+
+\caption{\label{fig-overlay}TPRS displacement overlay.}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{examples-of-displacement.png}}
+
+}
+
+\caption{\label{fig-examples}TPRS displacement examples.}
+
+\end{figure}%
+
+To quantify and normalize the vehicle impact force to displace a strip,
+the research team estimated the cumulative momentum --- speed multiplied
+by mass --- applied to TRPS. The weight of each vehicle was assumed
+based on the vehicle classification and a mean class weight derived from
+national data (John A. Volpe National Transportation Systems Center
+(U.S.) 2021). Each vehicle's speed was assumed to be the mean speed of
+its 15-minute time bin as measured by Radar 1.
+
+Camera 2 footage allowed researchers to evaluate worker exposure to
+traffic when correcting the strip alignment. The research team recorded
+when workers arrived on site to move TPRS, when vehicles passed while
+workers were on site, when workers started looking for a gap in traffic,
+when workers entered the road to adjust TPRS and exited the road, and
+when the workers left the site. The time when workers were actively
+engaged in seeking to enter the road was subject to a probabilistic
+critical gap analysis (Hewitt 1983) to identify the length of headway
+workers will accept for this task.
 
 \bookmarksetup{startatroot}
 
-\section{Results and Analysis}\label{sec-results}
+\section{Results}\label{sec-results}
 
-This section presents the results of the methodology in
-Chapter~\ref{sec-methodology}.
+This section describes the research results with regards to driver speed
+reduction, braking behavior, and TPRS avoidance, followed by the results
+related to TPRS displacement and related worker exposure.
 
 \subsection{Speeds}\label{speeds}
 
-Figure~\ref{fig-speed} shows the change in speed between units, 95\%
-confidence bound of different between 85th percentile speeds. The 95\%
-confidence bound is the range of speeds that are likely to occur if the
-null hypothesis is true. The confidence bounds are calculated using the
-bootstrap method. The 95\% confidence bound is calculated by taking the
-upper and lower bounds of the 95\% confidence interval, and then taking
-the difference between them. This is a useful metric for understanding
-the effect of rumble strips on traffic flow.
+The Radar devices record the mean and 85th percentile speeds for
+vehicles passing the detectors aggregated to 15-minute bins, meaning
+that in an 8-hour observation period, 48 85th-percentile speeds are
+recorded at each detector. Figure~\ref{fig-speed} shows the difference
+in mean 85th percentile speeds between Radar 1 and Radar 2 and the 95\%
+confidence interval of this difference. A positive difference implies
+that the 85th percentile speed \emph{increased} between Radar 1 and
+Radar 2. The results of this analysis do not show any clear correlation
+between change in speed and TPRS spacing, though in many conditions
+there is a reduction in speed. If the TPRS spacing had a consistent
+impact on speed, the relative position between the spacing types would
+be consistent between sites. The data do not show this pattern; rather,
+the impact of TPRS presence or spacing varies inconsistently between
+sites. Notably, there are cases on US-191 where vehicle speeds increased
+after drivers traversed the array of TPRS. Although this might seem to
+contradict the current consensus found in the literature, some studies
+did acknowledge that TPRS influence on speed is highly localized (McAvoy
+et al. 2009; Shahin et al. 2023)
 
-\begin{figure}
+\begin{figure}[t]
 
 \centering{
 
@@ -606,27 +655,132 @@ the effect of rumble strips on traffic flow.
 
 }
 
-\caption{\label{fig-speed}Change in speed between units, 95\% confidence
-bound of different between 85th percentile speeds.}
+\caption{\label{fig-speed}Change in 85th percentile speed between radar
+speed units with 95 percent confidence interval on difference in
+speeds.}
 
 \end{figure}%
 
 \subsection{Braking Behavior}\label{braking-behavior}
 
-\subsection{Avoidance Behavior}\label{avoidance-behavior}
+Using Camera 1, the research team tracked drivers' braking response to
+TPRS as another proxy measure of driver awareness.
+Table~\ref{tbl-brakeglm} shows a multinomial logit model of braking
+behavior independently estimated for each site. In this model,
+significant positive numbers are correlated with an increase in the
+associated behavior relative to the not-braking reference. Vehicle type
+is not consistently and significantly correlated with braking behavior.
+Motorcycles and trucks are both more likely than passenger cars to brake
+before the strips at I-70, trucks more likely at US-191, and motorcycles
+at US-6. There is no correlation between vehicle type and after-strip
+braking at any site. TPRS spacing is also not consistently and
+significantly correlated with braking behavior. Relative to the no-TPRS
+condition, before-strip braking is more likely at SR-12, US-6, and I-70
+at all spacing types. Before-strip braking at US-191 is oddly somewhat
+less likely with strips installed than without strips in place.
+After-strip braking is more likely with strips installed on I-70, and
+with UDOT spacing on US-6. But after-strip braking is less common with
+strips installed on SR-12 than without strips installed. The fact that
+many vehicles brake before TPRS may suggest that the influence of TPRS
+is primarily visual rather than tactile for most road users. If drivers
+are reacting to TPRS on sight rather than striking the strips, this
+could explain why motorcycle drivers seemed to brake more when TPRS are
+not present. Motorcycle drivers may be braking before they enter the
+camera's field of view when they see the TPRS installed, and thus not
+being counted. But when TPRS are not installed, motorcycle drivers may
+be braking later in response to seeing the lane closure rather than the
+TPRS. This interpretation is speculative and more research is needed.
 
-\begin{figure}
+\begin{landscape}
+
+\begin{table}
+
+\caption{\label{tbl-brakeglm}Multinomial Models of TPRS Braking}
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-avoidance-1.pdf}}
+\centering
+\begin{talltblr}[         %% tabularray outer open
+entry=none,label=none,
+note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
+]                     %% tabularray outer close
+{                     %% tabularray inner open
+colspec={Q[]Q[]Q[]Q[]Q[]Q[]Q[]Q[]Q[]},
+hline{2}={9}{solid, black, 0.03em},
+hline{2}={2,4,6,8}{solid, black, 0.03em, l=-0.5},
+hline{2}={3,5,7}{solid, black, 0.03em, r=-0.5},
+hline{3}={1-9}{solid, black, 0.05em},
+hline{15}={1-9}{solid, black, 0.05em},
+hline{1}={1-9}{solid, black, 0.08em},
+hline{18}={1-9}{solid, black, 0.08em},
+column{3,5,7,9}={}{halign=c},
+cell{1}{1}={}{halign=c},
+cell{1}{2}={c=2}{halign=c},
+cell{1}{4}={c=2}{halign=c},
+cell{1}{6}={c=2}{halign=c},
+cell{1}{8}={c=2}{halign=c},
+cell{2-17}{1}={}{halign=l},
+cell{2-17}{2}={}{halign=c},
+cell{2-17}{4}={}{halign=c},
+cell{2-17}{6}={}{halign=c},
+cell{2-17}{8}={}{halign=c},
+}                     %% tabularray inner close
+& SR-12 &  & US-6 &  & I-70 &  & US-191 &  \\
+& Before & After & Before & After & Before & After & Before & After \\
+(Intercept) & -2.929*** & -3.378*** & -4.064*** & -5.292*** & -3.730*** & -7.336*** & -2.019*** & -5.367*** \\
+& (0.125) & (0.161) & (0.201) & (0.387) & (0.142) & (1.008) & (0.152) & (1.026) \\
+Trucks & 0.033 & -0.580 & 0.021 & -0.350 & 1.490*** & 0.333 & 1.631*** & -1.088 \\
+& (0.157) & (0.597) & (0.139) & (0.384) & (0.094) & (0.367) & (0.136) & (1.114) \\
+Motorcycles & 0.435 & -7.051 & 1.338** & 1.322 & 1.860** & -7.554 & 0.669+ & -6.144 \\
+& (0.302) & (28.714) & (0.473) & (1.034) & (0.699) & (179.374) & (0.387) & (45.540) \\
+UDOT Spacing & 1.403*** & -0.771* & 1.830*** & 1.164** & 0.554** & 2.296* & -0.339* & -4.771 \\
+& (0.151) & (0.343) & (0.213) & (0.426) & (0.174) & (1.062) & (0.167) & (10.387) \\
+1:2 Spacing & 1.155*** & -1.683*** & 1.106*** & 1.066* & 1.290*** & 2.321* & -0.517** & 0.443 \\
+& (0.145) & (0.410) & (0.254) & (0.486) & (0.151) & (1.050) & (0.166) & (1.225) \\
+Long Spacing & 1.161*** & -1.495*** & 1.408*** & 0.485 & 1.315*** & 3.157** & 0.054 & 0.680 \\
+& (0.147) & (0.389) & (0.218) & (0.465) & (0.154) & (1.024) & (0.164) & (1.225) \\
+Num.Obs. & 4963 &  & 6324 &  & 5933 &  & 1796 &  \\
+RMSE & 0.282 &  & 0.209 &  & 0.238 &  & 0.328 &  \\
+McFadden $\rho^2$ & 0.036 &  & 0.036 &  & 0.089 &  & 0.096 &  \\
+\end{talltblr}
 
 }
 
-\caption{\label{fig-avoidance}Avoidance behavior by spacing of TPRS and
-vehicle type.}
+\end{table}%
 
-\end{figure}%
+\end{landscape}
+
+\subsection{Avoidance Behavior}\label{avoidance-behavior}
+
+The research team observed lane departures where vehicles appeared to
+avoid TPRS. It is the opinion of the researchers who watched the camera
+footage that most vehicles that departed their lane to avoid TPRS did so
+in an orderly manner similar to passing another vehicle, as opposed to a
+chaotic adjustment. There was no differentiation in the observations
+between partial lane departures, where only one side of tires crossed
+the center line or right-side line, and full lane departures, where all
+tires crossed either edge of the lane. On I-70, where TPRS were laid
+across both lanes, there were approximately 10 vehicles that drove fully
+in the shoulder to avoid the TPRS, but these were not classified
+separately.
+
+Table~\ref{tbl-avoidglm} presents a series of binomial logit models
+estimating the probability of lane departure at each site. In this
+model, significant positive coefficients indicate that vehicles are more
+likely to avoid TPRS. Motorcycles have a consistent and dramatically
+higher rate of lane departure than either passenger vehicles or trucks,
+but trucks and passenger vehicles avoid at the same rate. This finding
+confirms prior literature that motorcycles, as vulnerable road users and
+more agile vehicles, are both motivated and capable of avoiding the
+TPRS. Although some passenger vehicles and trucks do leave their lane to
+avoid the TPRS, the vast majority do not. The significance of the model
+coefficients showing TPRS avoidance at most TPRS layouts is a feature of
+TPRS avoidance being impossible when they are not deployed, which is the
+reference alternative in the model, and not a finding of importance.
+What is more important is that the estimated coefficients associated
+with TPRS spacing are not significantly different from each other at
+each site, indicating that the spacing does not incite or discourage
+TPRS avoidance.
 
 \begin{table}
 
@@ -640,82 +794,91 @@ entry=none,label=none,
 note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
 ]                     %% tabularray outer close
 {                     %% tabularray inner open
-colspec={Q[]Q[]Q[]Q[]Q[]Q[]},
-hline{2}={1-6}{solid, black, 0.05em},
-hline{20}={1-6}{solid, black, 0.05em},
-hline{1}={1-6}{solid, black, 0.08em},
-hline{25}={1-6}{solid, black, 0.08em},
-column{2-6}={}{halign=c},
+colspec={Q[]Q[]Q[]Q[]Q[]},
+hline{2}={1-5}{solid, black, 0.05em},
+hline{14}={1-5}{solid, black, 0.05em},
+hline{1}={1-5}{solid, black, 0.08em},
+hline{17}={1-5}{solid, black, 0.08em},
+column{2-5}={}{halign=c},
 column{1}={}{halign=l},
 }                     %% tabularray inner close
-& Pooled & SR-12 & US-6 & I-70 & US-191 \\
-(Intercept) & -7.852*** & -5.622*** & -7.577*** & -21.499 & -6.343*** \\
-& (0.382) & (0.413) & (1.012) & (754.412) & (1.009) \\
-Trucks & 0.166 & 0.306 & 0.536 & -0.669+ & 0.121 \\
-& (0.117) & (0.204) & (0.364) & (0.388) & (0.172) \\
-Motorcycles & 2.213*** & 2.192*** & 2.874*** & 3.836*** & 2.060*** \\
-& (0.210) & (0.282) & (0.777) & (0.948) & (0.354) \\
-UDOT Spacing & 3.189*** & 2.868*** & 1.875+ & 16.662 & 4.313*** \\
-& (0.367) & (0.433) & (1.063) & (754.413) & (1.013) \\
-1:2 Spacing & 3.538*** & 3.092*** & 3.145** & 17.971 & 4.312*** \\
-& (0.363) & (0.423) & (1.043) & (754.412) & (1.012) \\
-Long Spacing & 3.292*** & 3.165*** & 2.723** & 15.184 & 4.071*** \\
-& (0.365) & (0.424) & (1.030) & (754.413) & (1.016) \\
-SR-12 & 1.947*** &  &  &  &  \\
-& (0.153) &  &  &  &  \\
-US-191 & 2.352*** &  &  &  &  \\
-& (0.165) &  &  &  &  \\
-US-6 & -0.332 &  &  &  &  \\
-& (0.213) &  &  &  &  \\
-Num.Obs. & 19016 & 4963 & 6324 & 5933 & 1796 \\
-AIC & 4056.3 & 2018.0 & 454.8 & 530.1 & 1022.9 \\
-BIC & 4126.9 & 2057.1 & 495.3 & 570.2 & 1055.9 \\
-Log.Lik. & -2019.131 & -1003.004 & -221.398 & -259.041 & -505.462 \\
-RMSE & 0.16 & 0.23 & 0.08 & 0.09 & 0.28 \\
+& SR-12 & US-6 & I-70 & US-191 \\
+(Intercept) & -5.622*** & -7.577*** & -21.499 & -6.343*** \\
+& (0.413) & (1.012) & (754.412) & (1.009) \\
+Trucks & 0.306 & 0.536 & -0.669+ & 0.121 \\
+& (0.204) & (0.364) & (0.388) & (0.172) \\
+Motorcycles & 2.192*** & 2.874*** & 3.836*** & 2.060*** \\
+& (0.282) & (0.777) & (0.948) & (0.354) \\
+UDOT Spacing & 2.868*** & 1.875+ & 16.662 & 4.313*** \\
+& (0.433) & (1.063) & (754.413) & (1.013) \\
+1:2 Spacing & 3.092*** & 3.145** & 17.971 & 4.312*** \\
+& (0.423) & (1.043) & (754.412) & (1.012) \\
+Long Spacing & 3.165*** & 2.723** & 15.184 & 4.071*** \\
+& (0.424) & (1.030) & (754.413) & (1.016) \\
+Num.Obs. & 4963 & 6324 & 5933 & 1796 \\
+RMSE & 0.229 & 0.078 & 0.093 & 0.284 \\
+Log Likelihood & -1003.004 & -221.398 & -259.041 & -505.462 \\
 \end{talltblr}
 
 }
 
 \end{table}%
 
-\subsubsection{Strip Displacement}\label{strip-displacement}
+\subsection{Strip Displacement}\label{strip-displacement}
 
-\begin{figure}
+\begin{figure}[t]
 
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-momentum-site-1.pdf}}
-
-}
-
-\caption{\label{fig-momentum-site}Impact momentum for each transition,
-colored by site.}
-
-\end{figure}%
-
-\begin{figure}
+\begin{minipage}{\linewidth}
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-momentum-spacing-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-momentum-1.pdf}}
 
 }
 
-\caption{\label{fig-momentum-spacing}Impact momentum for each
-transition, colored by spacing.}
+\subcaption{\label{fig-momentum-1}By site}
+
+\end{minipage}%
+\newline
+\begin{minipage}{\linewidth}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-momentum-2.pdf}}
+
+}
+
+\subcaption{\label{fig-momentum-2}By spacing}
+
+\end{minipage}%
+
+\caption{\label{fig-momentum}Cumulative impact momentum for
+transitioning between displacement states.}
 
 \end{figure}%
 
-Figure~\ref{fig-momentum-site} shows the impact momentum for each
-transition, colored by site. The impact momentum is the change in speed
-for a vehicle in a given transition. The change in speed is calculated
-by subtracting the speed at the beginning of the transition from the
-speed at the end of the transition. This is a useful metric for
-understanding the effect of rumble strips on traffic flow.
+Figure~\ref{fig-momentum} shows the effect of cumulative impact momentum
+applied to a TPRS array as it transitions between displacement states
+from a reset to a significant displacement or out of specification
+condition. Each line in this figure represents a period of observation
+lasting from when the strip is reset to the baseline condition, to the
+point where observations ended or workers reset the displaced strips.
+Lines with higher cumulative momentum represent TPRS that stayed in
+place longer than lines with lower cumulative momentum. Not all the
+observed transitions from one state to another could be used: only
+chains of transitions that started from the initial baseline condition
+were considered to avoid any confounding variables related to the
+acceleration of displacement (Sun et al. 2011).
+Figure~\ref{fig-momentum-1} shows these chains of transitions colored by
+site, and Figure~\ref{fig-momentum-2} groups by spacing type; there does
+not appear to be any strong relationship between spacing and
+displacement rate, but there is a strong relationship between site and
+displacement rate. This may be a function of the condition of the strips
+themselves, which could not be controlled in this research.
 
 \subsubsection{Worker Exposure}\label{worker-exposure}
 
-\begin{figure}
+\begin{figure}[t]
 
 \centering{
 
@@ -723,20 +886,201 @@ understanding the effect of rumble strips on traffic flow.
 
 }
 
-\caption{\label{fig-cdf}CDF of headways for each site.}
+\caption{\label{fig-cdf}Cumulative distribution of headways at each
+site, with critical headway marked as a vertical line.}
 
 \end{figure}%
 
+The researchers observed six instances of workers entering the roadway
+to adjust TPRS. In each case, the workers were able to find a gap in
+traffic that allowed them to enter the roadway and adjust the strips
+without incident; the critical gap accepted by the workers was
+calculated as 33.5 seconds. Figure~\ref{fig-cdf} shows the cumulative
+distribution of headways for each site, with the critical gap marked as
+a vertical line. The analysis suggests that at all roadways, a gap of at
+least 33.5 seconds occurs between at least 15 percent of all headways.
+On roads with higher volumes and therefore shorter headway
+distributions, the availability of critical headways may eliminate the
+possibility for workers to enter the roadway without stopping traffic.
+
 \bookmarksetup{startatroot}
 
-\section{Conclusions}\label{conclusions}
+\section{Discussion and Limitations}\label{discussion-and-limitations}
 
-This section need not be overly long. You should address any limitations
-of your results, such as dependence on underlying assumptions or
-geographic scope. You should also provide a map for future research.
+There was no consistent relationship between driver speed and the
+presence or absence of TPRS, and there was no consistent relationship
+between driver speeds and the spacing of strips TPRS array. This is
+contrary to the consensus of the studies in the prior literature, which
+found TPRS generally slows driving speeds by 3-13 mph. There are several
+hypothetical explanations for this observed discrepancy. One explanation
+is that Utah drivers behave differently with respect to TPRS than
+drivers in the states previously studied. Another is that TPRS
+technology is more mature now than when first studied; it may be that
+drivers have become accustomed to TPRS and previous studies observed
+drivers reacting to a novel technology.
 
-Finally, you should underline the contributions of this work and any
-practical relevance.
+Other explanations for the discrepancy between this study's findings and
+previous studies in the literature could be based in the methodology
+used for this research. The observed change in speed between sites was
+larger than the variance within a site, implying that other variables
+related to the site may have had a greater impact on drivers' speed than
+the TPRS treatment. Curves in the road, traffic conditions on any given
+day, and sight lines from the TPRS array to the work zone could all be
+factors affecting driver speed. It was not possible for this study to
+control for these variables as they were endogenous to the site; more
+sites would need to be observed to control for these elements. The study
+used commercial radar speed detection units available from UDOT; these
+units provide only average and 85th percentile speeds within 15-minute
+time intervals. It may be that TPRS slow only the fastest 15 percent of
+drivers, a beneficial effect that this study could not have observed.
+The location of the second radar device was inconsistent between sites
+--- based on the availability of space at the work sites to place the
+collection device --- potentially impacting the measured speed
+reduction. An ideal location to measure final speed would be at the lane
+closure, but space was not available at the work sites to place this
+collection device at that point. A third speed measurement device could
+also have allowed the researchers to measure the speed of vehicles ahead
+of TPRS, providing more information on their effectiveness.
+
+Finally, the primary design of TPRS as a traffic control device is to
+gain the attention of potentially inattentive drivers, with a reduction
+in speed as a potential consequence. Although change in speed is a
+common proxy measure for TPRS effectiveness, it would be better to
+observe driver attention directly. Prior studies have observed this
+effect by instrumenting the interior of cars with drivers in a closed
+and controlled setting. Both methods have serious limitations; the most
+credible approach is probably to use instrumented vehicles on actual
+roadways, though this presents serious challenges.
+
+In terms of braking response, most drivers were not observed to activate
+their brake lights at any point as they traversed the TPRS. Of the
+drivers this study observed activating their brake lights, more did so
+before striking the TPRS than after. Braking behavior varied more across
+sites than within sites, indicating strong site-specific effects.
+
+There are multiple interpretations of these findings. If the purpose of
+TPRS is to gain the attention of distracted drivers, then the fact that
+more drivers brake before TPRS ---- with visual warning rather than
+tactile warning ---- may suggest that visual cues are more influential
+tactile cues. On the other hand, the fact that some drivers are observed
+braking after TPRS suggests that for that small number of drivers, TPRS
+may have played a tactile role in alerting the driver of an upcoming
+work zone.
+
+A primary limitation to observing brake lights was the difficulty in
+detecting activated brake lights and the limited observation window
+before the vehicle encountered TPRS. Some vehicles kept rear-facing tail
+lights illuminated similar to daytime running lights, relying on an
+increase in brightness to signal braking. Some brake light housings
+reflected the sunlight, making it difficult to see whether brake lights
+were illuminated. Both factors made it difficult to discern activated
+brake lights from false positives. To mitigate this, Camera 1 was placed
+closer to the TPRS array to see the vehicles in more detail. However,
+placing the camera closer shortened the amount of time vehicles were
+observed before striking the TPRS. Before the TPRS, vehicles were in
+frame for around 1-2 seconds or less, depending on the speed of traffic.
+After the TPRS, vehicles were in frame for 3 or more seconds. It is
+possible that some drivers braked before entering the field of view of
+Camera 1. The count of vehicles that activated their brake lights after
+the TPRS is likely more accurate than the counts of vehicles that braked
+before or not at all. Additional research is needed where a camera is
+placed farther upstream of the TPRS where drivers first see TPRS. Such
+footage would provide better insight into how drivers react to TPRS
+before striking them.
+
+Most drivers in passenger vehicles and trucks do not leave their lane to
+avoid the TPRS, but a large portion of motorcycle drivers do. Drivers of
+all vehicle types appeared to avoid the TPRS in a manner similar to
+passing a slow-moving vehicle; that is, this study did not observe
+abrupt or sudden evasive maneuvers. The low rates of lane departure
+amongst drivers of passenger vehicles and trucks suggest that the
+increased risk of related collisions due to TPRS is low, but additional
+research would be needed to measure this effect.
+
+TPRS move and displace during operation. The middle strip in a
+three-strip array appears to displace the most relative to the first and
+third strips. The amount of displacement was not affected by the spacing
+between the strips, and there is not a strong relationship between
+displacement and cumulative traffic momentum. Displacement was more
+correlated with the site. This could be a function of roadway geometry,
+pavement condition, or the condition of the strips themselves. All
+observed sites had asphalt surfaces, but this study did not measure
+pavement roughness or other specific characteristics that could have
+explained variation in displacement. This study also did not measure the
+level of wear of the individual TPRS or their age. Based on the strip
+designs used at these work zones, it is possible that some strips are
+more than 10 years old. Additionally, the assumptions made to calculate
+the cumulative momentum for TPRS displacement are very limited in their
+precision. While this is the first study to measure TPRS displacement in
+the field under live traffic loads, additional research is needed to
+correlate strip age and wear with displacement as well as refine methods
+to normalize traffic load on TPRS between sites.
+
+Workers enter live traffic streams to correct the installation of
+displaced strips. This study measured that workers seek headway times in
+traffic of approximately 34 seconds in order to make these corrections.
+At all of the sites observed in this research, such a headway was
+observed at least 20 percent of the time. It may be that at roads with
+more traffic and therefore smaller headways, workers will accept shorter
+headways and take more risks. The necessary headway of 34 seconds is
+calculated from only six observed correction events; more observations
+may yield a more precise measure.
+
+\bookmarksetup{startatroot}
+
+\section{Conclusion}\label{conclusion}
+
+The findings of this research suggest that driver responses to TPRS and
+the performance of the TPRS themselves are highly variable and strongly
+dependent on site-specific conditions rather than layout spacing,
+traffic speeds, or traffic volumes. Changes in vehicle speed showed no
+consistent relationship with the varied spacing of the TPRS layouts.
+Likely influences on speed data include uncontrolled differences across
+work zones and limitations in the setup and equipment used in the field
+research. Braking and avoidance behaviors were similarly inconsistent
+and difficult to interpret due to challenges in detecting brake
+activation and limited visibility. The data suggests that only a
+minority of drivers respond to TPRS, and of those that do most brake on
+the approach. Strip displacement also varies widely by site and does not
+correlate with spacing or estimated traffic momentum, suggesting
+influence from factors not observed in this study such as pavement
+condition, age and condition of the individual TPRS devices, and
+limitations in the method used to estimate momentum. While sufficient
+headways were present at the observed work zones, the results for worker
+exposure were based on only six instances when workers were observed to
+enter the roadway to adjust the TPRS. These limitations underscore the
+potential of future research implementing more precise measurements,
+expanded site sampling, and improved methods for assessing driver
+attention, braking, and TPRS condition.
+
+\subsection*{Acknowledgments}\label{acknowledgments}
+\addcontentsline{toc}{subsection}{Acknowledgments}
+
+\markright{Acknowledgments}
+
+This research was funded by the Utah Department of Transportation The
+authors alone are responsible for the preparation and accuracy of the
+information, data, analysis, discussions, recommendations, and
+conclusions presented herein. The contents do not necessarily reflect
+the views, opinions, endorsements, or policies of UDOT or the U.S.
+Department of Transportation.
+
+Graphics in this report use several open-source software packages
+(Arel-Bundock 2022; Dunnington 2025; Wickham 2016).
+
+\subsection*{Contributions}\label{contributions}
+\addcontentsline{toc}{subsection}{Contributions}
+
+\markright{Contributions}
+
+\textbf{Gregory Macfarlane:} Conceptualization, Methodology, Writing -
+review \& editing, Visualization, Supervision, Funding acquisition.
+\textbf{Grant Schultz:} Methodology, Writing - review \& editing,
+Supervision, Funding acquisition. \textbf{Tyler Carruth:} Methodology,
+Software, Validation, Formal analysis, Investigation, Data curation,
+Writing - original draft, Visualization. \textbf{Benjamin Hailstone:}
+Methodology, Validation, Formal analysis, Investigation, Data curation,
+Writing - original draft, Visualization.
 
 \bookmarksetup{startatroot}
 
@@ -747,23 +1091,141 @@ practical relevance.
 
 \phantomsection\label{refs}
 \begin{CSLReferences}{1}{0}
-\bibitem[\citeproctext]{ref-minnesotadot38278186LongTerm2024}
-DOT, M. (2024). \emph{38278186 - {Long Term TTC Layout} for {Two-Lane},
-{Two-Way}}.
-https://edocs-public.dot.state.mn.us/edocs\_public/DMResultSet/Urlsearch?columns=docnumber,docname\&folderid=38278186\&currSortFieldName=docname\&sortOrder=d.
+\bibitem[\citeproctext]{ref-modelsummary2022}
+Arel-Bundock, V. 2022. {``{modelsummary}: Data and model summaries in
+{R}.''} \emph{Journal of Statistical Software}, 103 (1): 1--23.
+\url{https://doi.org/10.18637/jss.v103.i01}.
 
-\bibitem[\citeproctext]{ref-wisconsindotWisconsinDepartmentTransportation2022}
-DOT, W. (2022). Wisconsin {Department} of {Transportation Standard
-Detail Drawings} ({SDDs}). In \emph{Wisconsin.gov}.
-https://wisconsindot.gov/Pages/doing-bus/eng-consultants/cnslt-rsrces/rdwy/sdd.aspx.
+\bibitem[\citeproctext]{ref-brown22}
+Brown, H., P. Edara, C. Sun, S. Kim, J. B. Bracy, Q. Zeng, H. J. Baek,
+and G. Ndungu. 2022. \emph{Effectiveness of Temporary Rumble Strips in
+Work Zones}. CMR 22-004. Missouri: Missouri Department of
+Transportation. \url{https://rosap.ntl.bts.gov/view/dot/63367}.
 
-\bibitem[\citeproctext]{ref-meyerDesignPortableRumble2006}
-Meyer, E., Hale, R., Taghavi, R., Olafsen, J., \& Mathur, G. (2006).
-\emph{Design of {Portable Rumble Strips}, {Phase} 2}. InTrans.
+\bibitem[\citeproctext]{ref-R-ggspatial}
+Dunnington, D. 2025.
+\emph{\href{https://paleolimbot.github.io/ggspatial/}{Ggspatial: Spatial
+data framework for ggplot2}}.
 
-\bibitem[\citeproctext]{ref-pssBestPracticesOptimal2018}
-PSS. (2018). \emph{{Best Practices for Optimal Use 2nd Edition -
-RoadQuake Temporary Portable Rumble Strip}}.
+\bibitem[\citeproctext]{ref-fhwa2014}
+Federal Highway Administration (FHWA). 2014. {``Traffic Monitoring Guide
+Appendix C: Vehicle Types.''} Accessed July 1, 2026.
+\url{https://www.fhwa.dot.gov/policyinformation/tmguide/tmg_2013/vehicle-types.cfm}.
+
+\bibitem[\citeproctext]{ref-fhwa2018}
+Federal Highway Administration (FHWA). 2018. \emph{Traffic Data Pocket
+Guide}. FHWA-PL-18-027.
+\url{https://www.fhwa.dot.gov/policyinformation/pubs/pl18027_traffic_data_pocket_guide.pdf}.
+
+\bibitem[\citeproctext]{ref-fontaineEvaluationSpeedDisplays2001}
+Fontaine, M. D., and P. J. Carlson. 2001. {``Evaluation of {Speed
+Displays} and {Rumble Strips} at {Rural-Maintenance Work Zones}.''}
+\emph{Transportation Research Record}, 1745 (1): 1--66.
+\url{https://doi.org/10.3141/1745-04}.
+
+\bibitem[\citeproctext]{ref-heaslipClosedCourseFeasibilityAnalysis2010}
+Heaslip, K., S. D. Schrock, M.-H. Wang, R. Rescot, Y. Bai, and B. Brady.
+2010. {``A {Closed-Course Feasibility Analysis} of {Temporary Rumble
+Strips} for {Use} in {Short-Term Work Zones}.''} \emph{Journal of
+Transportation Safety \& Security}, 2 (4): 299--311. Taylor \& Francis.
+\url{https://doi.org/10.1080/19439962.2010.511762}.
+
+\bibitem[\citeproctext]{ref-hewittMeasuringCriticalGap1983}
+Hewitt, R. H. 1983. {``Measuring {Critical Gap}.''} \emph{Transportation
+Science}, 17 (1): 87--109. INFORMS.
+\url{https://doi.org/10.1287/trsc.17.1.87}.
+
+\bibitem[\citeproctext]{ref-volpe2021}
+John A. Volpe National Transportation Systems Center (U.S.). 2021.
+\emph{National Transportation Statistics 2021 {[}50th Anniversary
+Edition{]}}. Bureau of Transportation Statistics.
+\url{https://doi.org/10.21949/1523389}.
+
+\bibitem[\citeproctext]{ref-macfarlaneEffectivenessTemporaryPortable2026}
+Macfarlane, G. S., G. G. Schultz, T. Carruth, and B. Hailstone. 2026.
+\emph{Effectiveness of {Temporary Portable Rumble Strips} on {Work
+Zones}}. UT-26.04. Utah DOT.
+\url{https://rosap.ntl.bts.gov/view/dot/91241}.
+
+\bibitem[\citeproctext]{ref-maze2000}
+Maze, T. 2000. \emph{Removable Orange Rumble Strips}. Institute for
+Transportation (InTrans), Iowa State University.
+\url{https://swzdi.intrans.iastate.edu/research/completed/removable-orange-rumble-strips-iowa/}.
+
+\bibitem[\citeproctext]{ref-mcavoyEvaluationTemporaryRemovable2009}
+McAvoy, D., P. T. Savolainen, V. Reddy, J. B. Santos, and T. K. Datta.
+2009. {``Evaluation of Temporary Removable Rumble Strips for Speed
+Reduction.''} In: \emph{Transportation Research Board 88th Annual
+Meeting}. \url{https://pubsindex.trb.org/view.aspx?id=881475}.
+
+\bibitem[\citeproctext]{ref-meyer2006}
+Meyer, E., R. Hale, R. Taghavi, J. Olafsen, and G. Mathur. 2006.
+\emph{Design of Portable Rumble Strips, Phase 2}. Institute for
+Transportation (InTrans), Iowa State University.
+\url{https://intrans.iastate.edu/research/completed/design-of-portable-rumble-strips-phase-2/}.
+
+\bibitem[\citeproctext]{ref-minndot2024}
+Minnesota DOT. 2024. {``38278186 -- Long Term TTC Layout for Two-Lane,
+Two-Way.''} Accessed January 30, 2025.
+\url{https://edocs-public.dot.state.mn.us/edocs_public/DMResultSet/Urlsearch?columns=docnumber,docname&folderid=38278186&currSortFieldName=docname&sortOrder=d}.
+
+\bibitem[\citeproctext]{ref-pss2018}
+Plastic Safety Systems (PSS). 2018. {``RoadQuake: Best Practices for
+Optimal Use, 2nd Edition.''} Accessed July 1, 2026.
+\url{https://www.pss-innovations.com/training-products/roadquake-best-practice-guide}.
+
+\bibitem[\citeproctext]{ref-schrockClosedCourseTestAnalysis2010}
+Schrock, S. D., K. P. Heaslip, M.-H. Wang, R. Jasrotia, and R. Rescot.
+2010. {``Closed-{Course Test} and {Analysis} of {Vibration} and {Sound
+Generated} by {Temporary Rumble Strips} for {Short-Term Work Zones}.''}
+\emph{Transportation Research Record}, 2169 (1): 21--30. Sage.
+\url{https://doi.org/10.3141/2169-03}.
+
+\bibitem[\citeproctext]{ref-schrock2016}
+Schrock, S. D., V. R. Sarikonda, and E. J. Fitzsimmons. 2016.
+\emph{Development of Temporary Rumble Strip Specifications}. K-TRAN:
+KU-14-6. Kansas DOT. \url{https://rosap.ntl.bts.gov/view/dot/35891}.
+
+\bibitem[\citeproctext]{ref-shahinEffectsHighwayWork2023}
+Shahin, F., W. Elias, and T. Toledo. 2023. {``Effects of highway work
+zone temporary countermeasures.''} \emph{European Transport Research
+Review}, 15 (1): 20. \url{https://doi.org/10.1186/s12544-023-00593-2}.
+
+\bibitem[\citeproctext]{ref-sunElevatedRiskWorkZone2011}
+Sun, C., P. Edaram, and K. Ervin. 2011. {``Elevated-{Risk Work Zone
+Evaluation} of {Temporary Rumble Strips}.''} \emph{Journal of
+Transportation Safety \& Security}, 3 (3): 157--173. Taylor \& Francis.
+\url{https://doi.org/10.1080/19439962.2011.594934}.
+
+\bibitem[\citeproctext]{ref-ullmanAnalysisWorkZone2018}
+Ullman, G. L., M. Pratt, M. D. Fontaine, R. J. Porter, and J. Medina.
+2018. \emph{Analysis of {Work Zone Crash Characteristics} and
+{Countermeasures}}. NCHRP Web-Only Document 240. Washington, D.C.:
+Transportation Research Board. \url{https://doi.org/10.17226/25006}.
+
+\bibitem[\citeproctext]{ref-wangEffectsInnovativePortable2013}
+Wang, M.-H., S. D. Schrock, C. Bornheimer, and R. Rescot. 2013.
+{``Effects of {Innovative Portable Plastic Rumble Strips} at
+{Flagger-Controlled Temporary Maintenance Work Zones}.''} \emph{Journal
+of Transportation Engineering}, 139 (2): 156--164. American Society of
+Civil Engineers.
+\url{https://doi.org/10.1061/(ASCE)TE.1943-5436.0000499}.
+
+\bibitem[\citeproctext]{ref-ggplot22016}
+Wickham, H. 2016. \emph{\href{https://ggplot2.tidyverse.org}{ggplot2:
+Elegant graphics for data analysis}}. Springer-Verlag New York.
+
+\bibitem[\citeproctext]{ref-wdotSDD15C12}
+Wisconsin DOT. 2022. {``Wisconsin Department of Transportation Standard
+Detail Drawings (SDDs) 15C12.''} Accessed January 30, 2025.
+\url{https://wisconsindot.gov/Pages/doing-bus/eng-consultants/cnslt-rsrces/rdwy/sdd.aspx}.
+
+\bibitem[\citeproctext]{ref-yangEffectivenessTemporaryRumble2015}
+Yang, H., K. Ozbay, and B. Bartin. 2015. {``Effectiveness of {Temporary
+Rumble Strips} in {Alerting Motorists} in {Short-Term Surveying Work
+Zones}.''} \emph{Journal of Transportation Engineering}, 141 (10):
+05015003. American Society of Civil Engineers.
+\url{https://doi.org/10.1061/(ASCE)TE.1943-5436.0000789}.
 
 \end{CSLReferences}
 

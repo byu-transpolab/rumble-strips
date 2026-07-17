@@ -4,17 +4,16 @@ Temporary portable rumble strips (TPRS) have been used since at least the early
 2000's to alert drivers to upcoming work zones. 
 Early adhesive strips have been largely replaced by non-adhesive steel and rubber pads heavy enough to resist
 movement but light enough to be handled by workers [@maze2000; @meyer2006; @brown22]. 
-Prior research has generally shown that TPRS reduce traffic speed and increase driver attentiveness [@sunElevatedRiskWorkZone2011; @yangEffectivenessTemporaryRumble2015], with the effect being most pronounced near the first set of strips and when drivers can see a flagger or additional barriers [@wangEffectsInnovativePortable2013]. There is also some evidence that TPRS reduce crash rates [@ullmanAnalysisWorkZone2018; @brown22]. These findings have led to the wide adoption of TPRS in work zones across many states.
-@volpe2021
+Prior research has generally shown that TPRS reduce traffic speed and increase driver attentiveness [@sunElevatedRiskWorkZone2011; @yangEffectivenessTemporaryRumble2015], with the effect being most pronounced near the first set of strips and when drivers can see a flagger or additional barriers [@wangEffectsInnovativePortable2013]. There is also some evidence that TPRS reduce crash rates [@ullmanAnalysisWorkZone2018]. These findings have led to the wide adoption of TPRS in work zones across many states.
 
-At the same time, there are several unanswered questions related to TPRS deployments. 
+In spite of their common use, there are several unanswered questions related to TPRS deployments. 
 First, some studies on the effectiveness of TPRS have been conducted on closed courses with instrumented vehicles [@schrock2016; @schrockClosedCourseTestAnalysis2010]; it is unknown whether this is a generalizable finding for work zones with open-road conditions. Similarly, as drivers become accustomed to TPRS, they may become desensitized to them or avoid them [@brown22], making them less effective safety measures.
-Second, a review of state specifications for TPRS spacing shows that there is little evidence to support standards related to the spacing of strips within a TPRS array, and that desired specifications vary widely across states. Some states, such as Wisconsin, Florida, and Colorado, specify a single spacing independent of speed [e.g., @wdotSDD15C12]. Some states such as Maryland, Virginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on the posted speed limit [@minndot2024].
+Second, a review of state specifications for TPRS spacing shows that there is little evidence to support standards related to the spacing of strips within a TPRS array, and that desired specifications vary widely across states. Some states, such as Wisconsin, Florida, and Colorado, specify a single spacing independent of speed [e.g., @wdotSDD15C12]. Some states such as Maryland, Virginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on the posted speed limit [e.g., @minndot2024].
 Finally, TPRS can become
 displaced with traffic, limiting their effectiveness or creating a potential hazard for drivers [@heaslipClosedCourseFeasibilityAnalysis2010;  @schrockClosedCourseTestAnalysis2010; @sunElevatedRiskWorkZone2011].
 Workers must therefore periodically enter the roadway to install the strips and adjust them when they become displaced. 
 
 This paper reports a field experiment to evaluate driver reaction to TPRS and observe strip displacement under traffic. Four sites in Utah were instrumented with cameras and speed-detecting radar units, allowing researchers to evaluate change in speed, braking behavior, avoidance, displacement, and worker exposure. Four TPRS spacings were applied to each site, including a no-TPRS control. 
 This paper is organized as follows: 
-A Methodology section describes the experimental design and methods used to collect data on driver behavior and TPRS displacement. A  subsequent Results section presents the results of the experiment, with a following Discussion and Limitations of the findings.
-A final Conclusion section discusses the implications of the findings for practice and future research.
+A methodology section describes the experimental design and methods used to collect data on driver behavior and TPRS displacement. A subsequent results section presents the results of the experiment, followed by a discussion of the findings with associated limitations of this research.
+A final concluding section discusses the implications of the findings for practice and future research.

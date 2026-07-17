@@ -75,7 +75,7 @@ references:
     type: webpage
     title: "Traffic Monitoring Guide Appendix C: Vehicle Types"
     author:
-      - literal: "FHWA"
+      - literal: "Federal Highway Administration (FHWA)"
     issued:
       date-parts:
         - [2014, 11]
@@ -87,7 +87,7 @@ references:
     type: report
     title: "Traffic Data Pocket Guide"
     author:
-      - literal: "FHWA"
+      - literal: "Federal Highway Administration (FHWA)"
     number: FHWA-PL-18-027
     issued:
       date-parts:
