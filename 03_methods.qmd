@@ -131,7 +131,7 @@ The research team decided on four layouts for the arrays of TPRS to observe the 
   1. **No TPRS**: TPRS are not installed.
   2.  **UDOT**:  The current recommended specifications in Region 4, which are 10 ft. for roads with a posted speed limit up to 45 mph, and 20 ft. for roads with a posted speed limit of 50 mph or higher.
   3. **1:2**: TPRS spaced in feet at half the value of the posted speed limit in miles per hour (e.g. a 60 mph road will have spacing of 30 ft.).
-  4. - **Long**: TPRS spaced between five to twenty ft. longer than the 1:2 spacing specification, depending on the posted speed limit.
+  4. **Long**: TPRS spaced between five to twenty ft. longer than the 1:2 spacing specification, depending on the posted speed limit.
 
 @fig-diagram illustrates the overall instrumentation plan applied at each site.
 The instrumentation plan consists of two video cameras, Camera 1 and Camera 2,
