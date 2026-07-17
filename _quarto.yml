@@ -61,7 +61,6 @@ book:
     - 03_methods.qmd
     - 04_results.qmd
     - 05_conclusion.qmd
-    - references.qmd
   abstract: |
     Transportation agencies regularly use Temporary portable rumble strips (TPRS) to alert 
     drivers to upcoming work zones or other changing traffic conditions, based on previous research
@@ -98,7 +97,7 @@ informedconsent: |
   Not applicable.
 dataavailability: |
   Datasets for this project are available on Zenodo and complete project code on GitHub.
-acknowledgements:  |
+acknowledgments:  |
   Graphics in this report use several open-source software packages [@ggplot22016; @modelsummary2022; @R-ggspatial].
 conflictsofinterest: |
   The authors declare no conflict of interest.
@@ -106,14 +105,16 @@ conflictsofinterest: |
 bibliography: 
   - references.bib
   - packages.bib
-  - extra_refs.yaml
-cite-method: citeproc
+  - additional-references.bib
 csl: american-society-of-civil-engineers.csl
 
 format:
   html:
+    cite-method: citeproc
     theme: cosmo
   mdpi-pdf:
+    cite-method: natbib
+    biblio-style: mdpi
     include-in-header: packages.tex
     article_status: submit
     article_type: article

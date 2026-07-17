@@ -268,10 +268,8 @@
 }
 
 \chicagostylejournals{%
-	\bibliographystyle{chicago2}
 	\bibpunct{(}{)}{;}{x}{}{,}%
 	}{%
-	\bibliographystyle{mdpi}
 	\bibpunct{[}{]}{,}{n}{}{,}%
 	}%
 

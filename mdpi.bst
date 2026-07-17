@@ -1076,6 +1076,8 @@ FUNCTION {techreport}
   format.eprint output
   new.block
   note output
+  new.block
+  format.website output
   formatfull.doi output
   fin.entry
 }
@@ -1342,5 +1344,3 @@ FUNCTION {end.bib}
 }
 
 EXECUTE {end.bib}
-
-
