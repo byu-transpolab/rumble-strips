@@ -104,11 +104,11 @@ plot_confidence_bounds <- function(paired_t_test) {
       xmin = conf_low, xmax = conf_high, color = spacing_type)
   )  +
     geom_errorbar(
-      position = position_dodge(width = 0.6),
+      position = position_dodge(width = 0.6, reverse = TRUE),
       width = 0.4
     ) +
     geom_point(
-      position = position_dodge(width = 0.6)
+      position = position_dodge(width = 0.6, reverse = TRUE)
     )
   
   # return the plot object so it can be saved in a separate target
