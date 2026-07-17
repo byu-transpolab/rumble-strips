@@ -90,13 +90,15 @@ keywords:
   - Driver Attention
 
 fundingstatement: |
-  This research was funded by the Utah Department of Transportation.
+  This research was funded by the Utah Department of Transportation under grant 25-8411.
 institutionalreview: |
-  Not applicable.
+  This research is not subject to IRB approval.
 informedconsent: |
-  Not applicable.
+  Principles of informed consent are not applicable to this research.
 dataavailability: |
-  Datasets for this project are available on Zenodo and complete project code on GitHub.
+  Curated datasets for this project are available from
+  @macfarlane_2026_21418618, and complete project code is available on GitHub at
+  <https://github.com/byu-transpolab/rumble-strips>.
 acknowledgments:  |
   Graphics in this report use several open-source software packages [@ggplot22016; @modelsummary2022; @R-ggspatial].
 conflictsofinterest: |
