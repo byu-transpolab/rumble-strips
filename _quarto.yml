@@ -6,6 +6,7 @@ book:
   title: "Effectiveness of Temporary Portable Rumble Strips in Utah"
   author:
     - name: Gregory S. Macfarlane
+      corresponding: true
       role: 
         - Conceptualization
         - Methodology
@@ -16,8 +17,9 @@ book:
       orcid: 0000-0003-3999-7584
       email: gregmacfarlane@byu.edu
       affiliations:
-        - id: a
-          name: Civil and Construction Engineering Department, Brigham Young University
+        - id: 1
+          department: Civil and Construction Engineering 
+          name: Brigham Young University
           address: 430 EB
           city: Provo
           state: UT
@@ -30,7 +32,7 @@ book:
         - Funding acquisition
       orcid: 0000-0002-0675-2970
       affiliations:
-        - ref: a
+        - ref: 1
     - name: Tyler Carruth
       role: 
         - Methodology
@@ -42,7 +44,7 @@ book:
         - Investigation
         - Data curation
       affiliations:
-        - ref: a
+        - ref: 1
     - name: Benjamin Hailstone
       role: 
         - Methodology
@@ -52,7 +54,7 @@ book:
         - Data curation
         - Writing - original draft
       affiliations:
-        - ref: a
+        - ref: 1
   date: "8/1/2026"
   chapters:
     - index.qmd
@@ -115,9 +117,7 @@ format:
     include-in-header: packages.tex
     article_status: submit
     article_type: article
+    mdpi_journal: futuretransp
     keep-tex: true
     top-level-division: section
     toc: false
-
-mdpi-journal: futuretransp
-
