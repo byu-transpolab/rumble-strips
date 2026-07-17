@@ -45,7 +45,7 @@ gm <- c()
 
 library(ggplot2)
 theme_set(theme_minimal())
-knitr::opts_chunk$set(fig.pos='t')
+knitr::opts_chunk$set(fig.pos='tpb')
 ```
 
 This section describes the research results with regards to driver speed
@@ -194,6 +194,7 @@ modelsummary(avoid_models[-1],  stars = TRUE, coef_rename = cm, gof_map = avoid_
 #|   - "By site"
 #|   - "By spacing"
 #| layout-nrow: 2
+#| fig-pos: p
 #| dev: tikz
 tar_load(momentum_per_transition_site)
 tar_load(momentum_per_transition_spacing)
