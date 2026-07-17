@@ -56,11 +56,17 @@ book:
     the need for further evaluation of TPRS effectiveness, standards for device
     condition, consideration of alternative measures for long-term work zones,
     and increased contractor discretion based on site conditions.
-acknowledgements: |
 keywords: 
   - Temporary Portable Rumble Strips
   - Work Zone Safety
   - Driver Attention
+
+fundingstatement: This research was funded by the Utah Department of Transportation.
+institutionalreview: Not applicable.
+informedconsent: Not applicable.
+dataavailability: Datasets for this project are available on Zenodo and complete project code on GitHub.
+acknowledgements:  Graphics in this report use several open-source software packages [@ggplot22016; @modelsummary2022; @R-ggspatial].
+conflictsofinterest: None.
 
 
 bibliography: 
@@ -73,12 +79,10 @@ csl: american-society-of-civil-engineers.csl
 format:
   html:
     theme: cosmo
-  elsevier-pdf:
-    include-in-header: 
-      - packages.tex
-    fontsize: 12pt
-    journal:
-      name: ASCE 2027
+  mdpi-pdf:
+    article_status: submit
+    article_type: article
+    mdpi-journal: futuretransp
     keep-tex: true
     top-level-division: section
     toc: false
