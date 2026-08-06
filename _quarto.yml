@@ -26,6 +26,7 @@ book:
           postal-code: 84602
     # to add additional authors, simply add another -name: tag 
     - name: Grant G. Schultz
+      email: gschultz@byu.edu
       role: 
         - Conceptualization
         - Writing - review & editing
@@ -34,6 +35,7 @@ book:
       affiliations:
         - ref: 1
     - name: Tyler Carruth
+      email: carrutht@byu.edu
       role: 
         - Methodology
         - Writing - original draft
@@ -46,6 +48,7 @@ book:
       affiliations:
         - ref: 1
     - name: Benjamin Hailstone
+      email: hbenjamm@student.byu.edu
       role: 
         - Methodology
         - Validation
