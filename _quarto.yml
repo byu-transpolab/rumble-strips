@@ -124,3 +124,9 @@ format:
     keep-tex: true
     top-level-division: section
     toc: false
+  elsevier-pdf:
+    include-in-header: 
+      - packages.tex
+    fontsize: 12pt
+    journal:
+      name: Transportation Research Record
