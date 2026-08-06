@@ -1,29 +1,51 @@
 % Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
-\documentclass[
-    futuretransp,
-    article,
-    submit,
-moreauthors
-]{mdpi}
 
+\documentclass[
+  letterpaper,
+]{trb}
+
+\usepackage{fullpage}
+\usepackage[pagewise]{lineno}
+\linenumbers
+\usepackage{newtxtext}
+
+
+\makeatletter
+\newcounter{wordcounter}
+\setcounter{wordcounter}{5155}
+
+\newcounter{tablecounter}
+\setcounter{tablecounter}{4}
+
+\newcounter{totalwordcounter}
+\newcommand{\totalwordcount}{%
+  \setcounter{totalwordcounter}{5155}
+  \addtocounter{totalwordcounter}{\numexpr250*4}
+  \number\value{totalwordcounter}% Output the number
+	\renewcommand{\totalwordcount}{\number\value{totalwordcounter}}
+}
+\makeatother
+\usepackage{xcolor}
 \usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
-\ifPDFTeX\else  
-    % xetex/luatex font selection
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -41,9 +63,6 @@ moreauthors
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{xcolor}
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\setcounter{secnumdepth}{5}
 % Make \paragraph and \subparagraph free-standing
 \makeatletter
 \ifx\paragraph\undefined\else
@@ -67,6 +86,7 @@ moreauthors
   \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
 \makeatother
+
 
 \usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
@@ -95,6 +115,39 @@ moreauthors
 \makeatother
 
 
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 
 
@@ -106,17 +159,8 @@ moreauthors
 
 
  
-\usepackage[]{natbib}
-\bibliographystyle{mdpi}
 
 
-% TODO: Add custom LaTeX header directives here
-% These are extra latex packages that the document depends on
-% 
-\usepackage{siunitx}
-\usepackage{tabularray}
-\UseTblrLibrary{siunitx}
-\captionsetup[subfigure]{belowskip=6pt}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -132,6 +176,11 @@ moreauthors
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\UseTblrLibrary{siunitx}
+\usepackage{orcidlink}
+\definecolor{mypink}{RGB}{219, 48, 122}
 \makeatletter
 \@ifpackageloaded{bookmark}{}{\usepackage{bookmark}}
 \makeatother
@@ -179,121 +228,45 @@ moreauthors
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
 \usepackage{bookmark}
-
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   pdftitle={Effectiveness of Temporary Portable Rumble Strips in Utah},
   pdfauthor={Gregory S. Macfarlane; Grant G. Schultz; Tyler Carruth; Benjamin Hailstone},
   pdfkeywords={Temporary Portable Rumble Strips, Work Zone
 Safety, Driver Attention},
-  pdfcreator={LaTeX via pandoc},
-  unicode=true,
-	bookmarksopen={true},
-	pdffitwindow=true, 
-	colorlinks=true, 
-	linkcolor=bluecite, 
-	citecolor=bluecite, 
-	urlcolor=bluecite, 
-	hyperfootnotes=true, 
-	pdfstartview={FitH},
-	pdfpagemode= UseNone}
-
-\firstpage{1} 
-\makeatletter 
-\setcounter{page}{\@firstpage} 
-\makeatother
-\pubvolume{1}
-\issuenum{1}
-\articlenumber{0}
-\pubyear{\the\year{}}
-\copyrightyear{\the\year{}}
-%\externaleditor{Academic Editor: Firstname Lastname}
-\datereceived{ } 
-\daterevised{ } % Comment out if no revised date
-\dateaccepted{ } 
-\datepublished{ } 
-%\datecorrected{} % For corrected papers: "Corrected: XXX" date in the original paper.
-%\dateretracted{} % For corrected papers: "Retracted: XXX" date in the original paper.
-\hreflink{https://doi.org/} % If needed use \linebreak
-%\doinum{}
-%\pdfoutput=1 % Uncommented for upload to arXiv.org
-%\CorrStatement{yes}  % For updates
-
-\Title{ Effectiveness of Temporary Portable Rumble Strips in Utah }
-
-% MDPI internal command: Title for citation in the left column
-\TitleCitation{ Effectiveness of Temporary Portable Rumble Strips in
-Utah }
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={red},
+  pdfcreator={LaTeX via pandoc}}
 
 
 
-% Author Orchid ID: enter ID or remove command
-%\newcommand{\orcidauthorA}{0000-0000-0000-000X} % Add \orcidA{} behind the author's name
-%\newcommand{\orcidauthorB}{0000-0000-0000-000X} % Add \orcidB{} behind the author's name
-\newcommand{\orcidauthorA}{0000-0003-3999-7584} 
-\newcommand{\orcidauthorB}{0000-0002-0675-2970} 
-
-
-% Authors, for the paper (add full first names)
-%\Author{Firstname Lastname $^{1,\dagger,\ddagger}$\orcidA{}, Firstname Lastname $^{2,\ddagger}$ and Firstname Lastname $^{2,}$*}
-
-\Author{Gregory S. Macfarlane$^{1}$\orcidA{}, 
-Grant G. Schultz$^{1}$\orcidB{}, 
-Tyler Carruth$^{1}$~and~Benjamin Hailstone$^{1}$
-}
-%\longauthorlist{yes}
-
-% MDPI internal command: Authors, for metadata in PDF
-\AuthorNames{
-  Gregory S. Macfarlane,
-  Grant G. Schultz,
-  Tyler Carruth,
-  Benjamin Hailstone}
-
-% MDPI internal command: Authors, for citation in the left column
-%\AuthorCitation{Lastname, F.; Lastname, F.; Lastname, F.}
-%\usepackage{xstring}
-\newcommand\getfirst[1]{\getfirstaux#1\relax} \def\getfirstaux#1#2\relax{#1}
-\newcommand{\authorformatted}{Macfarlane, \getfirst{Gregory S.}.; Schultz, \getfirst{Grant G.}.; Carruth, \getfirst{Tyler}.; Hailstone, \getfirst{Benjamin}.}
-\AuthorCitation{\authorformatted}
-
-% If this is a Chicago style journal: Lastname, Firstname, Firstname Lastname, and Firstname Lastname.
-
-% Affiliations / Addresses (Add [1] after \address if there is only one affiliation.)
-\address[1]{%
-$^{1}$ \quad Civil and Construction Engineering, Brigham Young
-University\\
-}
-
-%\address{
-%$^{1}$ \quad Affiliation 1; e-mail@e-mail.com\\
-%$^{2}$ \quad Affiliation 2; e-mail@e-mail.com}
-
-% Contact information of the corresponding author
-%% see: https://quarto.org/docs/journals/authors.html
-\corres{Correspondence: gregmacfarlane@byu.edu}
-
-% Current address and/or shared authorship
-%\firstnote{Current address: Affiliation.}  % Current address should not be the same as any items in the Affiliation section.
-%\secondnote{These authors contributed equally to this work.}
-% The commands \thirdnote{} till \eighthnote{} are available for further notes
-
-%\simplesumm{} % Simple summary
-
-%\conference{} % An extended version of a conference paper
-
-% Abstract (Do not insert blank lines, i.e. \\) 
-\abstract{ Transportation agencies regularly use Temporary portable
-rumble strips (TPRS) to alert drivers to upcoming work zones or other
-changing traffic conditions, based on previous research showing TPRS to
-effectively reduce traffic speed and increase driver attentiveness.
-However, questions persist regarding the continued effectiveness of TPRS
-as drivers become accustomed to them, the preferred spacing of TPRS, and
+\title{Effectiveness of Temporary Portable Rumble Strips in Utah}
+\author{
+Gregory S. Macfarlane\\ \itshape{Corresponding Author} \\Brigham Young
+University\\Civil and Construction
+Engineering\\\href{mailto:gregmacfarlane@byu.edu}{gregmacfarlane@byu.edu}\\ORCID: 0000-0003-3999-7584\\ \\ 
+Grant G. Schultz\\Brigham Young University\\Civil and Construction
+Engineering\\\href{mailto:gschultz@byu.edu}{gschultz@byu.edu}\\ORCID: 0000-0002-0675-2970\\ \\ 
+Tyler Carruth\\Brigham Young University\\Civil and Construction
+Engineering\\\href{mailto:carrutht@byu.edu}{carrutht@byu.edu}\\\\ \\ 
+Benjamin Hailstone\\Brigham Young University\\Civil and Construction
+Engineering\\\href{mailto:hbenjamm@student.byu.edu}{hbenjamm@student.byu.edu}\\}
+\date{2026-08-01}
+\begin{document}
+\maketitle
+\newpage
+\begin{abstract}
+Transportation agencies regularly use Temporary portable rumble strips
+(TPRS) to alert drivers to upcoming work zones or other changing traffic
+conditions, based on previous research showing TPRS to effectively
+reduce traffic speed and increase driver attentiveness. However,
+questions persist regarding the continued effectiveness of TPRS as
+drivers become accustomed to them, the preferred spacing of TPRS, and
 the need for workers to periodically enter the roadway and adjust the
 TPRS when they become displaced. This research presents the results of a
 field experiment at four sites in Utah with varying deployment
@@ -314,13 +287,10 @@ play a larger role. Maintenance requires traffic gaps of approximately
 findings highlight the need for further evaluation of TPRS
 effectiveness, standards for device condition, consideration of
 alternative measures for long-term work zones, and increased contractor
-discretion based on site conditions. }
+discretion based on site conditions.
+\end{abstract}
+\newpage
 
-% Keywords
-\keyword{Temporary Portable Rumble Strips; Work Zone Safety; Driver
-Attention}
-
-\begin{document}
 
 \bookmarksetup{startatroot}
 
@@ -330,37 +300,35 @@ Temporary portable rumble strips (TPRS) have been used since at least
 the early 2000's to alert drivers to upcoming work zones. Early adhesive
 strips have been largely replaced by non-adhesive steel and rubber pads
 heavy enough to resist movement but light enough to be handled by
-workers \citep{maze2000, meyer2006, brown22}. Prior research has
-generally shown that TPRS reduce traffic speed and increase driver
-attentiveness
-\citep{sunElevatedRiskWorkZone2011, yangEffectivenessTemporaryRumble2015},
-with the effect being most pronounced near the first set of strips and
-when drivers can see a flagger or additional barriers
-\citep{wangEffectsInnovativePortable2013}. There is also some evidence
-that TPRS reduce crash rates \citep{ullmanAnalysisWorkZone2018}. These
-findings have led to the wide adoption of TPRS in work zones across many
-states.
+workers (Brown et al., 2022; Maze, 2000; Meyer et al., 2006). Prior
+research has generally shown that TPRS reduce traffic speed and increase
+driver attentiveness (Sun et al., 2011; Yang et al., 2015), with the
+effect being most pronounced near the first set of strips and when
+drivers can see a flagger or additional barriers (Wang et al., 2013).
+There is also some evidence that TPRS reduce crash rates (Ullman et al.,
+2018). These findings have led to the wide adoption of TPRS in work
+zones across many states.
 
 In spite of their common use, there are several unanswered questions
 related to TPRS deployments. First, some studies on the effectiveness of
 TPRS have been conducted on closed courses with instrumented vehicles
-\citep{schrock2016, schrockClosedCourseTestAnalysis2010}; it is unknown
-whether this is a generalizable finding for work zones with open-road
-conditions. Similarly, as drivers become accustomed to TPRS, they may
-become desensitized to them or avoid them \citep{brown22}, making them
+(Schrock et al., 2010; Schrock et al., 2016); it is unknown whether this
+is a generalizable finding for work zones with open-road conditions.
+Similarly, as drivers become accustomed to TPRS, they may become
+desensitized to them or avoid them (Brown et al., 2022), making them
 less effective safety measures. Second, a review of state specifications
 for TPRS spacing shows that there is little evidence to support
 standards related to the spacing of strips within a TPRS array, and that
 desired specifications vary widely across states. Some states, such as
 Wisconsin, Florida, and Colorado, specify a single spacing independent
-of speed \citep[e.g.,][]{wdotSDD15C12}. Some states such as Maryland,
+of speed (e.g., Wisconsin DOT, 2022). Some states such as Maryland,
 Virginia, Minnesota, and Utah vary spacing from 10 to 20 ft. based on
-the posted speed limit \citep[e.g.,][]{minndot2024}. Finally, TPRS can
+the posted speed limit (e.g., Minnesota DOT, 2024). Finally, TPRS can
 become displaced with traffic, limiting their effectiveness or creating
-a potential hazard for drivers
-\citep{heaslipClosedCourseFeasibilityAnalysis2010, schrockClosedCourseTestAnalysis2010, sunElevatedRiskWorkZone2011}.
-Workers must therefore periodically enter the roadway to install the
-strips and adjust them when they become displaced.
+a potential hazard for drivers (Heaslip et al., 2010; Schrock et al.,
+2010; Sun et al., 2011). Workers must therefore periodically enter the
+roadway to install the strips and adjust them when they become
+displaced.
 
 This paper reports a field experiment to evaluate driver reaction to
 TPRS and observe strip displacement under traffic. Four sites in Utah
@@ -382,8 +350,7 @@ the findings for practice and future research.
 This section describes the methods and procedures used to select sites
 and collect data on driver behavior and TPRS displacement. More details
 on the reasoning behind the methodological decisions are available in an
-associated research report
-\citep{macfarlaneEffectivenessTemporaryPortable2026}.
+associated research report (G. S. Macfarlane et al., 2026).
 
 \subsection{Site Selection}\label{site-selection}
 
@@ -537,8 +504,8 @@ and not primarily to reduce speeds; however, measuring driver
 attentiveness in the general population at an active worksite presents
 technical and safety challenges. Change in speed, braking response, and
 TPRS avoidance have been used in previous studies as appropriate proxy
-measures
-\citep{brown22, fontaineEvaluationSpeedDisplays2001, sunElevatedRiskWorkZone2011}
+measures (Brown et al., 2022; Fontaine \& Carlson, 2001; Sun et al.,
+2011)
 
 Wavetronix units use radar to measure the speed of vehicles within their
 area of effect based on programmed lane location information adjusted
@@ -565,9 +532,10 @@ axles and four wheels were classified as passenger vehicles. Vehicles
 with more than four wheels or more than two axles (exclusive of
 trailers) were classified as trucks. This aligns with the FHWA's 13
 vehicle category classification with Class 1 as motorcycles, Classes 2
-and 3 as passenger vehicles, and Classes 4 through 13 as trucks
-\citep{fhwa2014}, and is consistent with the definition of truck used in
-calculating annual average daily truck traffic \citep{fhwa2018}.
+and 3 as passenger vehicles, and Classes 4 through 13 as trucks (Federal
+Highway Administration (FHWA), 2014), and is consistent with the
+definition of truck used in calculating annual average daily truck
+traffic (Federal Highway Administration (FHWA), 2018).
 
 The research team classified vehicles as braking before TPRS, after
 TPRS, or not braking at all. Vehicles driving on the shoulder or
@@ -589,13 +557,13 @@ The research team used a transparent overlay to track TPRS displacement
 over time. The overlay was based on PSS standards as outlined in their
 product guide, namely that the strips can move up to 5 ft. forward or
 back, 2 ft. to either side, and can rotate up to a 3 ft. differential
-between ends or roughly 15° \citep{pss2018}. To provide more nuanced
-description of displacement, the researchers developed five categories
-of displacement based on these overall specifications: reset (no
-movement), some, moderate, significant, and out of specification.
-Figure~\ref{fig-overlay} shows the overlay with dimensions for each area
-marked. The overlay was warped to approximate the perspective of the
-camera as shown in Figure~\ref{fig-examples}.
+between ends or roughly 15° (Plastic Safety Systems (PSS), 2018). To
+provide more nuanced description of displacement, the researchers
+developed five categories of displacement based on these overall
+specifications: reset (no movement), some, moderate, significant, and
+out of specification. Figure~\ref{fig-overlay} shows the overlay with
+dimensions for each area marked. The overlay was warped to approximate
+the perspective of the camera as shown in Figure~\ref{fig-examples}.
 
 \begin{figure}[t]
 
@@ -625,8 +593,9 @@ To quantify and normalize the vehicle impact force to displace a strip,
 the research team estimated the cumulative momentum --- speed multiplied
 by mass --- applied to TRPS. The weight of each vehicle was assumed
 based on the vehicle classification and a mean class weight derived from
-national data \citep{volpe2021}. Each vehicle's speed was assumed to be
-the mean speed of its 15-minute time bin as measured by Radar 1.
+national data (John A. Volpe National Transportation Systems Center
+(U.S.), 2021). Each vehicle's speed was assumed to be the mean speed of
+its 15-minute time bin as measured by Radar 1.
 
 Camera 2 footage allowed researchers to evaluate worker exposure to
 traffic when correcting the strip alignment. The research team recorded
@@ -635,8 +604,8 @@ workers were on site, when workers started looking for a gap in traffic,
 when workers entered the road to adjust TPRS and exited the road, and
 when the workers left the site. The time when workers were actively
 engaged in seeking to enter the road was subject to a probabilistic
-critical gap analysis \citep{hewittMeasuringCriticalGap1983} to identify
-the length of headway workers will accept for this task.
+critical gap analysis (Hewitt, 1983) to identify the length of headway
+workers will accept for this task.
 
 \bookmarksetup{startatroot}
 
@@ -664,8 +633,8 @@ the impact of TPRS presence or spacing varies inconsistently between
 sites. Notably, there are cases on US-191 where vehicle speeds increased
 after drivers traversed the array of TPRS. Although this might seem to
 contradict the current consensus found in the literature, some studies
-did acknowledge that TPRS influence on speed is highly localized
-\citep{mcavoyEvaluationTemporaryRemovable2009, shahinEffectsHighwayWork2023}
+did acknowledge that TPRS influence on speed is highly localized (McAvoy
+et al., 2009; Shahin et al., 2023)
 
 \begin{figure}[t]
 
@@ -888,7 +857,7 @@ place longer than lines with lower cumulative momentum. Not all the
 observed transitions from one state to another could be used: only
 chains of transitions that started from the initial baseline condition
 were considered to avoid any confounding variables related to the
-acceleration of displacement \citep{sunElevatedRiskWorkZone2011}.
+acceleration of displacement (Sun et al., 2011).
 Figure~\ref{fig-momentum-1} shows these chains of transitions colored by
 site, and Figure~\ref{fig-momentum-2} groups by spacing type; there does
 not appear to be any strong relationship between spacing and
@@ -1073,60 +1042,150 @@ potential of future research implementing more precise measurements,
 expanded site sampling, and improved methods for assessing driver
 attention, braking, and TPRS condition.
 
-%\authorcontributions{For research articles with several authors, a short paragraph specifying their individual contributions must be provided. The following statements should be used ``Conceptualization, X.X. and Y.Y.; methodology, X.X.; software, X.X.; validation, X.X., Y.Y. and Z.Z.; formal analysis, X.X.; investigation, X.X.; resources, X.X.; data curation, X.X.; writing---original draft preparation, X.X.; writing---review and editing, X.X.; visualization, X.X.; supervision, X.X.; project administration, X.X.; funding acquisition, Y.Y. All authors have read and agreed to the published version of the manuscript.'', please turn to the  \href{http://img.mdpi.org/data/contributor-role-instruction.pdf}{CRediT taxonomy} for the term explanation. Authorship must be limited to those who have contributed substantially to the work~reported.}
+\phantomsection\label{refs}
+\begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-modelsummary2022}
+Arel-Bundock, V. (2022). {modelsummary}: Data and model summaries in
+{R}. \emph{Journal of Statistical Software}, \emph{103}(1), 1--23.
+\url{https://doi.org/10.18637/jss.v103.i01}
 
-\authorcontributions{Conceptualization, G.S.M. and G.G.S.; Data
-curation, T.C. and B.H.; Formal analysis, T.C. and B.H.; Funding
-acquisition, G.S.M. and G.G.S.; Investigation, T.C. and B.H.;
-Methodology, G.S.M., T.C. and B.H.; Software, T.C.; Supervision, G.S.M.;
-Validation, T.C. and B.H.; Visualization, G.S.M. and T.C.; Writing -
-original draft, T.C. and B.H.; Writing - review \& editing, G.S.M. and
-G.G.S.. All authors have read and agreed to the published version of the
-manuscript.}
+\bibitem[\citeproctext]{ref-brown22}
+Brown, H., Edara, P., Sun, C., Kim, S., Bracy, J. B., Zeng, Q., Baek, H.
+J., \& Ndungu, G. (2022). \emph{Effectiveness of temporary rumble strips
+in work zones} (CMR 22-004). Missouri Department of Transportation.
+\url{https://rosap.ntl.bts.gov/view/dot/63367}
+
+\bibitem[\citeproctext]{ref-R-ggspatial}
+Dunnington, D. (2025). \emph{Ggspatial: Spatial data framework for
+ggplot2}. \url{https://paleolimbot.github.io/ggspatial/}
+
+\bibitem[\citeproctext]{ref-fhwa2014}
+Federal Highway Administration (FHWA). (2014). \emph{Traffic monitoring
+guide appendix c: Vehicle types}.
+\url{https://www.fhwa.dot.gov/policyinformation/tmguide/tmg_2013/vehicle-types.cfm}
+
+\bibitem[\citeproctext]{ref-fhwa2018}
+Federal Highway Administration (FHWA). (2018). \emph{Traffic data pocket
+guide} (FHWA-PL-18-027). Federal Highway Administration.
+\url{https://www.fhwa.dot.gov/policyinformation/pubs/pl18027_traffic_data_pocket_guide.pdf}
+
+\bibitem[\citeproctext]{ref-fontaineEvaluationSpeedDisplays2001}
+Fontaine, M. D., \& Carlson, P. J. (2001). Evaluation of {Speed
+Displays} and {Rumble Strips} at {Rural-Maintenance Work Zones}.
+\emph{Transportation Research Record}, \emph{1745}(1), 1--66.
+\url{https://doi.org/10.3141/1745-04}
+
+\bibitem[\citeproctext]{ref-heaslipClosedCourseFeasibilityAnalysis2010}
+Heaslip, K., Schrock, S. D., Wang, M.-H., Rescot, R., Bai, Y., \& Brady,
+B. (2010). A {Closed-Course Feasibility Analysis} of {Temporary Rumble
+Strips} for {Use} in {Short-Term Work Zones}. \emph{Journal of
+Transportation Safety \& Security}, \emph{2}(4), 299--311.
+\url{https://doi.org/10.1080/19439962.2010.511762}
+
+\bibitem[\citeproctext]{ref-hewittMeasuringCriticalGap1983}
+Hewitt, R. H. (1983). Measuring {Critical Gap}. \emph{Transportation
+Science}, \emph{17}(1), 87--109.
+\url{https://doi.org/10.1287/trsc.17.1.87}
+
+\bibitem[\citeproctext]{ref-volpe2021}
+John A. Volpe National Transportation Systems Center (U.S.). (2021).
+\emph{National transportation statistics 2021 {[}50th anniversary
+edition{]}}. Bureau of Transportation Statistics.
+\url{https://doi.org/10.21949/1523389}
+
+\bibitem[\citeproctext]{ref-macfarlaneEffectivenessTemporaryPortable2026}
+Macfarlane, G. S., Schultz, G. G., Carruth, T., \& Hailstone, B. (2026).
+\emph{Effectiveness of {Temporary Portable Rumble Strips} on {Work
+Zones}} (UT-26.04). Utah DOT.
+\url{https://rosap.ntl.bts.gov/view/dot/91241}
+
+\bibitem[\citeproctext]{ref-macfarlane_2026_21418618}
+Macfarlane, G., Carruth, T., \& Hailstone, B. (2026). \emph{Temporary
+portable rumble strip experiment in utah} (Version 1.0.0). Zenodo.
+\url{https://doi.org/10.5281/zenodo.21418618}
+
+\bibitem[\citeproctext]{ref-maze2000}
+Maze, T. (2000). \emph{Removable orange rumble strips}. Institute for
+Transportation (InTrans), Iowa State University.
+\url{https://swzdi.intrans.iastate.edu/research/completed/removable-orange-rumble-strips-iowa/}
+
+\bibitem[\citeproctext]{ref-mcavoyEvaluationTemporaryRemovable2009}
+McAvoy, D., Savolainen, P. T., Reddy, V., Santos, J. B., \& Datta, T. K.
+(2009). Evaluation of {Temporary Removable Rumble Strips} for {Speed
+Reduction}. \emph{Transportation {Research Board} 88th {Annual
+Meeting}}, 13. \url{https://pubsindex.trb.org/view.aspx?id=881475}
+
+\bibitem[\citeproctext]{ref-meyer2006}
+Meyer, E., Hale, R., Taghavi, R., Olafsen, J., \& Mathur, G. (2006).
+\emph{Design of portable rumble strips, phase 2}. Institute for
+Transportation (InTrans), Iowa State University.
+\url{https://intrans.iastate.edu/research/completed/design-of-portable-rumble-strips-phase-2/}
+
+\bibitem[\citeproctext]{ref-minndot2024}
+Minnesota DOT. (2024). \emph{38278186 -- long term TTC layout for
+two-lane, two-way}.
+\url{https://edocs-public.dot.state.mn.us/edocs_public/DMResultSet/Urlsearch?columns=docnumber,docname&folderid=38278186&currSortFieldName=docname&sortOrder=d}
+
+\bibitem[\citeproctext]{ref-pss2018}
+Plastic Safety Systems (PSS). (2018). \emph{RoadQuake: Best practices
+for optimal use, 2nd edition}.
+\url{https://www.pss-innovations.com/training-products/roadquake-best-practice-guide}
+
+\bibitem[\citeproctext]{ref-schrockClosedCourseTestAnalysis2010}
+Schrock, S. D., Heaslip, K. P., Wang, M.-H., Jasrotia, R., \& Rescot, R.
+(2010). Closed-{Course Test} and {Analysis} of {Vibration} and {Sound
+Generated} by {Temporary Rumble Strips} for {Short-Term Work Zones}.
+\emph{Transportation Research Record}, \emph{2169}(1), 21--30.
+\url{https://doi.org/10.3141/2169-03}
+
+\bibitem[\citeproctext]{ref-schrock2016}
+Schrock, S. D., Sarikonda, V. R., \& Fitzsimmons, E. J. (2016).
+\emph{Development of temporary rumble strip specifications} (K-TRAN:
+KU-14-6). Kansas DOT. \url{https://rosap.ntl.bts.gov/view/dot/35891}
+
+\bibitem[\citeproctext]{ref-shahinEffectsHighwayWork2023}
+Shahin, F., Elias, W., \& Toledo, T. (2023). Effects of highway work
+zone temporary countermeasures. \emph{European Transport Research
+Review}, \emph{15}(1), 20.
+\url{https://doi.org/10.1186/s12544-023-00593-2}
+
+\bibitem[\citeproctext]{ref-sunElevatedRiskWorkZone2011}
+Sun, C., Edaram, P., \& Ervin, K. (2011). Elevated-{Risk Work Zone
+Evaluation} of {Temporary Rumble Strips}. \emph{Journal of
+Transportation Safety \& Security}, \emph{3}(3), 157--173.
+\url{https://doi.org/10.1080/19439962.2011.594934}
+
+\bibitem[\citeproctext]{ref-ullmanAnalysisWorkZone2018}
+Ullman, G. L., Pratt, M., Fontaine, M. D., Porter, R. J., \& Medina, J.
+(2018). \emph{Analysis of {Work Zone Crash Characteristics} and
+{Countermeasures}} (NCHRP Web-Only Document 240). Transportation
+Research Board. \url{https://doi.org/10.17226/25006}
+
+\bibitem[\citeproctext]{ref-wangEffectsInnovativePortable2013}
+Wang, M.-H., Schrock, S. D., Bornheimer, C., \& Rescot, R. (2013).
+Effects of {Innovative Portable Plastic Rumble Strips} at
+{Flagger-Controlled Temporary Maintenance Work Zones}. \emph{Journal of
+Transportation Engineering}, \emph{139}(2), 156--164.
+\url{https://doi.org/10.1061/(ASCE)TE.1943-5436.0000499}
+
+\bibitem[\citeproctext]{ref-ggplot22016}
+Wickham, H. (2016). \emph{ggplot2: Elegant graphics for data analysis}.
+Springer-Verlag New York. \url{https://ggplot2.tidyverse.org}
+
+\bibitem[\citeproctext]{ref-wdotSDD15C12}
+Wisconsin DOT. (2022). \emph{Wisconsin department of transportation
+standard detail drawings (SDDs) 15C12}.
+\url{https://wisconsindot.gov/Pages/doing-bus/eng-consultants/cnslt-rsrces/rdwy/sdd.aspx}
+
+\bibitem[\citeproctext]{ref-yangEffectivenessTemporaryRumble2015}
+Yang, H., Ozbay, K., \& Bartin, B. (2015). Effectiveness of {Temporary
+Rumble Strips} in {Alerting Motorists} in {Short-Term Surveying Work
+Zones}. \emph{Journal of Transportation Engineering}, \emph{141}(10),
+05015003. \url{https://doi.org/10.1061/(ASCE)TE.1943-5436.0000789}
+
+\end{CSLReferences}
 
 
-%\funding{Please add: ``This research received no external funding'' or ``This research was funded by NAME OF FUNDER grant number XXX.'' and  and ``The APC was funded by XXX''. Check carefully that the details given are accurate and use the standard spelling of funding agency names at \url{https://search.crossref.org/funding}, any errors may affect your future funding.}
-
-\funding{This research was funded by the Utah Department of
-Transportation under grant 25-8411.}
-
-%\institutionalreview{In this section, you should add the Institutional Review Board Statement and approval number, if relevant to your study. You might choose to exclude this statement if the study did not require ethical approval. Please note that the Editorial Office might ask you for further information. Please add “The study was conducted in accordance with the Declaration of Helsinki, and approved by the Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies involving humans. OR “The animal study protocol was approved by the Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies involving animals. OR “Ethical review and approval were waived for this study due to REASON (please provide a detailed justification).” OR “Not applicable” for studies not involving humans or animals.}
-
-\institutionalreview{This research is not subject to IRB approval.}
-
-%\informedconsent{Any research article describing a study involving humans should contain this statement. Please add ``Informed consent was obtained from all subjects involved in the study.'' OR ``Patient consent was waived due to REASON (please provide a detailed justification).'' OR ``Not applicable'' for studies not involving humans. You might also choose to exclude this statement if the study did not involve humans. Written informed consent for publication must be obtained from participating patients who can be identified (including by the patients themselves). Please state ``Written informed consent has been obtained from the patient(s) to publish this paper'' if applicable.}
-
-\informedconsent{Principles of informed consent are not applicable to
-this research.}
-
-%\dataavailability{We encourage all authors of articles published in MDPI journals to share their research data. In this section, please provide details regarding where data supporting reported results can be found, including links to publicly archived datasets analyzed or generated during the study. Where no new data were created, or where data is unavailable due to privacy or ethical restrictions, a statement is still required. Suggested Data Availability Statements are available in section ``MDPI Research Data Policies'' at \url{https://www.mdpi.com/ethics}.} 
-
-\dataavailability{Curated datasets for this project are available from
-\citet{macfarlane_2026_21418618}, and complete project code is available
-on GitHub at \url{https://github.com/byu-transpolab/rumble-strips}.}
-
-% Only for journal Nursing Reports
-%\publicinvolvement{Please describe how the public (patients, consumers, carers) were involved in the research. Consider reporting against the GRIPP2 (Guidance for Reporting Involvement of Patients and the Public) checklist. If the public were not involved in any aspect of the research add: ``No public involvement in any aspect of this research''.}
-
-% Only for journal Nursing Reports
-%\guidelinesstandards{Please add a statement indicating which reporting guideline was used when drafting the report. For example, ``This manuscript was drafted against the XXX (the full name of reporting guidelines and citation) for XXX (type of research) research''. A complete list of reporting guidelines can be accessed via the equator network: \url{https://www.equator-network.org/}.}
-
-%\acknowledgments{In this section you can acknowledge any support given which is not covered by the author contribution or funding sections. This may include administrative and technical support, or donations in kind (e.g., materials used for experiments).}
-
-\acknowledgments{Graphics in this report use several open-source
-software packages \citep{ggplot22016, modelsummary2022, R-ggspatial}.}
-
-%\conflictsofinterest{Declare conflicts of interest or state ``The authors declare no conflicts of interest.'' Authors must identify and declare any personal circumstances or interest that may be perceived as inappropriately influencing the representation or interpretation of reported research results. Any role of the funders in the design of the study; in the collection, analyses or interpretation of data; in the writing of the manuscript; or in the decision to publish the results must be declared in this section. If there is no role, please state ``The funders had no role in the design of the study; in the collection, analyses, or interpretation of data; in the writing of the manuscript; or in the decision to publish the results''.} 
-
-\conflictsofinterest{The authors declare no conflict of interest.}
-
-\begin{adjustwidth}{-\extralength}{0cm}
-%\printendnotes[custom] % Un-comment to print a list of endnotes
-
-\reftitle{References}
-
-\bibliography{references.bib,packages.bib,additional-references.bib}
 
 
-\PublishersNote{}
-\end{adjustwidth}\end{document}
+\end{document}
