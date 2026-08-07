@@ -176,6 +176,14 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{tabularray}
+\usepackage[normalem]{ulem}
+\usepackage{graphicx}
+\usepackage{rotating}
+\UseTblrLibrary{siunitx}
+\NewTableCommand{\tinytableDefineColor}[3]{\definecolor{#1}{#2}{#3}}
+\newcommand{\tinytableTabularrayUnderline}[1]{\underline{#1}}
+\newcommand{\tinytableTabularrayStrikeout}[1]{\sout{#1}}
 \usepackage{siunitx}
 \usepackage{tabularray}
 \UseTblrLibrary{siunitx}
@@ -368,7 +376,7 @@ available.
 
 \centering{
 
-\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{03_methods_files/figure-pdf/fig-map-1.pdf}
+\includegraphics[width=0.72\linewidth,height=\textheight,keepaspectratio]{03_methods_files/figure-pdf/fig-map-1.pdf}
 
 }
 
@@ -640,7 +648,7 @@ et al., 2009; Shahin et al., 2023)
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-speed-1.pdf}}
+\includegraphics[width=0.9\linewidth,height=\textheight,keepaspectratio]{04_results_files/figure-pdf/fig-speed-1.pdf}
 
 }
 
@@ -821,7 +829,7 @@ Log Likelihood & -1003.004 & -221.398 & -259.041 & -505.462 \\
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-momentum-1.pdf}}
+\includegraphics[width=0.9\linewidth,height=\textheight,keepaspectratio]{04_results_files/figure-pdf/fig-momentum-1.pdf}
 
 }
 
@@ -833,7 +841,7 @@ Log Likelihood & -1003.004 & -221.398 & -259.041 & -505.462 \\
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-momentum-2.pdf}}
+\includegraphics[width=0.9\linewidth,height=\textheight,keepaspectratio]{04_results_files/figure-pdf/fig-momentum-2.pdf}
 
 }
 
@@ -871,7 +879,7 @@ themselves, which could not be controlled in this research.
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{04_results_files/figure-pdf/fig-cdf-1.pdf}}
+\includegraphics[width=0.9\linewidth,height=\textheight,keepaspectratio]{04_results_files/figure-pdf/fig-cdf-1.pdf}
 
 }
 
@@ -1041,6 +1049,49 @@ enter the roadway to adjust the TPRS. These limitations underscore the
 potential of future research implementing more precise measurements,
 expanded site sampling, and improved methods for assessing driver
 attention, braking, and TPRS condition.
+
+\bookmarksetup{startatroot}
+
+\section*{Author Contributions}\label{author-contributions}
+\addcontentsline{toc}{section}{Author Contributions}
+
+\markboth{Author Contributions}{Author Contributions}
+
+Gregory S. Macfarlane: Conceptualization, Methodology, Writing--review
+and editing, Visualization, Supervision, and Funding acquisition. Grant
+G. Schultz: Conceptualization, Writing--review and editing, and Funding
+acquisition. Tyler Carruth: Methodology, Writing--original draft,
+Software, Visualization, Validation, Formal analysis, Investigation, and
+Data curation. Benjamin Hailstone: Methodology, Validation, Formal
+analysis, Investigation, Data curation, and Writing--original draft.
+
+\bookmarksetup{startatroot}
+
+\section*{Acknowledgments}\label{acknowledgments}
+\addcontentsline{toc}{section}{Acknowledgments}
+
+\markboth{Acknowledgments}{Acknowledgments}
+
+This research was funded by the Utah Department of Transportation under
+grant 25-8411. The authors are responsible for the research and its
+findings. Graphics in this report use several open-source software
+packages (Arel-Bundock, 2022; Dunnington, 2025; Wickham, 2016).
+
+\bookmarksetup{startatroot}
+
+\section*{Conflicts of Interest}\label{conflicts-of-interest}
+\addcontentsline{toc}{section}{Conflicts of Interest}
+
+\markboth{Conflicts of Interest}{Conflicts of Interest}
+
+The authors declare no conflict of interest.
+
+\bookmarksetup{startatroot}
+
+\section*{References}\label{references}
+\addcontentsline{toc}{section}{References}
+
+\markboth{References}{References}
 
 \phantomsection\label{refs}
 \begin{CSLReferences}{1}{0}
