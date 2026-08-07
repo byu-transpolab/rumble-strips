@@ -30,7 +30,7 @@ sufficient samples to conduct statistical analysis were available.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-map
 #| fig-cap: Map of Utah with study locations.
-#| out-width: 80%
+#| out-width: 72%
 #| dev: tikz
 #| 
 utah <- tigris::states(progress_bar = FALSE) |> dplyr::filter(STUSPS == "UT")
